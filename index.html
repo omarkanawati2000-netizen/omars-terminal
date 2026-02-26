@@ -320,6 +320,10 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-bb" style="font-size:9px;padding:3px 6px">BB</button>
             <button class="tf-btn" id="ind-vwap" style="font-size:9px;padding:3px 6px">VWAP</button>
             <button class="tf-btn" id="ind-rsi" style="font-size:9px;padding:3px 6px">RSI</button>
+            <div class="chart-sep"></div>
+            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
+            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
+            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">🔗 Share</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
@@ -491,6 +495,72 @@ function toggleTheme(){
 
 function applyTheme(){
   document.body.className=theme==='light'?'light':'';
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT & SHARING
+   ═══════════════════════════════════════════ */
+function exportChartPNG(){
+  const canvas=document.getElementById('chart');
+  const link=document.createElement('a');
+  link.download=`${activeCoin}_${activeTF}_${new Date().toISOString().slice(0,10)}.png`;
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+}
+
+function downloadCSV(){
+  const candles=candleData[candleKey(activeCoin,activeTF)];
+  if(!candles||candles.length===0){alert('No candle data to export');return}
+  
+  let csv='Timestamp,Open,High,Low,Close,Volume\n';
+  candles.forEach(c=>{
+    const date=new Date(c.t).toISOString();
+    csv+=`${date},${c.o},${c.h},${c.l},${c.c},${c.v}\n`;
+  });
+  
+  // Add indicators if active
+  if(indicators.sma20){
+    csv+='\n\nSMA20\n';
+    const sma=calcSMA(candles,20);
+    sma.forEach((val,i)=>csv+=`${new Date(candles[i+candles.length-sma.length].t).toISOString()},${val}\n`);
+  }
+  
+  const blob=new Blob([csv],{type:'text/csv'});
+  const link=document.createElement('a');
+  link.download=`${activeCoin}_${activeTF}_${new Date().toISOString().slice(0,10)}.csv`;
+  link.href=URL.createObjectURL(blob);
+  link.click();
+}
+
+function shareChart(){
+  const url=new URL(window.location.href);
+  url.searchParams.set('coin',activeCoin);
+  url.searchParams.set('tf',activeTF);
+  url.searchParams.set('theme',theme);
+  if(indicators.sma20)url.searchParams.set('sma20','1');
+  if(indicators.sma50)url.searchParams.set('sma50','1');
+  if(indicators.ema20)url.searchParams.set('ema20','1');
+  if(indicators.bb)url.searchParams.set('bb','1');
+  if(indicators.vwap)url.searchParams.set('vwap','1');
+  
+  navigator.clipboard.writeText(url.toString()).then(()=>{
+    alert('📋 Share URL copied to clipboard!');
+  }).catch(()=>{
+    prompt('Share this URL:',url.toString());
+  });
+}
+
+// Load state from URL params on boot
+function loadFromURL(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('coin')&&ALL_TICKERS.includes(params.get('coin')))activeCoin=params.get('coin');
+  if(params.get('tf')&&TF_MS[params.get('tf')])activeTF=params.get('tf');
+  if(params.get('theme'))theme=params.get('theme');
+  if(params.get('sma20'))indicators.sma20=true;
+  if(params.get('sma50'))indicators.sma50=true;
+  if(params.get('ema20'))indicators.ema20=true;
+  if(params.get('bb'))indicators.bb=true;
+  if(params.get('vwap'))indicators.vwap=true;
 }
 
 function toggleFavorite(coin){
@@ -1913,6 +1983,12 @@ document.addEventListener('keydown',e=>{
   // Toggle theme (Alt+T)
   else if(e.altKey&&e.key==='t'){toggleTheme()}
   
+  // Export chart as PNG (Ctrl+P)
+  else if(e.ctrlKey&&e.key==='p'){e.preventDefault();exportChartPNG()}
+  
+  // Download CSV (Ctrl+D)
+  else if(e.ctrlKey&&e.key==='d'){e.preventDefault();downloadCSV()}
+  
   // Help (?)
   else if(e.key==='?'){alert(`KEYBOARD SHORTCUTS:
 1-6: Switch tabs
@@ -1954,6 +2030,7 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 /* ═══════════════════════════════════════════
    BOOT
    ═══════════════════════════════════════════ */
+loadFromURL();
 loadSettings();
 fetchPrices();
 fetchMeta();
