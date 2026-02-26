@@ -287,8 +287,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="hdr-right">
       <div class="hdr-live"><div class="hdr-dot"></div>LIVE</div>
       <span class="hdr-time" id="clock"></span>
-      <span onclick="toggleTheme()" style="cursor:pointer;font-size:14px;margin-left:8px" title="Toggle theme (Alt+T)" id="themeToggle">🌙</span>
-      <span onclick="showLayoutManager()" style="cursor:pointer;font-size:14px;margin-left:8px;color:var(--orange)" title="Manage layouts (Alt+L)">💾</span>
+      <span onclick="toggleTheme()" style="cursor:pointer;font-size:10px;margin-left:8px;font-weight:700;letter-spacing:0.08em;padding:3px 6px;border:1px solid #333;border-radius:3px" title="Toggle theme (Alt+T)" id="themeToggle">THEME</span>
+      <span onclick="showLayoutManager()" style="cursor:pointer;font-size:10px;margin-left:8px;color:var(--orange);font-weight:700;letter-spacing:0.08em;padding:3px 6px;border:1px solid var(--orange-dim);border-radius:3px" title="Manage layouts (Alt+L)">LAYOUT</span>
       <span class="hdr-brand">OMAR TERMINAL</span>
     </div>
   </div>
@@ -333,15 +333,15 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <div class="chart-sep"></div>
             <button class="draw-btn" data-tool="hline" onclick="setDrawingTool('hline')" title="Horizontal Line (H)"><span class="draw-btn-icon">━</span>H-LINE</button>
             <button class="draw-btn" data-tool="trendline" onclick="setDrawingTool('trendline')" title="Trend Line (T)"><span class="draw-btn-icon">╱</span>TREND</button>
-            <button class="draw-btn" data-tool="fib_ret" onclick="setDrawingTool('fib_ret')" title="Fibonacci Retracement (F)"><span class="draw-btn-icon">📊</span>FIB</button>
-            <button class="draw-btn" data-tool="fib_ext" onclick="setDrawingTool('fib_ext')" title="Fibonacci Extension"><span class="draw-btn-icon">📈</span>FIB-E</button>
+            <button class="draw-btn" data-tool="fib_ret" onclick="setDrawingTool('fib_ret')" title="Fibonacci Retracement (F)"><span class="draw-btn-icon">F</span>FIB</button>
+            <button class="draw-btn" data-tool="fib_ext" onclick="setDrawingTool('fib_ext')" title="Fibonacci Extension"><span class="draw-btn-icon">E</span>FIB-E</button>
             <button class="draw-btn" data-tool="rectangle" onclick="setDrawingTool('rectangle')" title="Rectangle (R)"><span class="draw-btn-icon">▭</span>RECT</button>
-            <button class="draw-btn" data-tool="ruler" onclick="setDrawingTool('ruler')" title="Ruler/Measure (M)"><span class="draw-btn-icon">📏</span>RULER</button>
+            <button class="draw-btn" data-tool="ruler" onclick="setDrawingTool('ruler')" title="Ruler/Measure (M)"><span class="draw-btn-icon">M</span>RULER</button>
             <button class="draw-btn" data-tool="text" onclick="setDrawingTool('text')" title="Text Annotation (X)"><span class="draw-btn-icon">T</span>TEXT</button>
             <div class="chart-sep"></div>
-            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
-            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
-            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">🔗 Share</button>
+            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
+            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">DATA</button>
+            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">SHARE</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
@@ -368,7 +368,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div id="contractInfo"></div>
         <div class="ov-section-title">MARKET SENTIMENT</div>
         <div id="fearGreedGauge"></div>
-        <div class="ov-section-title">🐋 WHALE ALERTS</div>
+        <div class="ov-section-title">LARGE TRANSACTIONS</div>
         <div id="whaleAlerts"></div>
         <div class="ov-section-title">WATCHLIST</div>
         <div id="watchlist"></div>
@@ -600,7 +600,7 @@ function showLayoutManager(){
   modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center';
   modal.innerHTML=`<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">💾 LAYOUTS</span>
+      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">LAYOUTS</span>
       <span onclick="document.getElementById('layoutModal').remove()" style="cursor:pointer;color:var(--muted);font-size:18px">✕</span>
     </div>
     <button onclick="const n=prompt('Layout name:');if(n){saveLayout(n);showLayoutManager()}" style="width:100%;background:var(--orange);color:#000;border:none;padding:8px;font-family:var(--font);font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;margin-bottom:12px">+ SAVE CURRENT LAYOUT</button>
@@ -718,7 +718,7 @@ function shareChart(){
   if(indicators.vwap)url.searchParams.set('vwap','1');
   
   navigator.clipboard.writeText(url.toString()).then(()=>{
-    alert('📋 Share URL copied to clipboard!');
+    alert('Share URL copied to clipboard!');
   }).catch(()=>{
     prompt('Share this URL:',url.toString());
   });
@@ -778,7 +778,7 @@ function checkPriceAlerts(){
     if(hit){
       alert.triggered=true;
       playAlertSound();
-      const msg=`🔔 PRICE ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
+      const msg=`PRICE ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
       console.log(msg);
       if('Notification' in window&&Notification.permission==='granted'){
         new Notification('Price Alert',{body:msg,icon:'https://omarkanawati2000-netizen.github.io/omars-terminal/favicon.ico'});
@@ -1389,7 +1389,7 @@ function renderWhaleAlerts(){
   ];
   
   el.innerHTML=`<div style="font-size:9px;color:var(--muted);padding:8px 12px;background:#0a0a0a">Large transactions (>$10M)</div>`+whales.map(w=>{
-    const icon=w.type==='transfer'?'📤':'🔄';
+    const icon=w.type==='transfer'?'→':'↔';
     return `<div style="padding:8px 12px;border-bottom:1px solid #0f0f0f;font-size:10px">
       <div style="display:flex;justify-content:space-between;margin-bottom:2px">
         <span style="font-weight:700;color:${categoryColor(w.coin)}">${icon} ${w.coin}</span>
@@ -1479,7 +1479,7 @@ function renderContractInfo(){
 
 function renderWatchlist(){
   const el=document.getElementById('watchlist');
-  const cats=[{id:'favorites',label:'★ FAV'},{id:'all',label:'ALL'},{id:'crypto',label:'CRYPTO'},{id:'stocks',label:'STOCKS'},{id:'commodities',label:'CMDTY'},{id:'forex',label:'FX'}];
+  const cats=[{id:'favorites',label:'FAV'},{id:'all',label:'ALL'},{id:'crypto',label:'CRYPTO'},{id:'stocks',label:'STOCKS'},{id:'commodities',label:'CMDTY'},{id:'forex',label:'FX'}];
   const catBar=cats.map(c=>`<span style="padding:3px 8px;font-size:9px;cursor:pointer;border-radius:2px;font-weight:600;${activeCategory===c.id?'background:var(--orange);color:#000':'color:var(--muted)'}" onclick="activeCategory='${c.id}';renderWatchlist()">${c.label}</span>`).join('');
   const assets=getFilteredAssets();
   const rows=assets.map(c=>{
@@ -1487,7 +1487,7 @@ function renderWatchlist(){
     const change=((d.price-d.open)/d.open*100);
     const isUp=change>=0;
     const isFav=favorites.includes(c);
-    const star=`<span onclick="event.stopPropagation();toggleFavorite('${c}')" style="cursor:pointer;margin-left:3px;color:${isFav?'var(--orange)':'var(--muted)'};font-size:10px">${isFav?'★':'☆'}</span>`;
+    const star=`<span onclick="event.stopPropagation();toggleFavorite('${c}')" style="cursor:pointer;margin-left:3px;padding:0 3px;font-size:8px;font-weight:700;border-radius:2px;${isFav?'background:var(--orange);color:#000':'border:1px solid var(--muted);color:var(--muted)'}">${isFav?'FAV':'ADD'}</span>`;
     return `<div class="ov-right-row" style="cursor:pointer;${c===activeCoin?'background:#1a1200;border-left:2px solid var(--orange);':'border-left:2px solid transparent;'}" onclick="selectCoin('${c}')">
       <span><span style="font-weight:700;color:${categoryColor(c)}">${cleanSym(c)}</span>${star} <span style="font-size:9px;color:var(--muted)">${displayName(c)}</span></span>
       <span class="${isUp?'up':'down'}" style="font-weight:600">$${fmtPrice(d.price)} <span style="font-size:10px">${isUp?'+':''}${change.toFixed(2)}%</span></span>
@@ -1812,7 +1812,7 @@ function renderAnalysis(){
   
   const aiCard=aiInsight?`<div class="analysis-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(255,140,0,0.05),rgba(0,0,0,0))">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>🤖 AI MARKET INSIGHT</h3>
+      <h3>AI MARKET INSIGHT</h3>
       <button onclick="fetchAIInsight()" style="background:var(--orange-bg);border:1px solid var(--orange-dim);color:var(--orange);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:9px;font-family:var(--font)">REFRESH</button>
     </div>
     <div style="font-size:12px;color:var(--text);line-height:1.6;margin-top:8px">${aiInsight}</div>
@@ -1869,7 +1869,7 @@ function renderAnalysis(){
       }).join('')}
     </div>
     <div class="analysis-card">
-      <h3>📅 ECONOMIC CALENDAR (THIS WEEK)</h3>
+      <h3>ECONOMIC CALENDAR (THIS WEEK)</h3>
       ${economicEvents.length===0?'<div style="padding:12px;color:var(--muted);font-size:10px">Loading events...</div>':economicEvents.map(e=>{
         const impactColor=e.impact==='High'?'var(--red)':e.impact==='Medium'?'var(--orange)':'var(--dim)';
         const dateStr=e.date.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -2339,7 +2339,7 @@ document.addEventListener('keydown',e=>{
   }
   
   // Toggle sound (Alt+M for mute)
-  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'🔊 Sound enabled':'🔇 Sound muted')}
+  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'Sound enabled':'Sound muted')}
   
   // Toggle theme (Alt+T)
   else if(e.altKey&&e.key==='t'){toggleTheme()}
@@ -2869,8 +2869,11 @@ function renderSingleDrawing(ctx, drawing, cW, cH, isActive) {
     const alertY = drawing.tool === TOOLS.HLINE ? y1 : Math.min(y1, y2);
     
     ctx.font = '12px Arial';
+    ctx.font = '700 9px JetBrains Mono';
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillRect(alertX - 2, alertY - 10, 24, 12);
     ctx.fillStyle = drawing.alertCrossed ? '#4caf50' : '#ffeb3b';
-    ctx.fillText('🔔', alertX, alertY);
+    ctx.fillText('ALT', alertX, alertY);
   }
 }
 
@@ -3086,10 +3089,10 @@ function showDrawingContextMenu(x, y, drawingIndex, drawing) {
   `;
   
   const options = [
-    { label: '📝 Edit Label', action: () => editDrawingLabel(drawingIndex, drawing) },
-    { label: drawing.alertEnabled ? '🔕 Disable Alert' : '🔔 Enable Alert', action: () => toggleDrawingAlert(drawingIndex, drawing) },
-    { label: '🎨 Change Color', action: () => changeDrawingColor(drawingIndex, drawing) },
-    { label: '❌ Delete', action: () => deleteDrawing(drawingIndex), danger: true }
+    { label: 'Edit Label', action: () => editDrawingLabel(drawingIndex, drawing) },
+    { label: drawing.alertEnabled ? 'Disable Alert' : 'Enable Alert', action: () => toggleDrawingAlert(drawingIndex, drawing) },
+    { label: 'Change Color', action: () => changeDrawingColor(drawingIndex, drawing) },
+    { label: 'Delete', action: () => deleteDrawing(drawingIndex), danger: true }
   ];
   
   options.forEach(opt => {
@@ -3241,7 +3244,7 @@ function checkDrawingAlerts() {
         box-shadow: 0 4px 16px rgba(255,140,0,0.4);
         animation: slideIn 0.3s ease;
       `;
-      alertDiv.textContent = `🔔 Drawing Alert: ${label}`;
+      alertDiv.textContent = `DRAWING ALERT: ${label}`;
       document.body.appendChild(alertDiv);
       
       setTimeout(() => {
