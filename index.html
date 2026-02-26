@@ -377,6 +377,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="draw-btn" data-tool="rectangle" onclick="setDrawingTool('rectangle')" title="Rectangle (R)"><span class="draw-btn-icon">▭</span>RECT</button>
             <button class="draw-btn" data-tool="ruler" onclick="setDrawingTool('ruler')" title="Ruler/Measure (M)"><span class="draw-btn-icon">M</span>RULER</button>
             <button class="draw-btn" data-tool="text" onclick="setDrawingTool('text')" title="Text Label (L)"><span class="draw-btn-icon">T</span>TEXT</button>
+            <button class="tf-btn" onclick="clearDrawings()" style="font-size:9px;padding:3px 6px;color:#ff1744" title="Clear all drawings">CLEAR</button>
             <div class="chart-sep"></div>
             <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
             <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
@@ -791,9 +792,124 @@ function loadDrawings(){
   }catch(e){console.error('Failed to load drawings:', e)}
 }
 
+function clearDrawings(){
+  if(confirm('Delete all drawings for this chart?')){
+    drawings = drawings.filter(d => d.coin !== activeCoin || d.tf !== activeTF);
+    saveDrawings();
+    renderChart();
+  }
+}
+
+function deleteDrawing(index){
+  drawings.splice(index, 1);
+  saveDrawings();
+  renderChart();
+  closeContextMenu();
+}
+
+function editDrawingLabel(index){
+  const label = prompt('Enter label text:', drawings[index].label || '');
+  if(label !== null){
+    drawings[index].label = label || null;
+    saveDrawings();
+    renderChart();
+  }
+  closeContextMenu();
+}
+
+function changeDrawingColor(index, color){
+  drawings[index].color = color;
+  saveDrawings();
+  renderChart();
+  closeContextMenu();
+}
+
+function showContextMenu(x, y, index){
+  closeContextMenu();
+  
+  const menu = document.createElement('div');
+  menu.id = 'drawing-context-menu';
+  menu.style.cssText = 'position:fixed;background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.5)';
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  
+  const colors = ['#ff8c00','#ff1744','#00c853','#2196f3','#ffeb3b','#9c27b0','#00bcd4','#fff'];
+  
+  menu.innerHTML = `
+    <div onclick="editDrawingLabel(${index})" style="padding:6px 12px;cursor:pointer;color:#e8e8e8;font-size:11px;font-family:JetBrains Mono">Edit Label</div>
+    <div style="padding:6px 12px;color:#888;font-size:10px">Color:</div>
+    <div style="display:flex;gap:4px;padding:4px 12px">
+      ${colors.map(c => `<div onclick="changeDrawingColor(${index},'${c}')" style="width:20px;height:20px;background:${c};cursor:pointer;border:2px solid ${drawings[index].color===c?'#fff':'transparent'}"></div>`).join('')}
+    </div>
+    <div onclick="deleteDrawing(${index})" style="padding:6px 12px;cursor:pointer;color:#ff1744;font-size:11px;font-family:JetBrains Mono;border-top:1px solid #333;margin-top:4px">Delete</div>
+  `;
+  
+  document.body.appendChild(menu);
+  
+  // Close on click outside
+  setTimeout(() => {
+    document.addEventListener('click', closeContextMenu, {once: true});
+  }, 10);
+}
+
+function closeContextMenu(){
+  const menu = document.getElementById('drawing-context-menu');
+  if(menu) menu.remove();
+}
+
+// Find drawing near click position
+function findDrawingNear(x, y, cW, cH, yMin, yMax){
+  const yRange = yMax - yMin;
+  const clickPrice = yMax - (y / cH) * yRange;
+  const threshold = yRange * 0.02; // 2% of range
+  
+  for(let i = drawings.length - 1; i >= 0; i--){
+    const d = drawings[i];
+    if(d.coin !== activeCoin || d.tf !== activeTF) continue;
+    
+    if(d.type === 'hline'){
+      if(Math.abs(d.price - clickPrice) < threshold){
+        return i;
+      }
+    }
+  }
+  return -1;
+}
+
 // Mouse handler for drawing tools
 function initDrawingHandlers(){
   const chartBody = document.getElementById('chartBody');
+  
+  // Right-click for context menu
+  chartBody.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    
+    const rect = chartBody.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const canvas = document.getElementById('chart');
+    const candles = candleData[candleKey(activeCoin, activeTF)];
+    if(!candles || candles.length < 2) return;
+    
+    const mB = 30, mR = 80;
+    const cH = canvas.height / (window.devicePixelRatio || 1) - mB;
+    const cW = canvas.width / (window.devicePixelRatio || 1) - mR;
+    
+    const visibleCandles = candles.slice(-100);
+    const prices = visibleCandles.flatMap(c => [c.h, c.l]);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min;
+    const padding = range * 0.05;
+    const yMin = min - padding;
+    const yMax = max + padding;
+    
+    const drawingIndex = findDrawingNear(x, y, cW, cH, yMin, yMax);
+    if(drawingIndex >= 0){
+      showContextMenu(e.clientX, e.clientY, drawingIndex);
+    }
+  });
   
   chartBody.addEventListener('click', (e) => {
     if(!drawingTool) return;
