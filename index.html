@@ -3569,6 +3569,52 @@ if (originalFetchPrices) {
 // Initialize drawing tools
 loadDrawings();
 initDrawingHandlers();
+
+/* ═══════════════════════════════════════════
+   DIAGNOSTIC: ON-SCREEN STATUS
+   ═══════════════════════════════════════════ */
+setTimeout(() => {
+  const tabs = document.querySelectorAll('.tab');
+  const statusDiv = document.createElement('div');
+  statusDiv.style.cssText = `
+    position:fixed;
+    top:10px;
+    right:10px;
+    background:rgba(0,0,0,0.9);
+    color:#0f0;
+    padding:10px;
+    font-family:monospace;
+    font-size:11px;
+    border:2px solid #0f0;
+    z-index:9999;
+    max-width:300px;
+  `;
+  
+  let status = `<strong>🔍 DIAGNOSTIC REPORT:</strong><br><br>`;
+  status += `✓ Tabs found: ${tabs.length}<br>`;
+  status += `✓ switchTab exists: ${typeof switchTab !== 'undefined'}<br>`;
+  
+  if (tabs.length > 0) {
+    const tab1Style = getComputedStyle(tabs[0]);
+    status += `<br><strong>Tab 1 CSS:</strong><br>`;
+    status += `• pointer-events: ${tab1Style.pointerEvents}<br>`;
+    status += `• z-index: ${tab1Style.zIndex}<br>`;
+    status += `• cursor: ${tab1Style.cursor}<br>`;
+    
+    // Test if click works
+    tabs[0].addEventListener('click', () => {
+      statusDiv.innerHTML += `<br><br><span style="color:yellow">✓ TAB CLICKED!</span>`;
+    });
+    
+    status += `<br><strong>Click tab 1 to test...</strong>`;
+  }
+  
+  statusDiv.innerHTML = status;
+  document.body.appendChild(statusDiv);
+  
+  // Auto-remove after 30 seconds
+  setTimeout(() => statusDiv.remove(), 30000);
+}, 1000);
 </script>
 </body>
 </html>
