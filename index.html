@@ -25,7 +25,7 @@ body.light{
   --red:#ff1744;--red-bg:rgba(255,23,68,0.15);
   --white:#1a1a1a;--text:#333;--dim:#666;--muted:#999;
 }
-html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:12px;line-height:1.4;overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:12px;line-height:1.4;overflow:hidden;height:100%;user-select:none;-webkit-font-smoothing:antialiased}
 
 /* ═══ APP SHELL ═══ */
 .app{display:flex;flex-direction:column;height:100vh}
@@ -59,8 +59,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .hdr-brand{color:var(--orange);font-weight:800;font-size:13px;letter-spacing:0.12em}
 
 /* ═══ TAB NAVIGATION ═══ */
-.tabs{display:flex;align-items:center;height:36px;background:#080808;border-bottom:1px solid #1a1a1a;padding:0 16px;gap:2px;position:relative;z-index:100}
-.tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.03em;border-bottom:2px solid transparent;transition:all 0.15s;pointer-events:auto}
+.tabs{display:flex;align-items:center;height:36px;background:#080808;border-bottom:1px solid #1a1a1a;padding:0 16px;gap:2px}
+.tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.03em;border-bottom:2px solid transparent;transition:all 0.15s}
 .tab:hover{color:var(--dim)}
 .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
 .tab .num{color:var(--orange-dim);margin-right:4px;font-size:10px}
@@ -73,30 +73,28 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .overview{display:flex;flex:1;overflow:hidden}
 .ov-left{flex:1;display:flex;flex-direction:column;min-width:300px}
 .ov-right{width:340px;border-left:1px solid #1a1a1a;overflow-y:auto;background:#0d0d0d}
-.ov-right-row{display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #141414;font-size:11px;cursor:pointer;pointer-events:auto}
+.ov-right-row{display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #141414;font-size:11px}
 .ov-right-row .lbl{color:var(--dim)}
 .ov-right-row .val{font-weight:600;color:var(--white)}
 .ov-section-title{padding:10px 16px;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.1em;text-transform:uppercase;background:#0a0a0a;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:1}
 
 /* Chart */
 .chart-container{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.chart-toolbar{display:flex;align-items:center;padding:6px 12px;gap:4px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;position:relative;z-index:50}
-.tf-btn{padding:4px 10px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;font-weight:600;pointer-events:auto}
+.chart-toolbar{display:flex;align-items:center;padding:6px 12px;gap:4px;background:#0d0d0d;border-bottom:1px solid #1a1a1a}
+.tf-btn{padding:4px 10px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;font-weight:600}
 .tf-btn:hover{color:var(--dim);background:#1a1a1a}
 .tf-btn.active{background:var(--orange);color:#000}
-.chart-sep{width:1px;height:16px;background:#222;margin:0 4px;pointer-events:none}
-.type-btn{padding:4px 8px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;pointer-events:auto}
+.chart-sep{width:1px;height:16px;background:#222;margin:0 4px}
+.type-btn{padding:4px 8px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px}
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
-.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s;pointer-events:auto}
+.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s}
 .draw-btn:hover{color:var(--orange-dim);border-color:var(--orange-dim);background:#1a1a1a}
 .draw-btn.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
 .draw-btn-icon{font-size:12px;margin-right:3px}
-button{pointer-events:auto}
 
 .chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
-.chart-body canvas{width:100%;height:100%;pointer-events:none;position:absolute;top:0;left:0;z-index:0}
-.chart-ohlc,.chart-watermark{pointer-events:none;z-index:1}
+.chart-body canvas{width:100%;height:100%;pointer-events:none}
 .chart-ohlc{position:absolute;top:8px;left:12px;display:flex;gap:12px;font-size:10px;pointer-events:none;z-index:2}
 .chart-ohlc span{color:var(--dim)}
 .chart-ohlc .lbl{color:var(--muted);font-size:9px}
@@ -197,27 +195,7 @@ button{pointer-events:auto}
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media (max-width: 768px) {
   /* ═══ MOBILE: SIMPLIFIED UI ═══ */
-  html,body{font-size:11px;-webkit-tap-highlight-color:rgba(255,140,0,0.2)}
-  
-  /* Ensure all interactive elements are clickable */
-  button,a,.tab,.ov-right-row,.coin-opt,.news-card,[onclick]{
-    pointer-events:auto!important;
-    cursor:pointer!important;
-    -webkit-tap-highlight-color:rgba(255,140,0,0.3)!important;
-  }
-  
-  /* Ensure views are scrollable */
-  .view{
-    touch-action:pan-y!important;
-    overflow-y:auto!important;
-    -webkit-overflow-scrolling:touch!important;
-  }
-  
-  /* Main app container */
-  .app{
-    touch-action:pan-y;
-    overflow:hidden;
-  }
+  html,body{font-size:11px}
   
   /* Hide advanced tabs on mobile (keep only essentials) */
   .tab[data-tab="orderbook"]{display:none}
@@ -225,9 +203,9 @@ button{pointer-events:auto}
   .tab[data-tab="analysis"]{display:none}
   
   /* Header: cleaner mobile layout */
-  .header{flex-wrap:wrap;height:auto;padding:12px;position:relative;z-index:90;pointer-events:auto}
-  .hdr-coin{width:100%;order:1;margin-bottom:10px;position:relative;z-index:95}
-  .hdr-coin-input{font-size:15px;width:100%;padding:10px 14px;pointer-events:auto;touch-action:manipulation}
+  .header{flex-wrap:wrap;height:auto;padding:12px}
+  .hdr-coin{width:100%;order:1;margin-bottom:10px}
+  .hdr-coin-input{font-size:15px;width:100%;padding:10px 14px}
   .hdr-label{font-size:17px;order:2;font-weight:800}
   .hdr-type{display:none} /* hide asset type label */
   .hdr-price{font-size:22px;order:4;margin-left:0;width:auto}
@@ -236,23 +214,23 @@ button{pointer-events:auto}
   .hdr-brand{order:6;width:100%;text-align:center;margin-top:10px;font-size:10px;opacity:0.5}
   
   /* Tabs: bigger, easier to tap */
-  .tabs{overflow-x:auto;padding:0 12px;gap:6px;height:48px;-webkit-overflow-scrolling:touch;position:relative;z-index:100;pointer-events:auto}
-  .tab{font-size:12px;padding:12px 20px;white-space:nowrap;min-width:100px;border-bottom-width:3px;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:rgba(255,140,0,0.3)}
+  .tabs{overflow-x:auto;padding:0 12px;gap:6px;height:48px;-webkit-overflow-scrolling:touch}
+  .tab{font-size:12px;padding:12px 20px;white-space:nowrap;min-width:100px;border-bottom-width:3px}
   .tab .num{display:none}
   
   /* Overview: stack chart above watchlist */
-  .overview{flex-direction:column;touch-action:pan-y}
-  .ov-left{width:100%!important;min-height:450px;display:flex;flex-direction:column;pointer-events:auto}
-  .ov-right{width:100%!important;max-height:none;border-left:none;border-top:2px solid #1a1a1a;touch-action:pan-y;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .overview{flex-direction:column}
+  .ov-left{width:100%!important;min-height:450px;display:flex;flex-direction:column}
+  .ov-right{width:100%!important;max-height:none;border-left:none;border-top:2px solid #1a1a1a}
   
   /* Chart container: ensure proper rendering */
   .chart-container{flex:1;min-height:400px}
-  .chart-body{min-height:350px;position:relative;touch-action:pan-y;pointer-events:auto}
-  .chart-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;pointer-events:none;z-index:0}
+  .chart-body{min-height:350px;position:relative}
+  .chart-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
   
   /* Chart toolbar: hide advanced features */
-  .chart-toolbar{flex-wrap:wrap;padding:8px 12px;gap:6px;position:relative;z-index:80;pointer-events:auto}
-  .tf-btn{font-size:11px;padding:7px 12px;border-radius:4px;cursor:pointer;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,140,0,0.3)}
+  .chart-toolbar{flex-wrap:wrap;padding:8px 12px;gap:6px}
+  .tf-btn{font-size:11px;padding:7px 12px;border-radius:4px}
   .type-btn,.chart-sep,.draw-btn{display:none} /* hide drawing tools & chart types */
   button[onclick*="exportChartPNG"],button[onclick*="downloadCSV"],button[onclick*="shareChart"]{display:none} /* hide export buttons */
   #ind-bb,#ind-vwap,#ind-rsi,#ind-volProfile,#ind-liqLevels{display:none} /* hide advanced indicators */
@@ -265,18 +243,10 @@ button{pointer-events:auto}
     display:flex!important;
     flex-direction:column!important;
     gap:1px;
-    touch-action:pan-y;
-    overflow-y:auto;
   }
   #view-gmm > div > div{
     width:100%!important;
     min-height:300px;
-    pointer-events:auto;
-    touch-action:pan-y;
-  }
-  #view-gmm > div > div > div{
-    touch-action:pan-y;
-    overflow-y:auto;
   }
   
   /* Screener: mobile-friendly columns */
@@ -300,9 +270,8 @@ button{pointer-events:auto}
   }
   
   /* Watchlist: bigger tap targets */
-  .ov-right{pointer-events:auto;position:relative;z-index:10}
-  .ov-right-row{padding:12px 16px;min-height:56px;font-size:12px;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:rgba(255,140,0,0.2)}
-  .ov-section-title{padding:12px 16px;font-size:11px;pointer-events:none}
+  .ov-right-row{padding:12px 16px;min-height:56px;font-size:12px}
+  .ov-section-title{padding:12px 16px;font-size:11px}
   
   /* News: larger, easier to read */
   .news-card{padding:16px;min-height:72px}
