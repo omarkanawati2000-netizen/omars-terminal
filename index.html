@@ -550,36 +550,38 @@ async function fetchMeta(){
    STOCK/COMMODITY/FOREX FETCHING (Yahoo Finance via proxy)
    ═══════════════════════════════════════════ */
 const YAHOO_SYMBOLS = [...STOCKS,...COMMODITIES,...FOREX];
-const YAHOO_PROXY = 'https://corsproxy.io/?';
+const CORS_PROXY = 'https://corsproxy.io/?';
 
 async function fetchStocks(){
-  try{
-    const syms=YAHOO_SYMBOLS.join(',');
-    const url=`${YAHOO_PROXY}${encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols='+syms+'&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketOpen,regularMarketDayHigh,regularMarketDayLow,regularMarketVolume,regularMarketPreviousClose,shortName')}`;
-    const resp=await fetch(url);
-    const data=await resp.json();
-    if(data.quoteResponse&&data.quoteResponse.result){
-      data.quoteResponse.result.forEach(q=>{
-        const sym=q.symbol;
-        const price=q.regularMarketPrice;
-        if(!price)return;
-        const open=q.regularMarketOpen||q.regularMarketPreviousClose||price;
-        if(!priceData[sym]){
-          priceData[sym]={price,prevPrice:price,open,high:q.regularMarketDayHigh||price,low:q.regularMarketDayLow||price,history:[],volume:q.regularMarketVolume||0,isStock:true};
-        }else{
-          priceData[sym].prevPrice=priceData[sym].price;
-          priceData[sym].price=price;
-          priceData[sym].high=q.regularMarketDayHigh||priceData[sym].high;
-          priceData[sym].low=q.regularMarketDayLow||priceData[sym].low;
-          priceData[sym].volume=q.regularMarketVolume||0;
-          priceData[sym].open=open;
-        }
-        priceData[sym].history.push({time:Date.now(),price});
-        if(priceData[sym].history.length>300)priceData[sym].history.shift();
-      });
-    }
-    renderAll();
-  }catch(e){console.error('Yahoo fetch error:',e)}
+  // Use v8 chart endpoint via CORS proxy (Yahoo has no CORS headers)
+  const promises=YAHOO_SYMBOLS.map(async sym=>{
+    try{
+      const url=CORS_PROXY+encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`);
+      const resp=await fetch(url);
+      const data=await resp.json();
+      const result=data.chart&&data.chart.result&&data.chart.result[0];
+      if(!result||!result.meta)return;
+      const m=result.meta;
+      const price=m.regularMarketPrice;
+      if(!price)return;
+      const open=m.chartPreviousClose||m.previousClose||price;
+      const high=m.regularMarketDayHigh||price;
+      const low=m.regularMarketDayLow||price;
+      const vol=m.regularMarketVolume||0;
+      if(!priceData[sym]){
+        priceData[sym]={price,prevPrice:price,open,high,low,history:[],volume:vol,isStock:true};
+      }else{
+        priceData[sym].prevPrice=priceData[sym].price;
+        priceData[sym].price=price;
+        priceData[sym].high=high;priceData[sym].low=low;
+        priceData[sym].volume=vol;priceData[sym].open=open;
+      }
+      priceData[sym].history.push({time:Date.now(),price});
+      if(priceData[sym].history.length>300)priceData[sym].history.shift();
+    }catch(e){/* silent per-symbol */}
+  });
+  await Promise.allSettled(promises);
+  renderAll();
 }
 
 // Fetch Yahoo Finance candles for stocks
@@ -591,7 +593,7 @@ async function fetchStockCandles(sym,tf){
     // Map TF to Yahoo interval/range
     const yInterval={'1m':'1m','5m':'5m','15m':'15m','1h':'1h','4h':'1h','1d':'1d','1w':'1wk'}[tf]||'1h';
     const yRange={'1m':'1d','5m':'5d','15m':'5d','1h':'1mo','4h':'3mo','1d':'1y','1w':'5y'}[tf]||'1mo';
-    const url=`${YAHOO_PROXY}${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+sym+'?interval='+yInterval+'&range='+yRange)}`;
+    const url=CORS_PROXY+encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=${yInterval}&range=${yRange}`);
     const resp=await fetch(url);
     const data=await resp.json();
     const result=data.chart&&data.chart.result&&data.chart.result[0];
