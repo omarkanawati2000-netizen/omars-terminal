@@ -552,23 +552,68 @@ html, body {
 const COINS = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE'];
 let activeCoin = 'BTC';
 let chartType = 'candle';
+let activeTF = '1h';
 let priceData = {};
-let candleData = {};
+let candleData = {};  // keyed by coin:tf
 
-function initCandles(coin, price) {
-  if (candleData[coin] && candleData[coin].length > 10) return;
-  candleData[coin] = [];
-  let p = price * (0.97 + Math.random() * 0.06);
-  for (let i = 60; i >= 0; i--) {
-    const vol = price * 0.003;
+const TF_MS = { '1m':60000, '5m':300000, '15m':900000, '1h':3600000, '4h':14400000, '1d':86400000, '1w':604800000 };
+const TF_VOLATILITY = { '1m':0.0008, '5m':0.0015, '15m':0.002, '1h':0.003, '4h':0.006, '1d':0.012, '1w':0.025 };
+const TF_BARS = { '1m':80, '5m':72, '15m':64, '1h':60, '4h':48, '1d':60, '1w':52 };
+
+function candleKey(coin, tf) { return coin + ':' + tf; }
+
+function initCandles(coin, price, force) {
+  const key = candleKey(coin, activeTF);
+  if (!force && candleData[key] && candleData[key].length > 10) return;
+  candleData[key] = [];
+  const bars = TF_BARS[activeTF] || 60;
+  const interval = TF_MS[activeTF] || 3600000;
+  const vol = price * (TF_VOLATILITY[activeTF] || 0.003);
+  let p = price * (0.95 + Math.random() * 0.10);
+  for (let i = bars; i >= 0; i--) {
     const o = p;
     const c = o + (Math.random() - 0.48) * vol;
-    const h = Math.max(o, c) + Math.random() * vol * 0.5;
-    const l = Math.min(o, c) - Math.random() * vol * 0.5;
+    const h = Math.max(o, c) + Math.random() * vol * 0.6;
+    const l = Math.min(o, c) - Math.random() * vol * 0.6;
     const v = Math.random() * 100 + 10;
-    candleData[coin].push({ o, h, l, c, v, t: Date.now() - i * 60000 });
+    candleData[key].push({ o, h, l, c, v, t: Date.now() - i * interval });
     p = c;
   }
+}
+
+function initCandlesEndAt(coin, endPrice) {
+  const key = candleKey(coin, activeTF);
+  candleData[key] = [];
+  const bars = TF_BARS[activeTF] || 60;
+  const interval = TF_MS[activeTF] || 3600000;
+  const volPct = TF_VOLATILITY[activeTF] || 0.003;
+  // Work backwards from endPrice
+  const candles = [];
+  let c = endPrice;
+  for (let i = 0; i < bars; i++) {
+    const vol = endPrice * volPct;
+    const move = (Math.random() - 0.48) * vol;
+    const o = c - move;
+    const h = Math.max(o, c) + Math.random() * vol * 0.4;
+    const l = Math.min(o, c) - Math.random() * vol * 0.4;
+    const v = Math.random() * 100 + 10;
+    candles.unshift({ o, h, l, c, v, t: Date.now() - i * interval });
+    c = o; // previous candle's close = this candle's open
+  }
+  candleData[key] = candles;
+}
+
+function switchTimeframe(tf) {
+  activeTF = tf;
+  // Generate candles for active coin at new TF if not already cached
+  const d = priceData[activeCoin];
+  if (d) {
+    const key = candleKey(activeCoin, tf);
+    if (!candleData[key] || candleData[key].length < 2) {
+      initCandles(activeCoin, d.price, true);
+    }
+  }
+  renderChart();
 }
 
 function updateClock() {
@@ -601,7 +646,10 @@ async function fetchPrices() {
       if (!price) continue;
       if (!priceData[coin]) {
         priceData[coin] = { price, prevPrice: price, open: price, high: price, low: price, history: [], volume: Math.random()*500+50 };
-        initCandles(coin, price);
+        // Init candles for ALL timeframes, ending at current price
+        const savedTF = activeTF;
+        for (const tf of Object.keys(TF_MS)) { activeTF = tf; initCandlesEndAt(coin, price); }
+        activeTF = savedTF;
       } else {
         priceData[coin].prevPrice = priceData[coin].price;
         priceData[coin].price = price;
@@ -610,16 +658,21 @@ async function fetchPrices() {
       }
       priceData[coin].history.push({ time: Date.now(), price });
       if (priceData[coin].history.length > 300) priceData[coin].history.shift();
-      if (candleData[coin] && candleData[coin].length > 0) {
-        const last = candleData[coin][candleData[coin].length - 1];
-        if (Date.now() - last.t > 60000) {
-          candleData[coin].push({ o: last.c, h: price, l: price, c: price, v: Math.random()*30+5, t: Date.now() });
-          if (candleData[coin].length > 80) candleData[coin].shift();
-        } else {
-          last.c = price;
-          last.h = Math.max(last.h, price);
-          last.l = Math.min(last.l, price);
-          last.v += Math.random() * 2;
+      // Update candles for all cached timeframes for this coin
+      for (const tf of Object.keys(TF_MS)) {
+        const key = candleKey(coin, tf);
+        if (candleData[key] && candleData[key].length > 0) {
+          const last = candleData[key][candleData[key].length - 1];
+          const interval = TF_MS[tf];
+          if (Date.now() - last.t > interval) {
+            candleData[key].push({ o: last.c, h: price, l: price, c: price, v: Math.random()*30+5, t: Date.now() });
+            if (candleData[key].length > 100) candleData[key].shift();
+          } else {
+            last.c = price;
+            last.h = Math.max(last.h, price);
+            last.l = Math.min(last.l, price);
+            last.v += Math.random() * 2;
+          }
         }
       }
     }
@@ -714,7 +767,7 @@ function renderChart() {
   document.getElementById('chartChangePct').textContent = (change>=0?'+':'')+change.toFixed(2)+'%';
   document.getElementById('chartChangePct').className = 'ch-change-pct '+(isUp?'change-up':'change-down');
 
-  const candles = candleData[activeCoin];
+  const candles = candleData[candleKey(activeCoin, activeTF)];
   if (chartType === 'candle' && candles && candles.length > 2) drawCandles(ctx, W, H, candles);
   else drawLine(ctx, W, H, d);
 }
@@ -740,7 +793,15 @@ function drawCandles(ctx, W, H, candles) {
   for (let i = 0; i < candles.length; i += step) {
     const x = i*gap+gap/2;
     const t = new Date(candles[i].t);
-    ctx.fillText(t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0'), x-14, cH+14);
+    let tlabel;
+    if (activeTF === '1d' || activeTF === '1w') {
+      tlabel = (t.getMonth()+1)+'/'+t.getDate();
+    } else if (activeTF === '4h') {
+      tlabel = t.getHours().toString().padStart(2,'0')+':00';
+    } else {
+      tlabel = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+    }
+    ctx.fillText(tlabel, x-14, cH+14);
   }
 
   const maxVol = Math.max(...candles.map(c=>c.v));
@@ -758,16 +819,17 @@ function drawCandles(ctx, W, H, candles) {
     const dim = bull ? '#005f27' : '#7a0b20';
     ctx.strokeStyle = dim; ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(x, cH-((c.h-min)/range)*cH);
-    ctx.lineTo(x, cH-((c.l-min)/range)*cH);
+    ctx.moveTo(x, Math.max(0, Math.min(cH, cH-((c.h-min)/range)*cH)));
+    ctx.lineTo(x, Math.max(0, Math.min(cH, cH-((c.l-min)/range)*cH)));
     ctx.stroke();
-    const oY = cH-((c.o-min)/range)*cH, cY = cH-((c.c-min)/range)*cH;
+    const oY = Math.max(0, Math.min(cH, cH-((c.o-min)/range)*cH));
+    const cY = Math.max(0, Math.min(cH, cH-((c.c-min)/range)*cH));
     ctx.fillStyle = color;
     ctx.fillRect(bx, Math.min(oY,cY), barW, Math.max(Math.abs(oY-cY),1));
   });
 
   const lastC = candles[candles.length-1].c;
-  const lastY = cH-((lastC-min)/range)*cH;
+  const lastY = Math.max(10, Math.min(cH-10, cH-((lastC-min)/range)*cH));
   ctx.setLineDash([3,3]);
   ctx.strokeStyle = lastC>=candles[0].o ? 'rgba(0,200,83,0.5)' : 'rgba(255,23,68,0.5)';
   ctx.lineWidth = 1;
@@ -915,7 +977,7 @@ function renderPositions() {
     </div>`).join('');
 }
 
-document.querySelectorAll('.tf-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.tf-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }));
+document.querySelectorAll('.tf-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.tf-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); switchTimeframe(b.dataset.tf); }));
 document.querySelectorAll('.type-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); chartType=b.dataset.type; renderChart(); }));
 
 window.addEventListener('resize', renderChart);
