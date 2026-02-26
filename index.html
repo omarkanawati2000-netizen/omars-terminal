@@ -188,7 +188,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
       <div class="coin-dropdown" id="coinDropdown"></div>
     </div>
     <span class="hdr-label" id="coinLabel">Bitcoin</span>
-    <span class="hdr-type">Perpetual</span>
+    <span class="hdr-type" id="coinType">Perpetual</span>
     <span class="hdr-price" id="headerPrice">—</span>
     <span class="hdr-change up" id="headerChange">+0.00%</span>
     <div class="hdr-right">
@@ -314,20 +314,59 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 /* ═══════════════════════════════════════════
    CONFIG
    ═══════════════════════════════════════════ */
-const COINS = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE'];
-const COIN_NAMES = {BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XRP:'XRP',DOGE:'Dogecoin',SUI:'Sui',AVAX:'Avalanche',LINK:'Chainlink',ADA:'Cardano',HYPE:'Hyperliquid',PEPE:'Pepe',WIF:'dogwifhat',JTO:'Jito',TIA:'Celestia',SEI:'Sei',INJ:'Injective',ONDO:'Ondo',PENDLE:'Pendle'};
+// ═══ ASSET CATEGORIES ═══
+const CRYPTO = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE'];
+const STOCKS = ['SPY','QQQ','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','JPM','AMD','COIN','MSTR','PLTR'];
+const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F'];
+const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB'];
+const ALL_TICKERS = [...CRYPTO,...STOCKS,...COMMODITIES,...FOREX];
+const COINS = CRYPTO; // backward compat
+
+const ASSET_NAMES = {
+  // Crypto
+  BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XRP:'XRP',DOGE:'Dogecoin',SUI:'Sui',AVAX:'Avalanche',LINK:'Chainlink',ADA:'Cardano',HYPE:'Hyperliquid',PEPE:'Pepe',WIF:'dogwifhat',JTO:'Jito',TIA:'Celestia',SEI:'Sei',INJ:'Injective',ONDO:'Ondo',PENDLE:'Pendle',
+  // Stocks & ETFs
+  SPY:'S&P 500 ETF',QQQ:'Nasdaq 100 ETF',AAPL:'Apple',MSFT:'Microsoft',NVDA:'NVIDIA',TSLA:'Tesla',AMZN:'Amazon',META:'Meta',GOOGL:'Alphabet',JPM:'JPMorgan',AMD:'AMD',COIN:'Coinbase',MSTR:'MicroStrategy',PLTR:'Palantir',
+  // Commodities
+  'GC=F':'Gold','SI=F':'Silver','CL=F':'Crude Oil','NG=F':'Natural Gas',
+  // Forex
+  'EURUSD=X':'EUR/USD','GBPUSD=X':'GBP/USD','USDJPY=X':'USD/JPY','DX-Y.NYB':'US Dollar Index'
+};
+const COIN_NAMES = ASSET_NAMES; // backward compat
+
+const ASSET_TYPE = {};
+CRYPTO.forEach(c=>ASSET_TYPE[c]='crypto');
+STOCKS.forEach(s=>ASSET_TYPE[s]='stock');
+COMMODITIES.forEach(c=>ASSET_TYPE[c]='commodity');
+FOREX.forEach(f=>ASSET_TYPE[f]='forex');
+
 let activeCoin = 'BTC';
+let activeCategory = 'all'; // all, crypto, stocks, commodities, forex
 let chartType = 'candle';
 let activeTF = '1h';
 let activeTab = 'overview';
 let activePosSub = 'positions';
 let priceData = {};
 let candleData = {};
-let metaData = null; // from metaAndAssetCtxs
+let metaData = null;
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 const TF_BARS = {'1m':500,'5m':500,'15m':400,'1h':300,'4h':200,'1d':365,'1w':150};
 const TF_API = {'1m':'1m','5m':'5m','15m':'15m','1h':'1h','4h':'4h','1d':'1d','1w':'1w'};
+
+function getFilteredAssets(){
+  if(activeCategory==='crypto')return CRYPTO;
+  if(activeCategory==='stocks')return STOCKS;
+  if(activeCategory==='commodities')return COMMODITIES;
+  if(activeCategory==='forex')return FOREX;
+  return ALL_TICKERS;
+}
+
+function displayName(sym){return ASSET_NAMES[sym]||sym}
+function assetCategory(sym){return ASSET_TYPE[sym]||'crypto'}
+function categoryColor(sym){const t=assetCategory(sym);return t==='crypto'?'var(--orange)':t==='stock'?'#2196f3':t==='commodity'?'#ffeb3b':'#e040fb'}
+function categoryLabel(sym){const t=assetCategory(sym);return t==='crypto'?'PERP':t==='stock'?'EQUITY':t==='commodity'?'FUTURES':t==='forex'?'FX':''}
+function cleanSym(sym){return sym.replace('=F','').replace('=X','').replace('-Y.NYB','').replace('DX','DXY')}
 
 function candleKey(c,t){return c+':'+t}
 let candleLoading = {};
@@ -366,8 +405,9 @@ const coinDropdown = document.getElementById('coinDropdown');
 
 function selectCoin(coin){
   activeCoin=coin;
-  coinInput.value=coin+' PERP';
-  document.getElementById('coinLabel').textContent=COIN_NAMES[coin]||coin;
+  coinInput.value=cleanSym(coin)+' '+categoryLabel(coin);
+  document.getElementById('coinLabel').textContent=displayName(coin);
+  document.getElementById('coinType').textContent=categoryLabel(coin);
   coinDropdown.classList.remove('show');
   chartZoomX=1;chartZoomY=1;chartPanX=0;
   const key=candleKey(coin,activeTF);
@@ -385,8 +425,9 @@ coinInput.addEventListener('input',()=>{
 });
 coinInput.addEventListener('keydown',e=>{
   if(e.key==='Enter'){
-    const val=coinInput.value.trim().toUpperCase().replace(' PERP','');
-    if(COINS.includes(val))selectCoin(val);
+    const val=coinInput.value.trim().toUpperCase().replace(/ (PERP|EQUITY|FUTURES|FX)$/,'');
+    const match=ALL_TICKERS.find(t=>cleanSym(t)===val||t===val);
+    if(match)selectCoin(match);
     coinDropdown.classList.remove('show');
     coinInput.blur();
   }
@@ -395,13 +436,14 @@ coinInput.addEventListener('keydown',e=>{
 document.addEventListener('click',e=>{if(!e.target.closest('.hdr-coin'))coinDropdown.classList.remove('show')});
 
 function renderCoinDropdown(filter){
-  const coins=COINS.filter(c=>!filter||c.includes(filter)||(COIN_NAMES[c]||'').toUpperCase().includes(filter));
-  coinDropdown.innerHTML=coins.map(c=>{
+  const all=ALL_TICKERS.filter(c=>!filter||cleanSym(c).includes(filter)||(ASSET_NAMES[c]||'').toUpperCase().includes(filter));
+  coinDropdown.innerHTML=all.map(c=>{
     const d=priceData[c];
     const price=d?'$'+fmtPrice(d.price):'—';
     const change=d?((d.price-d.open)/d.open*100):0;
     const cls=change>=0?'up':'down';
-    return `<div class="coin-opt" onclick="selectCoin('${c}')"><span class="sym">${c}</span><span style="color:var(--dim)">${COIN_NAMES[c]||''}</span><span class="${cls}">${price}</span></div>`;
+    const badge=`<span style="font-size:8px;padding:1px 4px;border-radius:2px;background:${categoryColor(c)};color:#000;font-weight:700">${assetCategory(c).toUpperCase()}</span>`;
+    return `<div class="coin-opt" onclick="selectCoin('${c}')"><span class="sym">${cleanSym(c)}</span>${badge}<span style="color:var(--dim);font-size:10px">${displayName(c)}</span><span class="${cls}">${price}</span></div>`;
   }).join('');
 }
 
@@ -411,6 +453,8 @@ coinInput.value='BTC PERP';
    CANDLE DATA (REAL API)
    ═══════════════════════════════════════════ */
 async function fetchRealCandles(coin,tf){
+  // Route non-crypto to Yahoo Finance
+  if(assetCategory(coin)!=='crypto'){return fetchStockCandles(coin,tf)}
   const key=candleKey(coin,tf);
   if(candleLoading[key])return;
   candleLoading[key]=true;
@@ -503,6 +547,72 @@ async function fetchMeta(){
 }
 
 /* ═══════════════════════════════════════════
+   STOCK/COMMODITY/FOREX FETCHING (Yahoo Finance via proxy)
+   ═══════════════════════════════════════════ */
+const YAHOO_SYMBOLS = [...STOCKS,...COMMODITIES,...FOREX];
+const YAHOO_PROXY = 'https://corsproxy.io/?';
+
+async function fetchStocks(){
+  try{
+    const syms=YAHOO_SYMBOLS.join(',');
+    const url=`${YAHOO_PROXY}${encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols='+syms+'&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent,regularMarketOpen,regularMarketDayHigh,regularMarketDayLow,regularMarketVolume,regularMarketPreviousClose,shortName')}`;
+    const resp=await fetch(url);
+    const data=await resp.json();
+    if(data.quoteResponse&&data.quoteResponse.result){
+      data.quoteResponse.result.forEach(q=>{
+        const sym=q.symbol;
+        const price=q.regularMarketPrice;
+        if(!price)return;
+        const open=q.regularMarketOpen||q.regularMarketPreviousClose||price;
+        if(!priceData[sym]){
+          priceData[sym]={price,prevPrice:price,open,high:q.regularMarketDayHigh||price,low:q.regularMarketDayLow||price,history:[],volume:q.regularMarketVolume||0,isStock:true};
+        }else{
+          priceData[sym].prevPrice=priceData[sym].price;
+          priceData[sym].price=price;
+          priceData[sym].high=q.regularMarketDayHigh||priceData[sym].high;
+          priceData[sym].low=q.regularMarketDayLow||priceData[sym].low;
+          priceData[sym].volume=q.regularMarketVolume||0;
+          priceData[sym].open=open;
+        }
+        priceData[sym].history.push({time:Date.now(),price});
+        if(priceData[sym].history.length>300)priceData[sym].history.shift();
+      });
+    }
+    renderAll();
+  }catch(e){console.error('Yahoo fetch error:',e)}
+}
+
+// Fetch Yahoo Finance candles for stocks
+async function fetchStockCandles(sym,tf){
+  const key=candleKey(sym,tf);
+  if(candleLoading[key])return;
+  candleLoading[key]=true;
+  try{
+    // Map TF to Yahoo interval/range
+    const yInterval={'1m':'1m','5m':'5m','15m':'15m','1h':'1h','4h':'1h','1d':'1d','1w':'1wk'}[tf]||'1h';
+    const yRange={'1m':'1d','5m':'5d','15m':'5d','1h':'1mo','4h':'3mo','1d':'1y','1w':'5y'}[tf]||'1mo';
+    const url=`${YAHOO_PROXY}${encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/'+sym+'?interval='+yInterval+'&range='+yRange)}`;
+    const resp=await fetch(url);
+    const data=await resp.json();
+    const result=data.chart&&data.chart.result&&data.chart.result[0];
+    if(result&&result.timestamp&&result.indicators){
+      const ts=result.timestamp;
+      const q=result.indicators.quote[0];
+      const candles=[];
+      for(let i=0;i<ts.length;i++){
+        if(q.open[i]==null)continue;
+        candles.push({o:q.open[i],h:q.high[i],l:q.low[i],c:q.close[i],v:q.volume[i]||0,t:ts[i]*1000});
+      }
+      if(candles.length>0){
+        candleData[key]=candles;
+        if(sym===activeCoin&&tf===activeTF)renderChart();
+      }
+    }
+  }catch(e){console.error('Yahoo candle error:',sym,tf,e)}
+  finally{candleLoading[key]=false}
+}
+
+/* ═══════════════════════════════════════════
    FORMATTING
    ═══════════════════════════════════════════ */
 function fmtPrice(p){
@@ -546,14 +656,14 @@ function updateHeader(){
    TICKER BAR
    ═══════════════════════════════════════════ */
 function updateTicker(){
-  const items=COINS.map(c=>{
+  const items=ALL_TICKERS.map(c=>{
     const d=priceData[c];if(!d)return'';
     const change=((d.price-d.open)/d.open*100);
     const isUp=change>=0;
     const arrow=isUp?'▲':'▼';
-    return `<span class="ticker-item"><span class="sym">${c}</span><span class="price">$${fmtPrice(d.price)}</span><span class="chg ${isUp?'up':'down'}">${arrow}${isUp?'+':''}${change.toFixed(2)}%</span></span>`;
-  }).join('');
-  document.getElementById('tickerTrack').innerHTML=items+items; // duplicate for seamless loop
+    return `<span class="ticker-item"><span class="sym" style="color:${categoryColor(c)}">${cleanSym(c)}</span><span class="price">$${fmtPrice(d.price)}</span><span class="chg ${isUp?'up':'down'}">${arrow}${isUp?'+':''}${change.toFixed(2)}%</span></span>`;
+  }).filter(Boolean).join('');
+  document.getElementById('tickerTrack').innerHTML=items+items;
 }
 
 /* ═══════════════════════════════════════════
@@ -588,27 +698,48 @@ function renderKeyStats(){
 
 function renderContractInfo(){
   const el=document.getElementById('contractInfo');
-  const maxLev=activeCoin==='BTC'||activeCoin==='ETH'?'50x':'20x';
-  el.innerHTML=`
-    <div class="ov-right-row"><span class="lbl">Exchange</span><span class="val">Hyperliquid</span></div>
-    <div class="ov-right-row"><span class="lbl">Type</span><span class="val">Perpetual</span></div>
-    <div class="ov-right-row"><span class="lbl">Max Leverage</span><span class="val" style="color:var(--orange)">${maxLev}</span></div>
-    <div class="ov-right-row"><span class="lbl">Settlement</span><span class="val">USDC</span></div>
-    <div class="ov-right-row"><span class="lbl">Tick Size</span><span class="val">${activeCoin==='BTC'?'0.10':activeCoin==='ETH'?'0.01':'0.0001'}</span></div>
-  `;
+  const cat=assetCategory(activeCoin);
+  if(cat==='crypto'){
+    const maxLev=activeCoin==='BTC'||activeCoin==='ETH'?'50x':'20x';
+    el.innerHTML=`
+      <div class="ov-right-row"><span class="lbl">Exchange</span><span class="val">Hyperliquid</span></div>
+      <div class="ov-right-row"><span class="lbl">Type</span><span class="val">Perpetual</span></div>
+      <div class="ov-right-row"><span class="lbl">Max Leverage</span><span class="val" style="color:var(--orange)">${maxLev}</span></div>
+      <div class="ov-right-row"><span class="lbl">Settlement</span><span class="val">USDC</span></div>`;
+  }else if(cat==='stock'){
+    el.innerHTML=`
+      <div class="ov-right-row"><span class="lbl">Exchange</span><span class="val">NASDAQ/NYSE</span></div>
+      <div class="ov-right-row"><span class="lbl">Type</span><span class="val">Equity</span></div>
+      <div class="ov-right-row"><span class="lbl">Currency</span><span class="val">USD</span></div>
+      <div class="ov-right-row"><span class="lbl">Market Hours</span><span class="val">9:30-16:00 ET</span></div>`;
+  }else if(cat==='commodity'){
+    el.innerHTML=`
+      <div class="ov-right-row"><span class="lbl">Exchange</span><span class="val">NYMEX/COMEX</span></div>
+      <div class="ov-right-row"><span class="lbl">Type</span><span class="val">Futures</span></div>
+      <div class="ov-right-row"><span class="lbl">Currency</span><span class="val">USD</span></div>`;
+  }else{
+    el.innerHTML=`
+      <div class="ov-right-row"><span class="lbl">Market</span><span class="val">Forex</span></div>
+      <div class="ov-right-row"><span class="lbl">Type</span><span class="val">Spot</span></div>
+      <div class="ov-right-row"><span class="lbl">Hours</span><span class="val">24/5</span></div>`;
+  }
 }
 
 function renderWatchlist(){
   const el=document.getElementById('watchlist');
-  el.innerHTML=COINS.map(c=>{
+  const cats=[{id:'all',label:'ALL'},{id:'crypto',label:'CRYPTO'},{id:'stocks',label:'STOCKS'},{id:'commodities',label:'CMDTY'},{id:'forex',label:'FX'}];
+  const catBar=cats.map(c=>`<span style="padding:3px 8px;font-size:9px;cursor:pointer;border-radius:2px;font-weight:600;${activeCategory===c.id?'background:var(--orange);color:#000':'color:var(--muted)'}" onclick="activeCategory='${c.id}';renderWatchlist()">${c.label}</span>`).join('');
+  const assets=getFilteredAssets();
+  const rows=assets.map(c=>{
     const d=priceData[c];if(!d)return'';
     const change=((d.price-d.open)/d.open*100);
     const isUp=change>=0;
     return `<div class="ov-right-row" style="cursor:pointer;${c===activeCoin?'background:#1a1200;border-left:2px solid var(--orange);':'border-left:2px solid transparent;'}" onclick="selectCoin('${c}')">
-      <span style="font-weight:700;color:var(--white)">${c}</span>
+      <span><span style="font-weight:700;color:${categoryColor(c)}">${cleanSym(c)}</span> <span style="font-size:9px;color:var(--muted)">${displayName(c)}</span></span>
       <span class="${isUp?'up':'down'}" style="font-weight:600">$${fmtPrice(d.price)} <span style="font-size:10px">${isUp?'+':''}${change.toFixed(2)}%</span></span>
     </div>`;
   }).join('');
+  el.innerHTML=`<div style="display:flex;gap:2px;padding:6px 12px;border-bottom:1px solid #1a1a1a">${catBar}</div>${rows}`;
 }
 
 function renderRecentTrades(){
@@ -938,7 +1069,7 @@ function renderDepthCanvas(){
 function renderRelValue(){
   // Peer table
   const el=document.getElementById('rvTableBody');
-  el.innerHTML=COINS.map(c=>{
+  el.innerHTML=getFilteredAssets().map(c=>{
     const d=priceData[c];if(!d)return'';
     const change24=((d.price-d.open)/d.open*100);
     const change7d=(Math.random()-0.3)*15;
@@ -1165,8 +1296,10 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
    ═══════════════════════════════════════════ */
 fetchPrices();
 fetchMeta();
+fetchStocks();
 setInterval(fetchPrices,3000);
 setInterval(fetchMeta,15000);
+setInterval(fetchStocks,10000); // stocks update every 10s (Yahoo rate limits)
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
 </body>
