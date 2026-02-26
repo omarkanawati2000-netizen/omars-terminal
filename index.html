@@ -93,8 +93,14 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .draw-btn.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
 .draw-btn-icon{font-size:12px;margin-right:3px}
 
-.chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
+.chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000;pointer-events:none}
 .chart-body canvas{width:100%;height:100%;pointer-events:none}
+
+/* Ensure all interactive elements work on both desktop and mobile */
+button,a,.tab,.ov-right-row,.coin-opt,.news-card,.ticker-item,.tf-btn,.type-btn,.draw-btn,[onclick]{
+  pointer-events:auto;
+  cursor:pointer;
+}
 .chart-ohlc{position:absolute;top:8px;left:12px;display:flex;gap:12px;font-size:10px;pointer-events:none;z-index:2}
 .chart-ohlc span{color:var(--dim)}
 .chart-ohlc .lbl{color:var(--muted);font-size:9px}
