@@ -225,6 +225,13 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="type-btn active" data-type="candle">Candle</button>
             <button class="type-btn" data-type="line">Line</button>
             <button class="type-btn" data-type="area">Area</button>
+            <div class="chart-sep"></div>
+            <button class="tf-btn" id="ind-sma20" style="font-size:9px;padding:3px 6px">SMA20</button>
+            <button class="tf-btn" id="ind-sma50" style="font-size:9px;padding:3px 6px">SMA50</button>
+            <button class="tf-btn" id="ind-ema20" style="font-size:9px;padding:3px 6px">EMA20</button>
+            <button class="tf-btn" id="ind-bb" style="font-size:9px;padding:3px 6px">BB</button>
+            <button class="tf-btn" id="ind-vwap" style="font-size:9px;padding:3px 6px">VWAP</button>
+            <button class="tf-btn" id="ind-rsi" style="font-size:9px;padding:3px 6px">RSI</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
@@ -350,6 +357,7 @@ let priceData = {};
 let candleData = {};
 let metaData = null;
 let orderBookData = {}; // L2 book keyed by coin
+let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false}; // active indicators
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 const TF_BARS = {'1m':500,'5m':500,'15m':400,'1h':300,'4h':200,'1d':365,'1w':150};
@@ -657,6 +665,79 @@ function fmtCompact(n){
 }
 
 /* ═══════════════════════════════════════════
+   TECHNICAL INDICATORS
+   ═══════════════════════════════════════════ */
+function calcSMA(candles,period){
+  if(!candles||candles.length<period)return[];
+  const sma=[];
+  for(let i=period-1;i<candles.length;i++){
+    const sum=candles.slice(i-period+1,i+1).reduce((a,c)=>a+c.c,0);
+    sma.push(sum/period);
+  }
+  return sma;
+}
+
+function calcEMA(candles,period){
+  if(!candles||candles.length<period)return[];
+  const ema=[];
+  const k=2/(period+1);
+  let prevEma=candles.slice(0,period).reduce((a,c)=>a+c.c,0)/period;
+  ema.push(prevEma);
+  for(let i=period;i<candles.length;i++){
+    prevEma=(candles[i].c-prevEma)*k+prevEma;
+    ema.push(prevEma);
+  }
+  return ema;
+}
+
+function calcRSI(candles,period=14){
+  if(!candles||candles.length<period+1)return[];
+  const rsi=[];
+  let gains=0,losses=0;
+  for(let i=1;i<=period;i++){
+    const change=candles[i].c-candles[i-1].c;
+    if(change>0)gains+=change;else losses-=change;
+  }
+  let avgGain=gains/period,avgLoss=losses/period;
+  rsi.push(100-(100/(1+(avgGain/avgLoss))));
+  for(let i=period+1;i<candles.length;i++){
+    const change=candles[i].c-candles[i-1].c;
+    avgGain=(avgGain*(period-1)+(change>0?change:0))/period;
+    avgLoss=(avgLoss*(period-1)+(change<0?-change:0))/period;
+    rsi.push(100-(100/(1+(avgGain/avgLoss))));
+  }
+  return rsi;
+}
+
+function calcBB(candles,period=20,mult=2){
+  if(!candles||candles.length<period)return{upper:[],middle:[],lower:[]};
+  const sma=calcSMA(candles,period);
+  const upper=[],lower=[];
+  for(let i=0;i<sma.length;i++){
+    const slice=candles.slice(i,i+period);
+    const mean=sma[i];
+    const variance=slice.reduce((a,c)=>a+Math.pow(c.c-mean,2),0)/period;
+    const std=Math.sqrt(variance);
+    upper.push(mean+mult*std);
+    lower.push(mean-mult*std);
+  }
+  return{upper,middle:sma,lower};
+}
+
+function calcVWAP(candles){
+  if(!candles||candles.length<1)return[];
+  const vwap=[];
+  let cumVolPrice=0,cumVol=0;
+  candles.forEach(c=>{
+    const typical=(c.h+c.l+c.c)/3;
+    cumVolPrice+=typical*c.v;
+    cumVol+=c.v;
+    vwap.push(cumVolPrice/cumVol);
+  });
+  return vwap;
+}
+
+/* ═══════════════════════════════════════════
    RENDER ALL
    ═══════════════════════════════════════════ */
 function renderAll(){
@@ -895,6 +976,103 @@ function drawCandles(ctx,W,H,allCandles){
     ctx.fillStyle=bull?'#00c853':'#ff1744';
     ctx.fillRect(bx,Math.min(oY,cY),barW,Math.max(Math.abs(oY-cY),1));
   });
+
+  // Technical Indicators
+  if(indicators.sma20){
+    const sma=calcSMA(allCandles,20);
+    if(sma.length>0){
+      const offset=allCandles.length-sma.length;
+      ctx.beginPath();
+      sma.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='#2196f3';ctx.lineWidth=1.5;ctx.stroke();
+    }
+  }
+  if(indicators.sma50){
+    const sma=calcSMA(allCandles,50);
+    if(sma.length>0){
+      const offset=allCandles.length-sma.length;
+      ctx.beginPath();
+      sma.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='#e040fb';ctx.lineWidth=1.5;ctx.stroke();
+    }
+  }
+  if(indicators.ema20){
+    const ema=calcEMA(allCandles,20);
+    if(ema.length>0){
+      const offset=allCandles.length-ema.length;
+      ctx.beginPath();
+      ema.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='#ffeb3b';ctx.lineWidth=1.5;ctx.stroke();
+    }
+  }
+  if(indicators.bb){
+    const bb=calcBB(allCandles,20,2);
+    if(bb.upper.length>0){
+      const offset=allCandles.length-bb.upper.length;
+      // Upper band
+      ctx.beginPath();
+      bb.upper.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='rgba(156,39,176,0.5)';ctx.lineWidth=1;ctx.stroke();
+      // Middle (same as SMA20)
+      ctx.beginPath();
+      bb.middle.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='rgba(156,39,176,0.8)';ctx.lineWidth=1.5;ctx.stroke();
+      // Lower band
+      ctx.beginPath();
+      bb.lower.forEach((val,i)=>{
+        const idx=i+offset-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='rgba(156,39,176,0.5)';ctx.lineWidth=1;ctx.stroke();
+    }
+  }
+  if(indicators.vwap){
+    const vwap=calcVWAP(allCandles);
+    if(vwap.length>0){
+      ctx.beginPath();
+      vwap.forEach((val,i)=>{
+        const idx=i-startIdx;
+        if(idx<0||idx>=candles.length)return;
+        const x=idx*gap+gap/2;
+        const y=Math.max(0,Math.min(cH,cH-((val-min)/range)*cH));
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      });
+      ctx.strokeStyle='#00bcd4';ctx.lineWidth=1.5;ctx.stroke();
+    }
+  }
 
   // Last price line
   const lastC=candles[candles.length-1].c;
@@ -1351,6 +1529,18 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
   document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');
   chartType=b.dataset.type;renderChart();
 }));
+
+// Indicator toggles
+['sma20','sma50','ema20','bb','vwap','rsi'].forEach(ind=>{
+  const btn=document.getElementById('ind-'+ind);
+  if(!btn)return;
+  if(indicators[ind])btn.classList.add('active');
+  btn.addEventListener('click',()=>{
+    indicators[ind]=!indicators[ind];
+    btn.classList.toggle('active');
+    renderChart();
+  });
+});
 
 window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')renderDepthCanvas();if(activeTab==='relvalue')renderRelChart()});
 
