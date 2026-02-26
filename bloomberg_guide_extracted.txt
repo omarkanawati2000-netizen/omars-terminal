@@ -1,0 +1,132 @@
+Total Pages: 19
+
+================================================================================
+
+--- PAGE 1 ---
+
+Guide to the Bloomberg Terminal 
+ₕₐₘₚₜₒₙ@hamptonism·Jan 20Exposing the truth about the most important software on Wall Street: The Bloomberg Terminal is quite literally the financial systems black box.Launched in 1981 by Michael Bloomberg, it started as a tool for delivering real-time bond data to firms like Merrill Lynch and has evolved into a global financial command center used by over 350,000 subscribers worldwide. The Terminal can cost up $30,000 per year, accounting for 85% of Bloomberg L.P.'s $15 billion total annual revenue alone (2024), ultimately representing the pinnacle of integrated financial technology, combining real-time data streams, proprietary algorithms, and multi-asset class analytics into a unified platform.
+
+
+================================================================================
+
+--- PAGE 2 ---
+
+●●●●●●●●
+Jessie Bloom's Bloomberg Terminal SetupThe Bloomberg Terminal has over 15,000 functions…  of which the average client only uses only 29!  Functions and commands are available for the entire spectrum of finance professionals, including Quantitative Analysts, Portfolio Managers, Hedge Fund Managers, Research Analysts, Traders, Investment Bankers, Risk Managers, Economists and Macro Strategists, Financial Consultants/Advisors, and Academics. Quantitative Analytics:Financial Analysis (FA <GO>): Parses SEC filings (10-K/Q) into normalized statements, computing ratios like EV/EBITDA using vectorized operations.Relative Valuation (RV <GO>:) Employs peer benchmarking via k-nearest neighbors algorithms on fundamental datasets.Earnings Estimates (EE <GO>): Aggregates consensus forecasts from 1,000+ analysts, applying Bayesian updates for revision tracking.More Common functions (type then <GO>):DES: Company description (overview, financials, contacts).RV: Relative valuation (compare peers).GP: Price charts (add indicators like RSI; compare stocks).
+
+================================================================================
+
+--- PAGE 3 ---
+
+●●●●●●●●GP: Price charts (add indicators like RSI; compare stocks).EE: Earnings estimates.ANR: Analyst recommendations.CRPR: Credit ratings.SPLC: Supply chain analysis.WACC: Weighted average cost of capital.There are also Charting and Technical Indicators, Portfolio and Risk Management tools, Screening and Backtesting abilities, the list goes on.Tools like PORT <GO> simulate Value-at-Risk via Monte Carlo methods, incorporating covariance matrices from historical returns. For example, stress testing under GARCH models for volatility clustering.EQS <GO> enables SQL-like queries (e.g., filter stocks where P/E < 15 and ROE > 20%), exporting to Excel via ODBC for integration with Python/R scripts. Backtesting leverages "BTST" for strategy simulation, optimizing parameters via genetic algorithms.Some ₕₐₘₚₜₒₙ certified command functions consist of:The Volatility Surface (OVDV <GO>) is a 3D set of option data that visualizes how implied volatility changes with respect to the option's strike price and maturity.  Instead of using a single volatility value, you can use the volatility from the surface that corresponds to the option's specific strike and expiration. The surface also helps in understanding and managing the volatility skew and smile. A pronounced skew might indicate market fears of a significant move in one direction, while a smile could suggest expectations of high volatility regardless of direction.
+
+
+================================================================================
+
+--- PAGE 4 ---
+
+OVDV <GO>With the Analyst Recommendations & Research (ANR <GO> you are able to see all the Analyst Recommendations & Research from a wide variety of contributing firms.  Securities are rated by a total metric of 5, and you are able to see what score an individual stock is rated by contributing analysts, and whether they believe it is a “buy, hold, or sell” .
+
+
+================================================================================
+
+--- PAGE 5 ---
+
+ANR <GO>Supply Chain Analysis (SPLC <GO>) function provides insights into a company’s relationships with its suppliers, customers, and competitors, including estimates of revenue exposure, costs, and financial performance metrics. To access it, load a company’s equity ticker (e.g., AAPL US ), then type SPLC  <GO> and hit to view breakdowns like major suppliers/customers, geographic exposures, and risk factors. The data draws from over 500,000 unique relationships across thousands of companies, helping users assess supply chain health and dependencies. 
+
+
+================================================================================
+
+--- PAGE 6 ---
+
+SPLC  <GO>WSL PREDICT <GO> integrates prediction market data directly into the platform for real-time and historical insights. Launched as a relatively new feature (around early 2026 or prior based on announcements), it aggregates data from major prediction markets, allowing users to gauge crowd-sourced probabilities/ implied probabilities on a wide range of events, from economic outcomes (e.g., who will be the next Fed chair) to geopolitical speculations (e.g., U.S. acquisition of Greenland) and beyond.
+
+
+================================================================================
+
+--- PAGE 7 ---
+
+
+
+================================================================================
+
+--- PAGE 8 ---
+
+WSL PREDICT <GO>The DINE <GO> function in the Bloomberg Terminal is a specialized tool for searching and accessing user-submitted restaurant reviews, recommendations, and dining guides, often focusing on high-end or popular eateries in major cities worldwide. Essentially, it's like a Wall Street-centric version of Yelp or OpenTable, tailored for busy finance professionals seeking quick insights on where to eat, network, or entertain clients. Users can filter by location, cuisine, price range, or ratings, with reviews often contributed by other Terminal subscribers, adding to that exclusive insider vibe.
+
+
+================================================================================
+
+--- PAGE 9 ---
+
+DINE <GO>The Global Market Monitor ( GMM <GO>) function in the Bloomberg Terminal is a real-time monitoring tool designed to track and highlight the most significant price movements across global financial markets, including equities, currencies, commodities, bonds, and indices. It provides an at-a-glance overview of intraday and recent market shifts, allowing users to quickly spot trends, volatility, or outliers in asset classes worldwide. 
+
+
+================================================================================
+
+--- PAGE 10 ---
+
+GMM <GO>The Intraday Market Map (IMAP <GO>) function is a visualization tool that provides a real-time, interactive breakdown of market performance across indices, sectors, industries, or regions. It displays intraday price movements in formats like pie charts, tables, or heat maps, allowing users to quickly assess which areas are outperforming or underperforming on a given day. 
+
+
+================================================================================
+
+--- PAGE 11 ---
+
+IMAP <GO>The Sovereign Debt Monitor ( SOVM <GO>) function in the Bloomberg Terminal is a real-time monitoring tool focused on government (sovereign) debt markets for countries worldwide. It provides an interactive dashboard for tracking benchmark government bonds, yield curves, inflation-linked bonds, credit default swap (CDS) spreads, and related economic indicators for selected nations or regions. The screen displays live updates on sovereign yields, spreads over benchmarks (e.g., vs. U.S. Treasuries), historical performance, and anomalies via charts, tables, and heat maps. You can filter by country (e.g., U.S., Germany, Japan) or developed/emerging markets. It integrates CDS data for assessing sovereign credit risk, alongside ratings from agencies like Moody's or S&P, helping users evaluate default probabilities and market sentiment.
+
+
+================================================================================
+
+--- PAGE 12 ---
+
+SOVM <GO>and lastly,The POSH <GO> function in the Bloomberg Terminal is an exclusive, user-generated classified ads marketplace, often dubbed "Craigslist for the ultra-wealthy", where subscribers can buy, sell, or trade high-end luxury items and assets. Unlike the Terminal's core financial tools, POSH is a lifestyle feature like DINE that leverages the platform's affluent user base to facilitate discreet transactions for everything from multimillion-dollar real estate and yachts to vintage cars, Rolex watches, diamond rings, and even unique items like dressage horses or unworn Christian Louboutin boots. You can find regular items as well such as washing machines, roommates, iPhones, vintage Carhartt jackets, etc.
+
+
+================================================================================
+
+--- PAGE 13 ---
+
+POSH <GO>
+
+================================================================================
+
+--- PAGE 14 ---
+
+Decoding the Bloomberg Terminal Keyboard: Design, Functionality, and Workflow Optimization:The Bloomberg Terminal keyboard represents a cornerstone of financial technology hardware, engineered for precision and speed in data-intensive environments. This device combines a standard QWERTY layout with bespoke features such as biometric authentication and color-coded keys. Priced at approximately $500–$600, it's optional but highly recommended for users handling real-time data across multiple asset classes. While compatible with standard keyboards via mappings (e.g., F2–F12 for sector keys), the dedicated hardware reduces input friction, making it indispensable on trading floors and in research desks. The keyboard's physical design prioritizes durability and integration within multi-monitor workflows. It features a full-sized layout with embedded Bloomberg Secure Access Technology (BSAT) for fingerprint-based login, ensuring compliance with security protocols like those mandated by financial regulators. Connectivity is via USB, with drivers supporting Windows, macOS, and KVM switches for seamless multi-device use.
+
+
+================================================================================
+
+--- PAGE 15 ---
+
+
+
+================================================================================
+
+--- PAGE 16 ---
+
+●●●●●●●●●●●●●●●
+Key setup involves minimal configuration: Plug in, launch the Terminal, and access settings via Alt+D > General > Keyboard Type to enable mappings. For non-Bloomberg keyboards, Alt+K displays an on-screen guide, while Alt+L lists shortcuts. The color-coding, yellow for sectors, green for actions, red for controls, facilitates intuitive navigation, akin to muscle memory in expert systems, reducing cognitive overhead in volatile markets.Yellow Keys: Sector-Specific Navigation:These keys categorize data by asset class, enabling rapid context switching. They prepend market types to queries, optimizing for the Terminal's mnemonic command system.Key: <GOVT>; Function: Government bonds; Example Usage: "T 2 02/15/30 <GOVT> <GO>"; Utility in Finance: Yield curve analysis for macro strategistsKey: <CORP>; Function: Corporate bonds; Example Usage: Corporate debt searches; Utility in Finance: Credit risk assessmentKey: <EQUITY>; Function: Equities/stocks; Example Usage: "AAPL <EQUITY> <GO>"; Utility in Finance: Real-time stock monitoring for tradersKey: <CMDTY>; Function: Commodities; Example Usage: Oil/gold data; Utility in Finance: Hedging strategiesKey: <INDEX>; Function: Market indices; Example Usage: S&P 500 overviews; Utility in Finance: Benchmarking portfoliosKey: <CURNCY>; Function: Currencies; Example Usage: FX rates; Utility in Finance: Currency tradingKey: <MTGE>; Function: Mortgages; Example Usage: Housing finance data; Utility in Finance: Real estate investmentKey: <MUNI>; Function: Municipal bonds; Example Usage: Local government debt; Utility in Finance: Tax-exempt strategiesKey: <PFD>; Function: Preferred stocks; Example Usage: Hybrid securities; Utility in Finance: Income-focused analysisKey: <M-MKT>; Function: Money markets; Example Usage: Short-term instruments; Utility in Finance: Liquidity managementUtility: Facilitates cross-asset workflows, e.g., hedge fund managers analyzing correlations between equities and commodities.Green Keys: Execution and Navigation Controls:Green keys handle operational commands, mirroring workflow accelerators in programming IDEs.Key: <GO>; Function: Execute command; Example Usage: After any query (e.g., "DES <GO>"); Utility in Finance: Universal action triggerKey: <MENU>; Function: Back to previous/main menu; Example Usage: Navigation rollback; Utility in Finance: Iterative analysisKey: <HELP>; Function: Access help (twice for chat); Example Usage: Instant support; Utility in Finance: Troubleshooting complex modelsKey: <PAGE FWD/BKWD>; Function: Multi-page navigation; Example Usage: Paging through results; Utility in Finance: Data review efficiencyKey: <PANEL>; Function: Switch workspaces (up to 4); Example Usage: Multi-tasking panels; Utility in Finance: Simultaneous monitoring of news/tradesUtility: Enables multitasking, such as analyzing real-time charts (GP <GO>) and news (TOP <GO>).Red Keys: Safety and Session Management:Red keys provide interrupt and security functions, essential for compliance-driven environments.
+
+================================================================================
+
+--- PAGE 17 ---
+
+●●Key: <CANCEL>; Function: Stop command/back out; Example Usage: Cancel queries (+1 <GO> for support); Utility in Finance: Error preventionKey: <CONN/DEFAULT>; Function: Login/logout; Example Usage: Session control; Utility in Finance: Security in shared spacesUtility: Ensures data integrity and prevents unauthorized access.The Bloomberg Terminal keyboard is a testament to ergonomic design in fintech, blending hardware with software for unparalleled efficiency. :)For newcomers, mastering the Terminal starts with Bloomberg Market Concepts (BMC ), an 8-hour certification course covering basics. Practice with cheatsheets (BPS ) and videos (BU ), focusing each function. Remember, the Terminal's power lies in customization, save your layouts, set alerts, and integrate with Excel for hybrid workflows. Whether you're a newcomer or seasoned pro, it's a tool that rewards investment, much like the markets it serves.
+
+
+================================================================================
+
+--- PAGE 18 ---
+
+
+
+================================================================================
+
+--- PAGE 19 ---
+
+
+
+================================================================================

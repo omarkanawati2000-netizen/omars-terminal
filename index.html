@@ -298,10 +298,11 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="tab active" data-tab="overview"><span class="num">[1]</span>OVERVIEW</div>
     <div class="tab" data-tab="analysis"><span class="num">[2]</span>ANALYSIS</div>
     <div class="tab" data-tab="orderbook"><span class="num">[3]</span>ORDER BOOK</div>
-    <div class="tab" data-tab="relvalue"><span class="num">[4]</span>REL VALUE</div>
+    <div class="tab" data-tab="gmm"><span class="num">[4]</span>MARKET MONITOR</div>
     <div class="tab" data-tab="screener"><span class="num">[5]</span>SCREENER</div>
-    <div class="tab" data-tab="news"><span class="num">[6]</span>NEWS</div>
-    <div class="tab" data-tab="positions"><span class="num">[7]</span>POSITIONS</div>
+    <div class="tab" data-tab="portfolio"><span class="num">[6]</span>PORTFOLIO</div>
+    <div class="tab" data-tab="news"><span class="num">[7]</span>NEWS</div>
+    <div class="tab" data-tab="relvalue"><span class="num">[8]</span>REL VALUE</div>
   </div>
 
   <!-- ═══ [1] OVERVIEW ═══ -->
@@ -407,6 +408,30 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     </div>
   </div>
 
+  <!-- ═══ [4] GMM (GLOBAL MARKET MONITOR) ═══ -->
+  <div class="view" id="view-gmm">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1a1a1a;height:100%">
+      <!-- Top Movers Panel -->
+      <div style="background:var(--bg);display:flex;flex-direction:column">
+        <div style="padding:8px 16px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.08em">TOP GAINERS</div>
+        <div id="gmmGainers" style="flex:1;overflow-y:auto"></div>
+      </div>
+      <div style="background:var(--bg);display:flex;flex-direction:column">
+        <div style="padding:8px 16px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.08em">TOP LOSERS</div>
+        <div id="gmmLosers" style="flex:1;overflow-y:auto"></div>
+      </div>
+      <!-- Volume & Volatility Panel -->
+      <div style="background:var(--bg);display:flex;flex-direction:column">
+        <div style="padding:8px 16px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.08em">VOLUME LEADERS</div>
+        <div id="gmmVolume" style="flex:1;overflow-y:auto"></div>
+      </div>
+      <div style="background:var(--bg);display:flex;flex-direction:column">
+        <div style="padding:8px 16px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.08em">MOST VOLATILE</div>
+        <div id="gmmVolatile" style="flex:1;overflow-y:auto"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ═══ [5] SCREENER ═══ -->
   <div class="view" id="view-screener">
     <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0d0d0d">
@@ -434,16 +459,54 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="news-list" id="newsList"></div>
   </div>
 
-  <!-- ═══ [6] POSITIONS ═══ -->
-  <div class="view" id="view-positions">
-    <div class="pos-view">
-      <div class="pos-subtabs">
-        <div class="pos-subtab active" data-sub="positions">POSITIONS</div>
-        <div class="pos-subtab" data-sub="orders">OPEN ORDERS</div>
-        <div class="pos-subtab" data-sub="history">TRADE HISTORY</div>
-        <div class="pos-subtab" data-sub="account">ACCOUNT</div>
+  <!-- ═══ [6] PORTFOLIO (Bloomberg PORT) ═══ -->
+  <div class="view" id="view-portfolio">
+    <div style="display:flex;flex-direction:column;height:100%">
+      <!-- Portfolio Summary Header -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#1a1a1a;border-bottom:1px solid #1a1a1a">
+        <div style="padding:12px;background:#0d0d0d">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:0.08em">TOTAL VALUE</div>
+          <div style="font-size:18px;font-weight:700;color:var(--white)" id="portTotalValue">$0.00</div>
+        </div>
+        <div style="padding:12px;background:#0d0d0d">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:0.08em">TOTAL P&L</div>
+          <div style="font-size:18px;font-weight:700" id="portTotalPnL">$0.00</div>
+        </div>
+        <div style="padding:12px;background:#0d0d0d">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:0.08em">DAY P&L</div>
+          <div style="font-size:18px;font-weight:700" id="portDayPnL">$0.00</div>
+        </div>
+        <div style="padding:12px;background:#0d0d0d">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:0.08em">POSITIONS</div>
+          <div style="font-size:18px;font-weight:700;color:var(--white)" id="portPositionCount">0</div>
+        </div>
+        <div style="padding:12px;background:#0d0d0d">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:4px;letter-spacing:0.08em">WIN RATE</div>
+          <div style="font-size:18px;font-weight:700;color:var(--white)" id="portWinRate">0%</div>
+        </div>
       </div>
-      <div class="pos-content" id="posContent"></div>
+      
+      <!-- Add Position Button -->
+      <div style="padding:8px 12px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;display:flex;gap:8px">
+        <button onclick="showAddPositionModal()" style="background:var(--orange);color:#000;border:none;padding:6px 12px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;border-radius:3px;letter-spacing:0.05em">+ ADD POSITION</button>
+        <button onclick="clearAllPositions()" style="background:transparent;color:var(--muted);border:1px solid #333;padding:6px 12px;font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;border-radius:3px">CLEAR ALL</button>
+      </div>
+      
+      <!-- Positions Table -->
+      <div style="flex:1;overflow-y:auto">
+        <div style="display:grid;grid-template-columns:100px 80px 100px 100px 100px 100px 100px 80px 60px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;padding:8px 12px;position:sticky;top:0;z-index:1">
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em">ASSET</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em">SIDE</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">ENTRY</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">CURRENT</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">SIZE</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">VALUE</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">P&L</span>
+          <span style="font-size:9px;color:var(--muted);font-weight:700;letter-spacing:0.08em;text-align:right">P&L %</span>
+          <span></span>
+        </div>
+        <div id="portfolioPositions"></div>
+      </div>
     </div>
   </div>
 
@@ -827,9 +890,11 @@ function switchTab(tab){
   if(tab==='overview')renderOverview();
   if(tab==='analysis')renderAnalysis();
   if(tab==='orderbook')renderOrderBookFull();
-  if(tab==='relvalue')renderRelValue();
+  if(tab==='gmm')renderGMM();
+  if(tab==='screener')renderScreener();
+  if(tab==='portfolio')renderPortfolio();
   if(tab==='news')renderNewsFull();
-  if(tab==='positions')renderPositionsSub();
+  if(tab==='relvalue')renderRelValue();
 }
 
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
@@ -2147,6 +2212,233 @@ function renderScreener(){
 document.getElementById('screenFilter')?.addEventListener('change',renderScreener);
 document.getElementById('screenSort')?.addEventListener('change',renderScreener);
 
+/* ═══════════════════════════════════════════
+   [4] GMM (GLOBAL MARKET MONITOR)
+   ═══════════════════════════════════════════ */
+function renderGMM(){
+  const assets=ALL_TICKERS.map(sym=>{
+    const d=priceData[sym];
+    if(!d)return null;
+    const change=((d.price-d.open)/d.open*100);
+    const volatility=d.high&&d.low?((d.high-d.low)/d.low*100):0;
+    return{sym,price:d.price,change,volume:d.volume||0,volatility};
+  }).filter(Boolean);
+  
+  // Top Gainers
+  const gainers=assets.filter(a=>a.change>0).sort((a,b)=>b.change-a.change).slice(0,20);
+  document.getElementById('gmmGainers').innerHTML=gainers.map(a=>createGMMRow(a,true)).join('');
+  
+  // Top Losers
+  const losers=assets.filter(a=>a.change<0).sort((a,b)=>a.change-b.change).slice(0,20);
+  document.getElementById('gmmLosers').innerHTML=losers.map(a=>createGMMRow(a,false)).join('');
+  
+  // Volume Leaders
+  const volume=assets.sort((a,b)=>b.volume-a.volume).slice(0,20);
+  document.getElementById('gmmVolume').innerHTML=volume.map(a=>createGMMRow(a,a.change>=0)).join('');
+  
+  // Most Volatile
+  const volatile=assets.sort((a,b)=>b.volatility-a.volatility).slice(0,20);
+  document.getElementById('gmmVolatile').innerHTML=volatile.map(a=>createGMMRow(a,a.change>=0)).join('');
+}
+
+function createGMMRow(asset,isUp){
+  return `<div style="display:grid;grid-template-columns:80px 1fr 100px;padding:8px 16px;border-bottom:1px solid #0f0f0f;cursor:pointer;font-size:11px" onclick="selectCoin('${asset.sym}')" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+    <span style="font-weight:700;color:${categoryColor(asset.sym)}">${cleanSym(asset.sym)}</span>
+    <span style="text-align:right;font-weight:600;color:var(--white)">$${fmtPrice(asset.price)}</span>
+    <span style="text-align:right;font-weight:700;font-size:13px;color:${isUp?'var(--green)':'var(--red)'}">${isUp?'+':''}${asset.change.toFixed(2)}%</span>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════
+   [6] PORTFOLIO (Bloomberg PORT)
+   ═══════════════════════════════════════════ */
+let portfolioPositions=[];
+
+// Load portfolio from localStorage
+function loadPortfolio(){
+  try{
+    const saved=localStorage.getItem('omar_terminal_portfolio');
+    if(saved){
+      portfolioPositions=JSON.parse(saved);
+    }
+  }catch(e){
+    console.error('Failed to load portfolio:',e);
+    portfolioPositions=[];
+  }
+}
+
+// Save portfolio to localStorage
+function savePortfolio(){
+  try{
+    localStorage.setItem('omar_terminal_portfolio',JSON.stringify(portfolioPositions));
+  }catch(e){
+    console.error('Failed to save portfolio:',e);
+  }
+}
+
+function renderPortfolio(){
+  // Calculate summary stats
+  let totalValue=0;
+  let totalPnL=0;
+  let totalCost=0;
+  let wins=0;
+  let total=portfolioPositions.length;
+  
+  portfolioPositions.forEach(pos=>{
+    const d=priceData[pos.symbol];
+    if(!d)return;
+    
+    const currentPrice=d.price;
+    const positionValue=pos.size*currentPrice;
+    const costBasis=pos.size*pos.entryPrice;
+    const pnl=positionValue-costBasis;
+    
+    totalValue+=positionValue;
+    totalPnL+=pnl;
+    totalCost+=costBasis;
+    
+    if(pnl>0)wins++;
+  });
+  
+  const winRate=total>0?(wins/total*100):0;
+  const dayPnL=totalPnL*0.1; // Placeholder - would need historical data for real day P&L
+  
+  // Update summary
+  document.getElementById('portTotalValue').textContent='$'+fmtCompact(totalValue);
+  document.getElementById('portTotalPnL').textContent=(totalPnL>=0?'+':'')+' $'+fmtCompact(Math.abs(totalPnL));
+  document.getElementById('portTotalPnL').style.color=totalPnL>=0?'var(--green)':'var(--red)';
+  document.getElementById('portDayPnL').textContent=(dayPnL>=0?'+':'')+' $'+fmtCompact(Math.abs(dayPnL));
+  document.getElementById('portDayPnL').style.color=dayPnL>=0?'var(--green)':'var(--red)';
+  document.getElementById('portPositionCount').textContent=total;
+  document.getElementById('portWinRate').textContent=winRate.toFixed(1)+'%';
+  
+  // Render positions table
+  const rows=portfolioPositions.map((pos,idx)=>{
+    const d=priceData[pos.symbol];
+    if(!d)return '';
+    
+    const currentPrice=d.price;
+    const positionValue=pos.size*currentPrice;
+    const costBasis=pos.size*pos.entryPrice;
+    const pnl=positionValue-costBasis;
+    const pnlPct=(pnl/costBasis)*100;
+    
+    return `<div style="display:grid;grid-template-columns:100px 80px 100px 100px 100px 100px 100px 80px 60px;padding:8px 12px;border-bottom:1px solid #0f0f0f;font-size:11px" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+      <span style="font-weight:700;color:${categoryColor(pos.symbol)};cursor:pointer" onclick="selectCoin('${pos.symbol}')">${cleanSym(pos.symbol)}</span>
+      <span style="font-weight:600;color:${pos.side==='LONG'?'var(--green)':'var(--red)'}">${pos.side}</span>
+      <span style="text-align:right;color:var(--dim)">$${fmtPrice(pos.entryPrice)}</span>
+      <span style="text-align:right;font-weight:600">$${fmtPrice(currentPrice)}</span>
+      <span style="text-align:right;color:var(--white)">${pos.size.toFixed(4)}</span>
+      <span style="text-align:right;font-weight:600;color:var(--white)">$${fmtCompact(positionValue)}</span>
+      <span style="text-align:right;font-weight:700;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${fmtCompact(Math.abs(pnl))}</span>
+      <span style="text-align:right;font-weight:700;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}${pnlPct.toFixed(2)}%</span>
+      <span style="text-align:center;cursor:pointer;color:var(--red);font-weight:700" onclick="removePosition(${idx})" title="Close position">×</span>
+    </div>`;
+  }).join('');
+  
+  document.getElementById('portfolioPositions').innerHTML=rows || '<div style="padding:40px;text-align:center;color:var(--muted);font-size:11px">No positions. Click "+ ADD POSITION" to start tracking.</div>';
+}
+
+function showAddPositionModal(){
+  const modal=document.createElement('div');
+  modal.style.cssText=`position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10000`;
+  
+  modal.innerHTML=`
+    <div style="background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:24px;width:450px;font-family:var(--font)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <span style="font-size:14px;font-weight:800;color:var(--orange);letter-spacing:0.1em">ADD POSITION</span>
+        <span onclick="this.closest('[style*=fixed]').remove()" style="cursor:pointer;color:var(--muted);font-size:20px">×</span>
+      </div>
+      
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.08em">SYMBOL</label>
+          <input type="text" id="posSymbol" placeholder="BTC" style="width:100%;background:var(--bg3);border:1px solid #333;color:var(--text);padding:8px 12px;font-family:var(--font);font-size:12px;border-radius:3px" />
+        </div>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.08em">SIDE</label>
+            <select id="posSide" style="width:100%;background:var(--bg3);border:1px solid #333;color:var(--text);padding:8px 12px;font-family:var(--font);font-size:12px;border-radius:3px">
+              <option value="LONG">LONG</option>
+              <option value="SHORT">SHORT</option>
+            </select>
+          </div>
+          
+          <div>
+            <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.08em">SIZE</label>
+            <input type="number" id="posSize" placeholder="1.0" step="0.0001" style="width:100%;background:var(--bg3);border:1px solid #333;color:var(--text);padding:8px 12px;font-family:var(--font);font-size:12px;border-radius:3px" />
+          </div>
+        </div>
+        
+        <div>
+          <label style="font-size:10px;color:var(--muted);display:block;margin-bottom:6px;letter-spacing:0.08em">ENTRY PRICE</label>
+          <input type="number" id="posEntry" placeholder="0.00" step="0.01" style="width:100%;background:var(--bg3);border:1px solid #333;color:var(--text);padding:8px 12px;font-family:var(--font);font-size:12px;border-radius:3px" />
+        </div>
+        
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="addPositionFromModal()" style="flex:1;background:var(--orange);color:#000;border:none;padding:10px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;border-radius:3px;letter-spacing:0.08em">ADD POSITION</button>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:transparent;color:var(--muted);border:1px solid #333;padding:10px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;border-radius:3px">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  document.getElementById('posSymbol').focus();
+}
+
+function addPositionFromModal(){
+  const symbol=document.getElementById('posSymbol').value.trim().toUpperCase();
+  const side=document.getElementById('posSide').value;
+  const size=parseFloat(document.getElementById('posSize').value);
+  const entryPrice=parseFloat(document.getElementById('posEntry').value);
+  
+  if(!symbol||!size||!entryPrice){
+    alert('Please fill in all fields');
+    return;
+  }
+  
+  // Check if asset exists
+  if(!ALL_TICKERS.includes(symbol)){
+    alert('Asset not found. Available: '+ALL_TICKERS.join(', '));
+    return;
+  }
+  
+  portfolioPositions.push({
+    symbol,
+    side,
+    size,
+    entryPrice,
+    timestamp:Date.now()
+  });
+  
+  savePortfolio();
+  renderPortfolio();
+  
+  // Close modal
+  document.querySelector('[style*="position:fixed"]')?.remove();
+}
+
+function removePosition(index){
+  if(confirm('Close this position?')){
+    portfolioPositions.splice(index,1);
+    savePortfolio();
+    renderPortfolio();
+  }
+}
+
+function clearAllPositions(){
+  if(confirm('Clear all positions? This cannot be undone.')){
+    portfolioPositions=[];
+    savePortfolio();
+    renderPortfolio();
+  }
+}
+
+// Load portfolio on startup
+loadPortfolio();
+
 function timeAgo(date){
   const now=Date.now();
   const diff=now-date.getTime();
@@ -2272,14 +2564,15 @@ function renderAccount(el){
 document.addEventListener('keydown',e=>{
   if(document.activeElement===coinInput)return;
   
-  // Tab switching (1-7)
+  // Tab switching (1-8) - Bloomberg style
   if(e.key==='1')switchTab('overview');
   else if(e.key==='2')switchTab('analysis');
   else if(e.key==='3')switchTab('orderbook');
-  else if(e.key==='4')switchTab('relvalue');
-  else if(e.key==='5')switchTab('screener');
-  else if(e.key==='6')switchTab('news');
-  else if(e.key==='7')switchTab('positions');
+  else if(e.key==='4')switchTab('gmm'); // GMM - Global Market Monitor
+  else if(e.key==='5')switchTab('screener'); // EQS - Equity Screener
+  else if(e.key==='6')switchTab('portfolio'); // PORT - Portfolio Manager
+  else if(e.key==='7')switchTab('news');
+  else if(e.key==='8')switchTab('relvalue');
   
   // Search
   else if(e.key==='/'){e.preventDefault();coinInput.focus()}
@@ -2337,6 +2630,15 @@ document.addEventListener('keydown',e=>{
     addPriceAlert(activeCoin,price,condition);
     alert(`Alert set: ${activeCoin} ${condition} $${fmtPrice(price)}`);
   }
+  
+  // Bloomberg-style function shortcuts
+  else if(e.altKey&&e.key==='g'){switchTab('gmm')} // Alt+G → GMM (Global Market Monitor)
+  else if(e.altKey&&e.key==='p'){switchTab('portfolio')} // Alt+P → PORT (Portfolio)
+  else if(e.altKey&&e.key==='e'){switchTab('screener')} // Alt+E → EQS (Screener)
+  else if(e.altKey&&e.key==='n'){switchTab('news')} // Alt+N → News
+  
+  // Quick add position (Ctrl+P)
+  else if(e.ctrlKey&&e.key==='p'){e.preventDefault();showAddPositionModal()}
   
   // Toggle sound (Alt+M for mute)
   else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'Sound enabled':'Sound muted')}
