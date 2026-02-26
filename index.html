@@ -349,6 +349,7 @@ let activePosSub = 'positions';
 let priceData = {};
 let candleData = {};
 let metaData = null;
+let orderBookData = {}; // L2 book keyed by coin
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 const TF_BARS = {'1m':500,'5m':500,'15m':400,'1h':300,'4h':200,'1d':365,'1w':150};
@@ -412,6 +413,7 @@ function selectCoin(coin){
   chartZoomX=1;chartZoomY=1;chartPanX=0;
   const key=candleKey(coin,activeTF);
   if(!candleData[key]||candleData[key].length<2)fetchRealCandles(coin,activeTF);
+  fetchOrderBook(coin); // Fetch L2 book for new coin
   renderAll();
 }
 
@@ -582,6 +584,30 @@ async function fetchStocks(){
   });
   await Promise.allSettled(promises);
   renderAll();
+}
+
+/* ═══════════════════════════════════════════
+   ORDER BOOK FETCHING (Hyperliquid L2)
+   ═══════════════════════════════════════════ */
+async function fetchOrderBook(coin){
+  // Only fetch for crypto (Hyperliquid has order books)
+  if(assetCategory(coin)!=='crypto')return;
+  try{
+    const resp=await fetch('https://api.hyperliquid.xyz/info',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({type:'l2Book',coin})
+    });
+    const data=await resp.json();
+    if(data&&data.levels&&data.levels.length===2){
+      orderBookData[coin]={
+        bids:data.levels[0].map(l=>({price:parseFloat(l.px),size:parseFloat(l.sz),count:l.n})),
+        asks:data.levels[1].map(l=>({price:parseFloat(l.px),size:parseFloat(l.sz),count:l.n})),
+        timestamp:data.time
+      };
+      if(coin===activeCoin&&activeTab==='orderbook')renderOrderBookFull();
+    }
+  }catch(e){console.error('Order book fetch error:',coin,e)}
 }
 
 // Fetch Yahoo Finance candles for stocks
@@ -982,31 +1008,49 @@ function renderOrderBookFull(){
   const d=priceData[activeCoin];if(!d)return;
   const price=d.price;
   const el=document.getElementById('obList');
+  const ob=orderBookData[activeCoin];
+  
   let html='';
-  // Asks
-  const asks=[];
-  for(let i=20;i>=1;i--){
-    const off=price*(0.00005*i+Math.random()*0.0001);
-    const s=+(Math.random()*40+1).toFixed(3);
-    asks.push({price:price+off,size:s});
+  let asks,bids;
+  
+  // Use real L2 data if available (crypto), else generate fake (stocks)
+  if(ob&&ob.asks&&ob.bids){
+    asks=ob.asks.slice(0,20).reverse(); // top 20 asks, reversed for display
+    bids=ob.bids.slice(0,20); // top 20 bids
+  }else{
+    // Fake data for non-crypto
+    asks=[];bids=[];
+    for(let i=20;i>=1;i--){
+      const off=price*(0.00005*i+Math.random()*0.0001);
+      asks.push({price:price+off,size:+(Math.random()*40+1).toFixed(3)});
+    }
+    for(let i=1;i<=20;i++){
+      const off=price*(0.00005*i+Math.random()*0.0001);
+      bids.push({price:price-off,size:+(Math.random()*40+1).toFixed(3)});
+    }
   }
+  
+  // Render asks (highest to lowest, so reverse)
   let cum=0;
-  asks.forEach(a=>{cum+=a.size;const pct=(a.size/50)*100;
+  const maxSize=Math.max(...asks.map(a=>a.size),...bids.map(b=>b.size));
+  asks.forEach(a=>{
+    cum+=a.size;
+    const pct=(a.size/maxSize)*100;
     html+=`<div class="ob-row2"><div class="ob-bar2" style="width:${pct}%;background:var(--red)"></div><span style="color:var(--red);font-weight:600">${fmtPrice(a.price)}</span><span style="text-align:right;color:var(--dim)">${a.size.toFixed(3)}</span><span style="text-align:right;color:var(--muted)">${cum.toFixed(1)}</span></div>`;
   });
+  
   // Mid
   html+=`<div class="ob-mid2"><span class="${d.price>=d.prevPrice?'up':'down'}">$${fmtPrice(price)}</span></div>`;
+  
   // Bids
   cum=0;
-  for(let i=1;i<=20;i++){
-    const off=price*(0.00005*i+Math.random()*0.0001);
-    const s=+(Math.random()*40+1).toFixed(3);cum+=s;
-    const pct=(s/50)*100;
-    html+=`<div class="ob-row2"><div class="ob-bar2" style="width:${pct}%;background:var(--green)"></div><span style="color:var(--green);font-weight:600">${fmtPrice(price-off)}</span><span style="text-align:right;color:var(--dim)">${s.toFixed(3)}</span><span style="text-align:right;color:var(--muted)">${cum.toFixed(1)}</span></div>`;
-  }
-  el.innerHTML=html;
+  bids.forEach(b=>{
+    cum+=b.size;
+    const pct=(b.size/maxSize)*100;
+    html+=`<div class="ob-row2"><div class="ob-bar2" style="width:${pct}%;background:var(--green)"></div><span style="color:var(--green);font-weight:600">${fmtPrice(b.price)}</span><span style="text-align:right;color:var(--dim)">${b.size.toFixed(3)}</span><span style="text-align:right;color:var(--muted)">${cum.toFixed(1)}</span></div>`;
+  });
   
-  // Depth chart
+  el.innerHTML=html;
   renderDepthCanvas();
 }
 
@@ -1020,13 +1064,30 @@ function renderDepthCanvas(){
   const W=rect.width,H=rect.height;
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   
-  const price=d.price,spread=price*0.05,levels=40;
+  const price=d.price;
+  const ob=orderBookData[activeCoin];
   let bidCum=[],askCum=[],bidTotal=0,askTotal=0;
-  for(let i=0;i<levels;i++){
-    bidTotal+=Math.random()*50+5+(levels-i)*2;
-    askTotal+=Math.random()*50+5+(levels-i)*1.5;
-    bidCum.push({price:price-(i/levels)*spread,cum:bidTotal});
-    askCum.push({price:price+(i/levels)*spread,cum:askTotal});
+  
+  // Use real L2 data if available
+  if(ob&&ob.bids&&ob.asks){
+    // Build cumulative depth from real data
+    ob.bids.slice(0,50).forEach(b=>{
+      bidTotal+=b.size;
+      bidCum.push({price:b.price,cum:bidTotal});
+    });
+    ob.asks.slice(0,50).forEach(a=>{
+      askTotal+=a.size;
+      askCum.push({price:a.price,cum:askTotal});
+    });
+  }else{
+    // Fake data fallback
+    const spread=price*0.05,levels=40;
+    for(let i=0;i<levels;i++){
+      bidTotal+=Math.random()*50+5+(levels-i)*2;
+      askTotal+=Math.random()*50+5+(levels-i)*1.5;
+      bidCum.push({price:price-(i/levels)*spread,cum:bidTotal});
+      askCum.push({price:price+(i/levels)*spread,cum:askTotal});
+    }
   }
   const maxCum=Math.max(bidTotal,askTotal);
   const midX=W/2,mB=30,cH=H-mB;
@@ -1299,9 +1360,11 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 fetchPrices();
 fetchMeta();
 fetchStocks();
+fetchOrderBook(activeCoin);
 setInterval(fetchPrices,3000);
 setInterval(fetchMeta,15000);
-setInterval(fetchStocks,10000); // stocks update every 10s (Yahoo rate limits)
+setInterval(fetchStocks,10000);
+setInterval(()=>fetchOrderBook(activeCoin),2000); // L2 book every 2s
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
 </body>
