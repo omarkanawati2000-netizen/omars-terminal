@@ -282,6 +282,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
       <div class="hdr-live"><div class="hdr-dot"></div>LIVE</div>
       <span class="hdr-time" id="clock"></span>
       <span onclick="toggleTheme()" style="cursor:pointer;font-size:14px;margin-left:8px" title="Toggle theme (Alt+T)" id="themeToggle">🌙</span>
+      <span onclick="showLayoutManager()" style="cursor:pointer;font-size:14px;margin-left:8px;color:var(--orange)" title="Manage layouts (Alt+L)">💾</span>
       <span class="hdr-brand">OMAR TERMINAL</span>
     </div>
   </div>
@@ -485,7 +486,9 @@ let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:fal
 let favorites = []; // favorite coins
 let priceAlerts = [];
 let soundEnabled = true;
-let theme = 'dark'; // 'dark' or 'light'
+let theme = 'dark';
+let customLayouts = {}; // saved layouts
+let activeLayout = 'default';
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -522,6 +525,78 @@ function toggleTheme(){
 
 function applyTheme(){
   document.body.className=theme==='light'?'light':'';
+}
+
+/* ═══════════════════════════════════════════
+   CUSTOM LAYOUTS
+   ═══════════════════════════════════════════ */
+function saveLayout(name){
+  const layout={
+    activeCoin,
+    activeTF,
+    activeTab,
+    indicators:{...indicators},
+    theme,
+    activeCategory
+  };
+  customLayouts[name]=layout;
+  localStorage.setItem('omar_terminal_layouts',JSON.stringify(customLayouts));
+  alert(`✅ Layout "${name}" saved!`);
+}
+
+function loadLayout(name){
+  const layout=customLayouts[name];
+  if(!layout){alert(`Layout "${name}" not found`);return}
+  activeCoin=layout.activeCoin||'BTC';
+  activeTF=layout.activeTF||'1h';
+  activeTab=layout.activeTab||'overview';
+  indicators={...indicators,...layout.indicators};
+  theme=layout.theme||'dark';
+  activeCategory=layout.activeCategory||'all';
+  activeLayout=name;
+  applyTheme();
+  switchTab(activeTab);
+  selectCoin(activeCoin);
+  document.querySelectorAll('.tf-btn').forEach(b=>b.classList.toggle('active',b.dataset.tf===activeTF));
+  Object.keys(indicators).forEach(ind=>{
+    const btn=document.getElementById('ind-'+ind);
+    if(btn)btn.classList.toggle('active',indicators[ind]);
+  });
+  alert(`✅ Layout "${name}" loaded!`);
+}
+
+function showLayoutManager(){
+  const names=Object.keys(customLayouts);
+  const list=names.length>0?names.map(n=>`<div style="padding:8px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center">
+    <span style="font-weight:600">${n}</span>
+    <div style="display:flex;gap:4px">
+      <button onclick="loadLayout('${n}');document.getElementById('layoutModal').remove()" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green);padding:4px 10px;cursor:pointer;font-size:9px;font-family:var(--font);border-radius:2px">LOAD</button>
+      <button onclick="delete customLayouts['${n}'];localStorage.setItem('omar_terminal_layouts',JSON.stringify(customLayouts));showLayoutManager()" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red);padding:4px 10px;cursor:pointer;font-size:9px;font-family:var(--font);border-radius:2px">DELETE</button>
+    </div>
+  </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--muted);font-size:11px">No saved layouts</div>';
+  
+  let modal=document.getElementById('layoutModal');
+  if(modal)modal.remove();
+  modal=document.createElement('div');
+  modal.id='layoutModal';
+  modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML=`<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">💾 LAYOUTS</span>
+      <span onclick="document.getElementById('layoutModal').remove()" style="cursor:pointer;color:var(--muted);font-size:18px">✕</span>
+    </div>
+    <button onclick="const n=prompt('Layout name:');if(n){saveLayout(n);showLayoutManager()}" style="width:100%;background:var(--orange);color:#000;border:none;padding:8px;font-family:var(--font);font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;margin-bottom:12px">+ SAVE CURRENT LAYOUT</button>
+    ${list}
+  </div>`;
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove()});
+  document.body.appendChild(modal);
+}
+
+function loadSavedLayouts(){
+  try{
+    const saved=localStorage.getItem('omar_terminal_layouts');
+    if(saved)customLayouts=JSON.parse(saved);
+  }catch(e){console.error('Layout load error:',e)}
 }
 
 /* ═══════════════════════════════════════════
@@ -2163,6 +2238,9 @@ document.addEventListener('keydown',e=>{
   // Toggle theme (Alt+T)
   else if(e.altKey&&e.key==='t'){toggleTheme()}
   
+  // Layout manager (Alt+L)
+  else if(e.altKey&&e.key==='l'){showLayoutManager()}
+  
   // Export chart as PNG (Ctrl+P)
   else if(e.ctrlKey&&e.key==='p'){e.preventDefault();exportChartPNG()}
   
@@ -2211,6 +2289,7 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
    BOOT
    ═══════════════════════════════════════════ */
 loadFromURL();
+loadSavedLayouts();
 loadSettings();
 fetchPrices();
 fetchMeta();
