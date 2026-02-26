@@ -194,134 +194,81 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media (max-width: 768px) {
-  /* ═══ MOBILE: SIMPLIFIED UI ═══ */
-  html,body{font-size:11px}
+  html,body{font-size:10px}
   
-  /* Hide advanced tabs on mobile (keep only essentials) */
-  .tab[data-tab="orderbook"]{display:none}
-  .tab[data-tab="relvalue"]{display:none}
-  .tab[data-tab="analysis"]{display:none}
+  /* Header: stack vertically */
+  .header{flex-wrap:wrap;height:auto;padding:8px}
+  .hdr-coin{width:100%;order:1;margin-bottom:6px}
+  .hdr-coin-input{font-size:13px}
+  .hdr-label{font-size:14px;order:2}
+  .hdr-type{order:3}
+  .hdr-price{font-size:16px;order:4}
+  .hdr-change{order:5}
+  .hdr-right{width:100%;order:6;justify-content:space-between;margin-top:6px}
   
-  /* Header: cleaner mobile layout */
-  .header{flex-wrap:wrap;height:auto;padding:12px}
-  .hdr-coin{width:100%;order:1;margin-bottom:10px}
-  .hdr-coin-input{font-size:15px;width:100%;padding:10px 14px}
-  .hdr-label{font-size:17px;order:2;font-weight:800}
-  .hdr-type{display:none} /* hide asset type label */
-  .hdr-price{font-size:22px;order:4;margin-left:0;width:auto}
-  .hdr-change{order:5;font-size:15px;margin-left:10px}
-  .hdr-right{display:none} /* hide theme/layout buttons */
-  .hdr-brand{order:6;width:100%;text-align:center;margin-top:10px;font-size:10px;opacity:0.5}
+  /* Tabs: smaller, scrollable */
+  .tabs{overflow-x:auto;padding:0 8px}
+  .tab{font-size:9px;padding:6px 10px;white-space:nowrap}
   
-  /* Tabs: bigger, easier to tap */
-  .tabs{overflow-x:auto;padding:0 12px;gap:6px;height:48px;-webkit-overflow-scrolling:touch}
-  .tab{font-size:12px;padding:12px 20px;white-space:nowrap;min-width:100px;border-bottom-width:3px}
-  .tab .num{display:none}
-  
-  /* Overview: stack chart above watchlist */
+  /* Overview: stack left/right vertically */
   .overview{flex-direction:column}
-  .ov-left{width:100%!important;min-height:450px;display:flex;flex-direction:column}
-  .ov-right{width:100%!important;max-height:none;border-left:none;border-top:2px solid #1a1a1a}
+  .ov-left{width:100%!important}
+  .ov-right{width:100%!important;max-height:400px}
   
-  /* Chart container: ensure proper rendering */
-  .chart-container{flex:1;min-height:400px}
-  .chart-body{min-height:350px;position:relative}
-  .chart-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+  /* Chart toolbar: wrap, smaller buttons */
+  .chart-toolbar{flex-wrap:wrap;padding:4px 8px;gap:2px}
+  .tf-btn,.type-btn{font-size:8px;padding:3px 6px}
+  .chart-sep{display:none} /* hide separators on mobile */
   
-  /* Chart toolbar: hide advanced features */
-  .chart-toolbar{flex-wrap:wrap;padding:8px 12px;gap:6px}
-  .tf-btn{font-size:11px;padding:7px 12px;border-radius:4px}
-  .type-btn,.chart-sep,.draw-btn{display:none} /* hide drawing tools & chart types */
-  button[onclick*="exportChartPNG"],button[onclick*="downloadCSV"],button[onclick*="shareChart"]{display:none} /* hide export buttons */
-  #ind-bb,#ind-vwap,#ind-rsi,#ind-volProfile,#ind-liqLevels{display:none} /* hide advanced indicators */
+  /* Hide OHLC overlay on mobile (too cluttered) */
+  .chart-ohlc{display:none}
   
-  /* Hide chart clutter */
-  .chart-ohlc,.chart-watermark,.chart-scroll{display:none}
+  /* Order book view: stack side-by-side */
+  .ob-view{flex-direction:column}
+  .ob-list{width:100%!important;max-height:300px}
+  .ob-depth-chart{width:100%!important;height:200px}
   
-  /* GMM: stack panels vertically (2x1 instead of 2x2) */
-  #view-gmm > div{
-    display:flex!important;
-    flex-direction:column!important;
-    gap:1px;
-  }
-  #view-gmm > div > div{
-    width:100%!important;
-    min-height:300px;
-  }
+  /* Position table: smaller fonts, horizontal scroll */
+  .pos-head,.pos-row{grid-template-columns:60px 45px 70px 75px 75px 65px 60px 60px 1fr;font-size:9px;padding:4px 6px}
+  .pos-badge{font-size:8px;padding:1px 4px}
   
-  /* Screener: mobile-friendly columns */
-  #screenerTable{padding:0}
-  #screenFilter,#screenSort{font-size:12px;padding:8px 10px}
+  /* Relative value table: horizontal scroll */
+  .rv-head,.rv-row{grid-template-columns:70px 90px 80px 70px 70px 70px 70px 70px 1fr;font-size:9px}
   
-  /* Portfolio: simplified layout */
-  #view-portfolio{font-size:11px}
-  #view-portfolio button{font-size:12px;padding:10px 16px!important}
-  
-  /* Portfolio summary: 2 columns */
-  #view-portfolio > div > div:first-child{
-    grid-template-columns:1fr 1fr!important;
-  }
-  #view-portfolio > div > div:first-child > div:nth-child(3),
-  #view-portfolio > div > div:first-child > div:nth-child(5){
-    display:none; /* hide Day P&L and Win Rate on mobile */
-  }
-  #view-portfolio > div > div:first-child > div{
-    padding:16px!important;
-  }
+  /* Ticker: slower scroll, bigger text */
+  .ticker-bar{height:32px}
+  .ticker-item{font-size:10px;padding:0 16px}
   
   /* Watchlist: bigger tap targets */
-  .ov-right-row{padding:12px 16px;min-height:56px;font-size:12px}
-  .ov-section-title{padding:12px 16px;font-size:11px}
+  .ov-right-row{padding:8px 12px}
   
-  /* News: larger, easier to read */
-  .news-card{padding:16px;min-height:72px}
-  .news-card-title{font-size:13px;line-height:1.5;margin-bottom:6px}
-  .news-card-time{font-size:10px}
+  /* News cards: more padding */
+  .news-card{padding:10px 16px}
   
-  /* Coin dropdown: full width, larger */
-  .coin-dropdown{width:calc(100vw - 24px);left:12px;max-height:50vh}
-  .coin-opt{min-height:60px;padding:14px 16px;font-size:13px}
+  /* Hide watermark on mobile */
+  .chart-watermark{display:none}
   
-  /* Ticker: larger, slower */
-  .ticker-bar{height:38px}
-  .ticker-item{font-size:12px;padding:0 24px}
-  
-  /* Order book (if viewed): stack */
-  .ob-view{flex-direction:column}
-  .ob-list{width:100%!important;max-height:350px}
-  .ob-depth-chart{width:100%!important;height:250px}
+  /* Coin dropdown: full width on mobile */
+  .coin-dropdown{width:calc(100vw - 16px);left:0;right:0}
+  .coin-opt{min-height:48px;padding:10px 16px}
 }
 
 @media (max-width: 480px) {
-  /* Extra small phones */
-  html,body{font-size:10px}
-  .header{padding:10px}
-  .hdr-label{font-size:15px}
-  .hdr-price{font-size:20px}
-  .hdr-change{font-size:13px}
-  .tab{font-size:11px;padding:10px 16px;min-width:90px}
-  .tf-btn{font-size:10px;padding:6px 10px}
-  
-  /* Chart: even more height */
-  .chart-container{min-height:350px}
-  .chart-body{min-height:300px}
+  /* Extra small phones: even tighter */
+  html,body{font-size:9px}
+  .header{padding:6px}
+  .hdr-label{font-size:12px}
+  .hdr-price{font-size:14px}
+  .tab{font-size:8px;padding:5px 8px}
+  .tf-btn,.type-btn{font-size:7px;padding:2px 5px}
   
   /* Single column for everything */
   .analysis-grid{grid-template-columns:1fr}
   .account-grid{grid-template-columns:1fr}
   
-  /* GMM panels: smaller on tiny screens */
-  #view-gmm > div > div{
-    min-height:250px!important;
-  }
-  
-  /* Portfolio summary: stack vertically */
-  #view-portfolio > div > div:first-child{
-    grid-template-columns:1fr!important;
-  }
-  #view-portfolio > div > div:first-child > div:nth-child(4){
-    display:none; /* also hide position count */
-  }
+  /* Hide some stat columns on tiny screens */
+  .rv-head,.rv-row{grid-template-columns:60px 70px 70px 60px 1fr;font-size:8px}
+  .rv-head span:nth-child(n+6),.rv-row span:nth-child(n+6){display:none}
 }
 </style>
 </head>
@@ -2745,19 +2692,6 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
 });
 
 window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')renderDepthCanvas();if(activeTab==='relvalue')renderRelChart()});
-
-// Mobile: force chart redraw on orientation change
-window.addEventListener('orientationchange',()=>{setTimeout(()=>{renderChart();renderGMM();renderPortfolio()},300)});
-
-// Mobile: ensure chart canvas renders on touch devices
-if('ontouchstart' in window){
-  document.addEventListener('DOMContentLoaded',()=>{
-    setTimeout(()=>{
-      renderChart();
-      if(activeTab==='overview')renderOverview();
-    },500);
-  });
-}
 
 /* ═══════════════════════════════════════════
    BOOT
