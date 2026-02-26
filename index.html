@@ -453,8 +453,9 @@ let candleData = {};
 let metaData = null;
 let orderBookData = {};
 let fearGreedData = null; // {value, classification}
-let newsData = []; // real-time crypto news
-let aiInsight = null; // LLM market analysis
+let newsData = [];
+let aiInsight = null;
+let economicEvents = [];
 let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false,volProfile:false};
 let favorites = []; // favorite coins
 let priceAlerts = [];
@@ -973,6 +974,27 @@ Provide actionable market outlook in 2-3 sentences max. Be concise and specific.
       if(activeTab==='analysis')renderAnalysis();
     }
   }catch(e){console.error('AI insight error:',e)}
+}
+
+/* ═══════════════════════════════════════════
+   ECONOMIC CALENDAR
+   ═══════════════════════════════════════════ */
+async function fetchEconomicCalendar(){
+  try{
+    const resp=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    const data=await resp.json();
+    if(Array.isArray(data)){
+      economicEvents=data.filter(e=>e.impact==='High'||e.impact==='Medium').slice(0,15).map(e=>({
+        title:e.title,
+        country:e.country,
+        date:new Date(e.date),
+        impact:e.impact,
+        forecast:e.forecast,
+        previous:e.previous
+      }));
+      if(activeTab==='analysis')renderAnalysis();
+    }
+  }catch(e){console.error('Economic calendar error:',e)}
 }
 
 // Fetch Yahoo Finance candles for stocks
@@ -1613,6 +1635,23 @@ function renderAnalysis(){
         </div>`;
       }).join('')}
     </div>
+    <div class="analysis-card">
+      <h3>📅 ECONOMIC CALENDAR (THIS WEEK)</h3>
+      ${economicEvents.length===0?'<div style="padding:12px;color:var(--muted);font-size:10px">Loading events...</div>':economicEvents.map(e=>{
+        const impactColor=e.impact==='High'?'var(--red)':e.impact==='Medium'?'var(--orange)':'var(--dim)';
+        const dateStr=e.date.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        return `<div class="indicator-row" style="align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:10px;color:${impactColor};font-weight:700">${e.country} • ${e.impact.toUpperCase()}</span>
+            <span style="font-size:9px;color:var(--muted)">${dateStr}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;text-align:right">
+            <span style="font-size:10px;font-weight:600">${e.title}</span>
+            <span style="font-size:9px;color:var(--dim)">Fcst: ${e.forecast||'—'} | Prev: ${e.previous||'—'}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
   `;
 }
 
@@ -2078,6 +2117,7 @@ fetchOrderBook(activeCoin);
 fetchFearGreed();
 fetchCryptoNews();
 fetchAIInsight();
+fetchEconomicCalendar();
 setInterval(fetchPrices,3000);
 setInterval(fetchMeta,15000);
 setInterval(fetchStocks,10000);
@@ -2085,6 +2125,7 @@ setInterval(()=>fetchOrderBook(activeCoin),2000);
 setInterval(fetchFearGreed,60000);
 setInterval(fetchCryptoNews,120000); // News every 2 min
 setInterval(fetchAIInsight,300000); // AI insight every 5 min
+setInterval(fetchEconomicCalendar,3600000); // Economic calendar every hour
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
 </body>
