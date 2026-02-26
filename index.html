@@ -895,21 +895,26 @@ function initDrawingHandlers(){
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    const candles = candleData[candleKey(activeCoin, activeTF)];
-    if(!candles || candles.length < 2) return;
+    const allCandles = candleData[candleKey(activeCoin, activeTF)];
+    if(!allCandles || allCandles.length < 2) return;
     
     const mB = 30, mR = 80;
     const cH = rect.height - mB;
     const cW = rect.width - mR;
     
-    const visibleCandles = candles.slice(-100);
-    const prices = visibleCandles.flatMap(c => [c.h, c.l]);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const range = max - min;
-    const padding = range * 0.05;
-    const yMin = min - padding;
-    const yMax = max + padding;
+    // Calculate visible range exactly like drawCandles does
+    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+    const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
+    const candles = allCandles.slice(startIdx, endIdx);
+    
+    const dataMin = Math.min(...candles.map(c => c.l));
+    const dataMax = Math.max(...candles.map(c => c.h));
+    const dataMid = (dataMax + dataMin) / 2;
+    const dataRange = (dataMax - dataMin) || 1;
+    const zr = dataRange / chartZoomY;
+    const yMin = dataMid - zr / 2;
+    const yMax = dataMid + zr / 2;
     
     console.log('Right-click at', x, y, 'checking for drawings...');
     const drawingIndex = findDrawingNear(x, y, cW, cH, yMin, yMax);
@@ -929,20 +934,26 @@ function initDrawingHandlers(){
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Convert pixel Y to price
+    // Convert pixel Y to price - USE SAME LOGIC AS drawCandles()
     const canvas = document.getElementById('chart');
-    const candles = candleData[candleKey(activeCoin, activeTF)];
-    if(!candles || candles.length < 2) return;
+    const allCandles = candleData[candleKey(activeCoin, activeTF)];
+    if(!allCandles || allCandles.length < 2) return;
     
-    const mB = 30, cH = canvas.height - mB;
-    const visibleCandles = candles.slice(-100);
-    const prices = visibleCandles.flatMap(c => [c.h, c.l]);
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
-    const range = max - min;
-    const padding = range * 0.05;
-    const yMin = min - padding;
-    const yMax = max + padding;
+    const mB = 30, cH = rect.height - mB;
+    
+    // Calculate visible range exactly like drawCandles does
+    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+    const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
+    const candles = allCandles.slice(startIdx, endIdx);
+    
+    const dataMin = Math.min(...candles.map(c => c.l));
+    const dataMax = Math.max(...candles.map(c => c.h));
+    const dataMid = (dataMax + dataMin) / 2;
+    const dataRange = (dataMax - dataMin) || 1;
+    const zr = dataRange / chartZoomY;
+    const yMin = dataMid - zr / 2;
+    const yMax = dataMid + zr / 2;
     const yRange = yMax - yMin;
     
     const price = yMax - (y / cH) * yRange;
