@@ -320,6 +320,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-bb" style="font-size:9px;padding:3px 6px">BB</button>
             <button class="tf-btn" id="ind-vwap" style="font-size:9px;padding:3px 6px">VWAP</button>
             <button class="tf-btn" id="ind-rsi" style="font-size:9px;padding:3px 6px">RSI</button>
+            <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <div class="chart-sep"></div>
             <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
             <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
@@ -454,7 +455,7 @@ let orderBookData = {};
 let fearGreedData = null; // {value, classification}
 let newsData = []; // real-time crypto news
 let aiInsight = null; // LLM market analysis
-let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false}; // active indicators
+let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false,volProfile:false};
 let favorites = []; // favorite coins
 let priceAlerts = [];
 let soundEnabled = true;
@@ -1093,6 +1094,29 @@ function calcVWAP(candles){
   return vwap;
 }
 
+function calcVolumeProfile(candles,bins=30){
+  if(!candles||candles.length<2)return{};
+  const min=Math.min(...candles.map(c=>c.l));
+  const max=Math.max(...candles.map(c=>c.h));
+  const range=max-min;
+  const binSize=range/bins;
+  const profile={};
+  
+  for(let i=0;i<bins;i++){
+    const priceLevel=min+i*binSize;
+    profile[priceLevel.toFixed(2)]=0;
+  }
+  
+  candles.forEach(c=>{
+    const avgPrice=(c.h+c.l+c.c)/3;
+    const binIdx=Math.floor((avgPrice-min)/binSize);
+    const key=(min+binIdx*binSize).toFixed(2);
+    if(profile[key]!==undefined)profile[key]+=c.v;
+  });
+  
+  return profile;
+}
+
 /* ═══════════════════════════════════════════
    RENDER ALL
    ═══════════════════════════════════════════ */
@@ -1459,6 +1483,21 @@ function drawCandles(ctx,W,H,allCandles){
       });
       ctx.strokeStyle='#00bcd4';ctx.lineWidth=1.5;ctx.stroke();
     }
+  }
+  
+  // Volume Profile (horizontal bars on right side)
+  if(indicators.volProfile){
+    const profile=calcVolumeProfile(allCandles,20);
+    const maxVol=Math.max(...Object.values(profile));
+    const profileW=60; // width of volume profile bars
+    Object.keys(profile).forEach(priceStr=>{
+      const price=parseFloat(priceStr);
+      const vol=profile[priceStr];
+      const y=Math.max(0,Math.min(cH,cH-((price-min)/range)*cH));
+      const barW=(vol/maxVol)*profileW;
+      ctx.fillStyle='rgba(255,140,0,0.2)';
+      ctx.fillRect(cW-profileW,y-2,barW,4);
+    });
   }
 
   // Last price line
@@ -2013,7 +2052,7 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
 }));
 
 // Indicator toggles
-['sma20','sma50','ema20','bb','vwap','rsi'].forEach(ind=>{
+['sma20','sma50','ema20','bb','vwap','rsi','volProfile'].forEach(ind=>{
   const btn=document.getElementById('ind-'+ind);
   if(!btn)return;
   if(indicators[ind])btn.classList.add('active');
