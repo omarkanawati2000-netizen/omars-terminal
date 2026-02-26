@@ -860,19 +860,22 @@ function closeContextMenu(){
 // Find drawing near click position
 function findDrawingNear(x, y, cW, cH, yMin, yMax){
   const yRange = yMax - yMin;
-  const clickPrice = yMax - (y / cH) * yRange;
-  const threshold = yRange * 0.05; // 5% of range (more lenient)
+  const pixelThreshold = 10; // 10 pixels tolerance
   
-  console.log('Click price:', clickPrice.toFixed(2), 'threshold:', threshold.toFixed(2));
+  console.log('Click at y:', y);
   
   for(let i = drawings.length - 1; i >= 0; i--){
     const d = drawings[i];
     if(d.coin !== activeCoin || d.tf !== activeTF) continue;
     
     if(d.type === 'hline'){
-      const diff = Math.abs(d.price - clickPrice);
-      console.log('Drawing', i, 'price:', d.price.toFixed(2), 'diff:', diff.toFixed(2));
-      if(diff < threshold){
+      // Convert drawing price to Y pixel
+      const drawingY = cH * (1 - (d.price - yMin) / yRange);
+      const pixelDiff = Math.abs(drawingY - y);
+      
+      console.log('Drawing', i, 'at y:', drawingY.toFixed(1), 'pixelDiff:', pixelDiff.toFixed(1));
+      
+      if(pixelDiff < pixelThreshold){
         return i;
       }
     }
