@@ -370,6 +370,14 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
+            <button class="draw-btn" data-tool="hline" onclick="setDrawingTool('hline')" title="Horizontal Line (H)"><span class="draw-btn-icon">━</span>H-LINE</button>
+            <button class="draw-btn" data-tool="trendline" onclick="setDrawingTool('trendline')" title="Trend Line (T)"><span class="draw-btn-icon">╱</span>TREND</button>
+            <button class="draw-btn" data-tool="fib_ret" onclick="setDrawingTool('fib_ret')" title="Fibonacci Retracement (F)"><span class="draw-btn-icon">F</span>FIB</button>
+            <button class="draw-btn" data-tool="fib_ext" onclick="setDrawingTool('fib_ext')" title="Fibonacci Extension"><span class="draw-btn-icon">E</span>FIB-E</button>
+            <button class="draw-btn" data-tool="rectangle" onclick="setDrawingTool('rectangle')" title="Rectangle (R)"><span class="draw-btn-icon">▭</span>RECT</button>
+            <button class="draw-btn" data-tool="ruler" onclick="setDrawingTool('ruler')" title="Ruler/Measure (M)"><span class="draw-btn-icon">M</span>RULER</button>
+            <button class="draw-btn" data-tool="text" onclick="setDrawingTool('text')" title="Text Label (L)"><span class="draw-btn-icon">T</span>TEXT</button>
+            <div class="chart-sep"></div>
             <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
             <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
             <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">🔗 Share</button>
