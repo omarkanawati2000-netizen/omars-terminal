@@ -23,17 +23,12 @@ Press `?` in the terminal for full keyboard shortcuts.
 ## 🚀 Next Features (No blockers)
 - [ ] Heatmap view as full tab (treemap sized by market cap)
 - [ ] Liquidation feed (check if Hyperliquid API has this publicly)
-- [ ] Mobile responsive layout
 - [ ] Better error handling & loading states
 - [ ] Multi-chart split screen layout
 - [ ] Correlation matrix
 - [ ] RSI subplot (separate panel below main chart)
-
-## 🔑 Need API Keys / Info From Omar
-- [ ] **AI market analysis** — need LLM API key (OpenAI/Anthropic) OR we can use a free tier
-  - Could use Anthropic Claude (Omar might have access via OpenClaw?)
-  - Or use Hugging Face Inference API (free tier)
-  - Or use local Ollama if installed
+- [ ] Volume profile chart
+- [ ] Advanced order types visualization
 
 ## 🔐 Need Omar's HL Account
 - [ ] Connect to real Hyperliquid account (show actual positions/PnL)
@@ -52,7 +47,7 @@ Press `?` in the terminal for full keyboard shortcuts.
 - Created TODO list
 - Starting with: Real order book, chart indicators, search, settings
 
-### ✅ Completed (2026-02-26 Night Shift)
+### ✅ Completed (2026-02-26 Night Shift + Morning)
 - [x] Real Hyperliquid order book (L2) — real bid/ask data for crypto
 - [x] Technical indicators (SMA20, SMA50, EMA20, Bollinger Bands, VWAP) — toggleable overlays
 - [x] Persistent settings (localStorage) — saves coin, TF, indicators, favorites
@@ -63,6 +58,9 @@ Press `?` in the terminal for full keyboard shortcuts.
 - [x] Dark/light theme toggle — Alt+T or click 🌙 icon
 - [x] Favorite coins system — star/unstar coins, ★ FAV filter tab
 - [x] Added PUMP ticker
+- [x] Mobile-responsive UI — touch-friendly, stacked layouts, adaptive fonts
+- [x] Real-time crypto news — Cryptocompare API, updates every 2 min, clickable headlines
+- [x] AI market insights — Mistral-7B LLM analysis in Analysis tab, auto-refreshes every 5 min
 
 ### Working Now
 - [ ] None (waiting for Omar)
