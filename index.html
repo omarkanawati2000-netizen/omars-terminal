@@ -525,19 +525,7 @@ window.onerror = function(msg, url, line, col, error) {
 };
 
 // ═══ EARLY DIAGNOSTIC ═══
-console.log('SCRIPT STARTED');
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    const earlyDiag = document.createElement('div');
-    earlyDiag.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;font-size:20px;z-index:99999;border:5px solid yellow;';
-    earlyDiag.textContent = 'JAVASCRIPT IS RUNNING!';
-    document.body.appendChild(earlyDiag);
-    setTimeout(() => earlyDiag.remove(), 3000);
-  } catch (e) {
-    console.error('Early diagnostic failed:', e);
-    alert('Early diagnostic error: ' + e.message);
-  }
-});
+console.log('SCRIPT STARTED - Waiting for DOM...');
 
 /* ═══════════════════════════════════════════
    CONFIG
@@ -918,24 +906,6 @@ function switchTab(tab){
   if(tab==='news')renderNewsFull();
   if(tab==='relvalue')renderRelValue();
 }
-
-// Attach tab click listeners with error handling (after DOM loads)
-window.addEventListener('DOMContentLoaded', () => {
-  try {
-    const tabs = document.querySelectorAll('.tab');
-    console.log('Attaching click listeners to', tabs.length, 'tabs');
-    tabs.forEach(t => {
-      t.addEventListener('click', () => {
-        console.log('Tab clicked:', t.dataset.tab);
-        switchTab(t.dataset.tab);
-      });
-    });
-    console.log('Tab listeners attached successfully');
-  } catch (e) {
-    console.error('FAILED TO ATTACH TAB LISTENERS:', e);
-    alert('ERROR: Tab listeners failed - ' + e.message);
-  }
-});
 
 /* ═══════════════════════════════════════════
    COIN SELECTOR
@@ -2732,28 +2702,65 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
 window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')renderDepthCanvas();if(activeTab==='relvalue')renderRelChart()});
 
 /* ═══════════════════════════════════════════
-   BOOT
+   BOOT - ALL initialization wrapped in DOMContentLoaded
    ═══════════════════════════════════════════ */
-loadFromURL();
-loadSavedLayouts();
-loadSettings();
-fetchPrices();
-fetchMeta();
-fetchStocks();
-fetchOrderBook(activeCoin);
-fetchFearGreed();
-fetchCryptoNews();
-fetchAIInsight();
-fetchEconomicCalendar();
-setInterval(fetchPrices,3000);
-setInterval(fetchMeta,15000);
-setInterval(fetchStocks,10000);
-setInterval(()=>fetchOrderBook(activeCoin),2000);
-setInterval(fetchFearGreed,60000);
-setInterval(fetchCryptoNews,120000); // News every 2 min
-setInterval(fetchAIInsight,300000); // AI insight every 5 min
-setInterval(fetchEconomicCalendar,3600000); // Economic calendar every hour
-setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded - initializing...');
+  
+  // 1. Show diagnostic (3 seconds)
+  try {
+    const earlyDiag = document.createElement('div');
+    earlyDiag.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;font-size:20px;z-index:99999;border:5px solid yellow;';
+    earlyDiag.textContent = 'JAVASCRIPT IS RUNNING!';
+    document.body.appendChild(earlyDiag);
+    setTimeout(() => earlyDiag.remove(), 3000);
+  } catch (e) {
+    console.error('Early diagnostic failed:', e);
+    alert('Diagnostic error: ' + e.message);
+  }
+  
+  // 2. Attach tab click listeners
+  try {
+    const tabs = document.querySelectorAll('.tab');
+    console.log('Attaching click listeners to', tabs.length, 'tabs');
+    tabs.forEach(t => {
+      t.addEventListener('click', () => {
+        console.log('Tab clicked:', t.dataset.tab);
+        switchTab(t.dataset.tab);
+      });
+    });
+    console.log('✓ Tab listeners attached');
+  } catch (e) {
+    console.error('Tab listeners failed:', e);
+    alert('Tab listeners error: ' + e.message);
+  }
+  
+  // 3. Initialize app state and fetch data
+  loadFromURL();
+  loadSavedLayouts();
+  loadSettings();
+  fetchPrices();
+  fetchMeta();
+  fetchStocks();
+  fetchOrderBook(activeCoin);
+  fetchFearGreed();
+  fetchCryptoNews();
+  fetchAIInsight();
+  fetchEconomicCalendar();
+  
+  // 4. Start update intervals
+  setInterval(fetchPrices,3000);
+  setInterval(fetchMeta,15000);
+  setInterval(fetchStocks,10000);
+  setInterval(()=>fetchOrderBook(activeCoin),2000);
+  setInterval(fetchFearGreed,60000);
+  setInterval(fetchCryptoNews,120000); // News every 2 min
+  setInterval(fetchAIInsight,300000); // AI insight every 5 min
+  setInterval(fetchEconomicCalendar,3600000); // Economic calendar every hour
+  setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
+  
+  console.log('✓ Initialization complete');
+});
 
 /* ═══════════════════════════════════════════
    DRAWING TOOLS SYSTEM
