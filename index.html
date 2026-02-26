@@ -1110,6 +1110,279 @@ document.querySelectorAll('.tf-btn').forEach(b => b.addEventListener('click', ()
 document.querySelectorAll('.type-btn').forEach(b => b.addEventListener('click', () => { document.querySelectorAll('.type-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); chartType=b.dataset.type; renderChart(); }));
 
 window.addEventListener('resize', renderChart);
+
+/* ═══════════════════════════════════════════
+   BOTTOM PANEL TABS (Positions/Orders/History/Account)
+   ═══════════════════════════════════════════ */
+let activeBottomTab = 'positions';
+
+function switchBottomTab(tab) {
+  activeBottomTab = tab;
+  document.querySelectorAll('.bp-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bp-tab').forEach(t => {
+    if (t.textContent.trim().toUpperCase().includes(tab.toUpperCase()) ||
+        (tab === 'positions' && t.textContent.includes('POSITIONS')) ||
+        (tab === 'orders' && t.textContent.includes('OPEN ORDERS')) ||
+        (tab === 'history' && t.textContent.includes('TRADE HISTORY')) ||
+        (tab === 'account' && t.textContent.includes('ACCOUNT')) ||
+        (tab === 'analytics' && t.textContent.includes('ANALYTICS')) ||
+        (tab === 'trades' && t.textContent.includes('TRADES')))
+      t.classList.add('active');
+  });
+  const el = document.getElementById('positions');
+  const head = document.querySelector('.pos-head');
+  if (tab === 'positions') { renderPositions(); }
+  else if (tab === 'orders') { renderOpenOrders(head, el); }
+  else if (tab === 'history') { renderTradeHistory(head, el); }
+  else if (tab === 'account') { renderAccount(head, el); }
+  else if (tab === 'analytics') { renderAnalytics(head, el); }
+  else if (tab === 'trades') { renderRecentTrades(head, el); }
+}
+
+function renderOpenOrders(head, el) {
+  head.innerHTML = '<span>SYMBOL</span><span>SIDE</span><span>TYPE</span><span>PRICE</span><span>SIZE</span><span>FILLED</span><span>STATUS</span><span>TIME</span><span></span>';
+  const orders = [
+    {sym:'BTC',side:'BUY',type:'LIMIT',price:'$66,500.00',size:'0.200',filled:'0%',status:'OPEN',time:'14:32:01'},
+    {sym:'ETH',side:'SELL',type:'LIMIT',price:'$2,850.00',size:'5.000',filled:'0%',status:'OPEN',time:'13:45:22'},
+    {sym:'SOL',side:'BUY',type:'STOP',price:'$165.00',size:'30.00',filled:'0%',status:'PENDING',time:'12:10:45'},
+    {sym:'HYPE',side:'BUY',type:'LIMIT',price:'$23.00',size:'200',filled:'0%',status:'OPEN',time:'11:55:33'},
+    {sym:'DOGE',side:'SELL',type:'LIMIT',price:'$0.26500',size:'15,000',filled:'20%',status:'PARTIAL',time:'10:22:18'},
+  ];
+  el.innerHTML = orders.map(o => `<div class="pos-row">
+    <span class="pos-sym">${o.sym}</span>
+    <span><span class="pos-badge ${o.side==='BUY'?'pos-long':'pos-short'}">${o.side}</span></span>
+    <span style="color:var(--text-dim)">${o.type}</span><span>${o.price}</span><span>${o.size}</span>
+    <span style="color:${o.filled==='0%'?'var(--text-muted)':'var(--orange)'}">${o.filled}</span>
+    <span style="color:${o.status==='OPEN'?'var(--green)':o.status==='PARTIAL'?'var(--orange)':'var(--text-dim)'}">${o.status}</span>
+    <span style="color:var(--text-muted)">${o.time}</span><span></span>
+  </div>`).join('');
+}
+
+function renderTradeHistory(head, el) {
+  head.innerHTML = '<span>SYMBOL</span><span>SIDE</span><span>PRICE</span><span>SIZE</span><span>FEE</span><span>PnL</span><span>TIME</span><span>DATE</span><span></span>';
+  const trades = [
+    {sym:'BTC',side:'SELL',price:'$97,100.00',size:'0.100',fee:'-$2.43',pnl:'+$142.00',time:'22:15:33',date:'02/25',up:true},
+    {sym:'ETH',side:'BUY',price:'$2,784.20',size:'2.500',fee:'-$1.74',pnl:'—',time:'21:45:10',date:'02/25',up:null},
+    {sym:'SOL',side:'BUY',price:'$168.42',size:'45.00',fee:'-$1.90',pnl:'—',time:'20:30:05',date:'02/25',up:null},
+    {sym:'DOGE',side:'SELL',price:'$0.26100',size:'5,000',fee:'-$0.33',pnl:'+$34.50',time:'19:12:44',date:'02/25',up:true},
+    {sym:'BTC',side:'BUY',price:'$96,200.00',size:'0.050',fee:'-$1.20',pnl:'-$18.30',time:'18:05:22',date:'02/25',up:false},
+    {sym:'HYPE',side:'BUY',price:'$24.50',size:'120',fee:'-$0.74',pnl:'—',time:'16:40:15',date:'02/25',up:null},
+    {sym:'SOL',side:'SELL',price:'$172.80',size:'20.00',fee:'-$0.86',pnl:'+$87.20',time:'15:22:08',date:'02/25',up:true},
+    {sym:'ETH',side:'SELL',price:'$2,810.00',size:'1.000',fee:'-$0.70',pnl:'+$25.80',time:'14:10:33',date:'02/25',up:true},
+  ];
+  el.innerHTML = trades.map(t => `<div class="pos-row">
+    <span class="pos-sym">${t.sym}</span>
+    <span><span class="pos-badge ${t.side==='BUY'?'pos-long':'pos-short'}">${t.side}</span></span>
+    <span>${t.price}</span><span>${t.size}</span>
+    <span style="color:var(--text-muted)">${t.fee}</span>
+    <span class="${t.up===true?'up':t.up===false?'down':''}" style="font-weight:600">${t.pnl}</span>
+    <span style="color:var(--text-muted)">${t.time}</span>
+    <span style="color:var(--text-muted)">${t.date}</span><span></span>
+  </div>`).join('');
+}
+
+function renderAccount(head, el) {
+  head.innerHTML = '';
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);padding:0;">
+      <div class="stat-cell"><div class="stat-label">ACCOUNT EQUITY</div><div class="stat-val" style="font-size:16px;color:var(--white)">$12,458.63</div></div>
+      <div class="stat-cell"><div class="stat-label">AVAILABLE BALANCE</div><div class="stat-val" style="font-size:16px;color:var(--green)">$7,560.40</div></div>
+      <div class="stat-cell"><div class="stat-label">MARGIN USED</div><div class="stat-val" style="font-size:16px;color:var(--orange)">$4,898.23</div></div>
+      <div class="stat-cell"><div class="stat-label">UNREALIZED PnL</div><div class="stat-val up" style="font-size:14px">+$308.23</div></div>
+      <div class="stat-cell"><div class="stat-label">REALIZED PnL (TODAY)</div><div class="stat-val up" style="font-size:14px">+$271.20</div></div>
+      <div class="stat-cell"><div class="stat-label">TOTAL PnL (24H)</div><div class="stat-val up" style="font-size:14px">+$579.43</div></div>
+      <div class="stat-cell"><div class="stat-label">MARGIN RATIO</div><div class="stat-val" style="color:var(--green)">39.3%</div></div>
+      <div class="stat-cell"><div class="stat-label">LEVERAGE (AVG)</div><div class="stat-val" style="color:var(--orange)">8.2x</div></div>
+      <div class="stat-cell"><div class="stat-label">OPEN POSITIONS</div><div class="stat-val">5</div></div>
+    </div>`;
+}
+
+function renderAnalytics(head, el) {
+  head.innerHTML = '';
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1px;background:var(--border);padding:0;">
+      <div class="stat-cell"><div class="stat-label">WIN RATE</div><div class="stat-val up" style="font-size:16px">68.4%</div></div>
+      <div class="stat-cell"><div class="stat-label">PROFIT FACTOR</div><div class="stat-val up" style="font-size:16px">2.14</div></div>
+      <div class="stat-cell"><div class="stat-label">SHARPE RATIO</div><div class="stat-val" style="font-size:16px;color:var(--orange)">1.87</div></div>
+      <div class="stat-cell"><div class="stat-label">MAX DRAWDOWN</div><div class="stat-val down" style="font-size:16px">-8.3%</div></div>
+      <div class="stat-cell"><div class="stat-label">AVG WIN</div><div class="stat-val up">+$72.40</div></div>
+      <div class="stat-cell"><div class="stat-label">AVG LOSS</div><div class="stat-val down">-$33.80</div></div>
+      <div class="stat-cell"><div class="stat-label">TOTAL TRADES (7D)</div><div class="stat-val">47</div></div>
+      <div class="stat-cell"><div class="stat-label">AVG HOLD TIME</div><div class="stat-val">2.4h</div></div>
+      <div class="stat-cell"><div class="stat-label">BEST TRADE</div><div class="stat-val up">+$342.00 (SOL)</div></div>
+      <div class="stat-cell"><div class="stat-label">WORST TRADE</div><div class="stat-val down">-$128.50 (DOGE)</div></div>
+      <div class="stat-cell"><div class="stat-label">LONG WIN RATE</div><div class="stat-val up">72.1%</div></div>
+      <div class="stat-cell"><div class="stat-label">SHORT WIN RATE</div><div class="stat-val">61.5%</div></div>
+    </div>`;
+}
+
+function renderRecentTrades(head, el) {
+  head.innerHTML = '<span>TIME</span><span>SYMBOL</span><span>SIDE</span><span>PRICE</span><span>SIZE</span><span>VALUE</span><span></span><span></span><span></span>';
+  const d = priceData[activeCoin];
+  const price = d ? d.price : 68000;
+  const trades = [];
+  for (let i = 0; i < 20; i++) {
+    const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
+    const p = price * (1 + (Math.random()-0.5)*0.001);
+    const size = +(Math.random()*5+0.01).toFixed(3);
+    const t = new Date(Date.now() - i*3000 - Math.random()*5000);
+    trades.push({time:t.toLocaleTimeString('en-US',{hour12:false}), sym:activeCoin, side, price:p, size, value:p*size});
+  }
+  el.innerHTML = trades.map(t => `<div class="pos-row">
+    <span style="color:var(--text-muted)">${t.time}</span>
+    <span class="pos-sym">${t.sym}</span>
+    <span style="color:${t.side==='BUY'?'var(--green)':'var(--red)'}; font-weight:600">${t.side}</span>
+    <span>${fmtPrice(t.price)}</span><span>${t.size.toFixed(3)}</span>
+    <span style="color:var(--text-dim)">$${fmtCompact(t.value)}</span>
+    <span></span><span></span><span></span>
+  </div>`).join('');
+}
+
+// Wire up bottom tabs
+document.querySelectorAll('.bp-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const text = tab.textContent.trim().toUpperCase();
+    if (text.includes('POSITION')) switchBottomTab('positions');
+    else if (text.includes('OPEN ORDER')) switchBottomTab('orders');
+    else if (text.includes('TRADE HIST')) switchBottomTab('history');
+    else if (text.includes('ACCOUNT')) switchBottomTab('account');
+  });
+});
+
+/* ═══════════════════════════════════════════
+   HELP MODAL
+   ═══════════════════════════════════════════ */
+function toggleHelp() {
+  let modal = document.getElementById('helpModal');
+  if (modal) { modal.remove(); return; }
+  modal = document.createElement('div');
+  modal.id = 'helpModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="color:var(--orange);font-weight:800;font-size:16px;letter-spacing:0.1em;">KEYBOARD SHORTCUTS</span>
+      <span onclick="toggleHelp()" style="cursor:pointer;color:var(--text-muted);font-size:18px;">✕</span>
+    </div>
+    <div style="display:grid;grid-template-columns:80px 1fr;gap:6px 12px;font-size:11px;">
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F1</kbd><span>Toggle this help</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F2</kbd><span>Scroll to News panel</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F3</kbd><span>Focus command bar</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F5</kbd><span>Reset to chart view</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F6</kbd><span>Show depth visualization</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F7</kbd><span>Recent trades feed</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F9</kbd><span>Portfolio / Account view</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F10</kbd><span>Price alerts</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">F11</kbd><span>Trading analytics</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">H</kbd><span>Toggle heatmap</span>
+      <kbd style="background:#1a1a1a;border:1px solid #333;padding:2px 6px;border-radius:2px;color:var(--orange);text-align:center;">Esc</kbd><span>Reset zoom / close modals</span>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid #222;padding-top:12px;">
+      <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">CHART CONTROLS</div>
+      <div style="font-size:10px;color:var(--text);line-height:1.8;">
+        • <b>Drag chart</b> — pan through candle history<br>
+        • <b>Drag time axis</b> (bottom) — horizontal zoom<br>
+        • <b>Drag price axis</b> (right) — vertical zoom<br>
+        • <b>Scrollbar</b> — navigate timeline<br>
+        • <b>Double-click</b> — reset all zoom<br>
+        • <b>Type ticker in command bar</b> + Enter — switch coin
+      </div>
+    </div>
+  </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) toggleHelp(); });
+  document.body.appendChild(modal);
+}
+
+/* ═══════════════════════════════════════════
+   HEATMAP TOGGLE
+   ═══════════════════════════════════════════ */
+let heatmapVisible = true;
+function toggleHeatmap() {
+  heatmapVisible = !heatmapVisible;
+  document.querySelector('.heatmap-section').style.display = heatmapVisible ? '' : 'none';
+}
+
+/* ═══════════════════════════════════════════
+   ALERTS PANEL
+   ═══════════════════════════════════════════ */
+function showAlerts() {
+  let modal = document.getElementById('alertsModal');
+  if (modal) { modal.remove(); return; }
+  modal = document.createElement('div');
+  modal.id = 'alertsModal';
+  modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;';
+  const alerts = [
+    {coin:'BTC',cond:'ABOVE',price:'$70,000',status:'WATCHING',color:'var(--orange)'},
+    {coin:'BTC',cond:'BELOW',price:'$65,000',status:'WATCHING',color:'var(--orange)'},
+    {coin:'ETH',cond:'ABOVE',price:'$3,000',status:'WATCHING',color:'var(--orange)'},
+    {coin:'SOL',cond:'ABOVE',price:'$200',status:'WATCHING',color:'var(--orange)'},
+    {coin:'SOL',cond:'BELOW',price:'$80',status:'TRIGGERED',color:'var(--red)'},
+    {coin:'DOGE',cond:'ABOVE',price:'$0.15',status:'WATCHING',color:'var(--orange)'},
+  ];
+  modal.innerHTML = `<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="color:var(--orange);font-weight:800;font-size:16px;letter-spacing:0.1em;">⚡ PRICE ALERTS</span>
+      <span onclick="showAlerts()" style="cursor:pointer;color:var(--text-muted);font-size:18px;">✕</span>
+    </div>
+    ${alerts.map(a => `<div style="display:grid;grid-template-columns:60px 70px 100px 1fr;gap:8px;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:11px;align-items:center;">
+      <span style="font-weight:700;color:var(--white)">${a.coin}</span>
+      <span style="color:${a.cond==='ABOVE'?'var(--green)':'var(--red)'}">${a.cond}</span>
+      <span>${a.price}</span>
+      <span style="color:${a.color};font-weight:600;font-size:9px">${a.status}</span>
+    </div>`).join('')}
+    <div style="margin-top:12px;color:var(--text-muted);font-size:9px;text-align:center;">Alerts are simulated for demo</div>
+  </div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) showAlerts(); });
+  document.body.appendChild(modal);
+}
+
+/* ═══════════════════════════════════════════
+   FUNCTION KEY BAR CLICK HANDLERS
+   ═══════════════════════════════════════════ */
+document.querySelectorAll('.fn-key').forEach(btn => {
+  const text = btn.textContent.trim();
+  btn.addEventListener('click', () => {
+    if (text.includes('HELP')) toggleHelp();
+    else if (text.includes('NEWS')) document.getElementById('newsFeed')?.scrollIntoView({behavior:'smooth'});
+    else if (text.includes('QUOTE')) document.getElementById('cmdInput')?.focus();
+    else if (text.includes('CHART')) { switchBottomTab('positions'); chartZoomX=1;chartZoomY=1;chartPanX=0;renderChart(); }
+    else if (text.includes('DEPTH')) { /* scroll right panel to order book */ document.querySelector('.ob-head')?.scrollIntoView({behavior:'smooth'}); }
+    else if (text.includes('TRADES') && !text.includes('HISTORY')) switchBottomTab('trades');
+    else if (text.includes('PORTFOLIO')) switchBottomTab('account');
+    else if (text.includes('ALERTS')) showAlerts();
+    else if (text.includes('ANALYTICS')) switchBottomTab('analytics');
+    else if (text.includes('HEATMAP')) toggleHeatmap();
+    else if (text.includes('RESET')) { chartZoomX=1;chartZoomY=1;chartPanX=0;document.getElementById('chartScroll').value=100;renderChart(); document.getElementById('helpModal')?.remove(); document.getElementById('alertsModal')?.remove(); }
+  });
+});
+
+/* ═══════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+   ═══════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  // Don't trigger if typing in the command input
+  if (document.activeElement === document.getElementById('cmdInput')) return;
+  
+  switch(e.key) {
+    case 'F1': e.preventDefault(); toggleHelp(); break;
+    case 'F2': e.preventDefault(); document.getElementById('newsFeed')?.scrollIntoView({behavior:'smooth'}); break;
+    case 'F3': e.preventDefault(); document.getElementById('cmdInput')?.focus(); break;
+    case 'F5': e.preventDefault(); switchBottomTab('positions'); break;
+    case 'F6': e.preventDefault(); document.querySelector('.ob-head')?.scrollIntoView({behavior:'smooth'}); break;
+    case 'F7': e.preventDefault(); switchBottomTab('trades'); break;
+    case 'F9': e.preventDefault(); switchBottomTab('account'); break;
+    case 'F10': e.preventDefault(); showAlerts(); break;
+    case 'F11': e.preventDefault(); switchBottomTab('analytics'); break;
+    case 'h': case 'H': if (!e.ctrlKey && !e.metaKey) toggleHeatmap(); break;
+    case 'Escape':
+      chartZoomX=1;chartZoomY=1;chartPanX=0;
+      document.getElementById('chartScroll').value=100;
+      renderChart();
+      document.getElementById('helpModal')?.remove();
+      document.getElementById('alertsModal')?.remove();
+      break;
+  }
+});
+
 renderPositions();
 fetchPrices();
 setInterval(fetchPrices, 3000);
