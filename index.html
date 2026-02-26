@@ -195,7 +195,27 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 /* ═══ MOBILE RESPONSIVE ═══ */
 @media (max-width: 768px) {
   /* ═══ MOBILE: SIMPLIFIED UI ═══ */
-  html,body{font-size:11px}
+  html,body{font-size:11px;-webkit-tap-highlight-color:rgba(255,140,0,0.2)}
+  
+  /* Ensure all interactive elements are clickable */
+  button,a,.tab,.ov-right-row,.coin-opt,.news-card,[onclick]{
+    pointer-events:auto!important;
+    cursor:pointer!important;
+    -webkit-tap-highlight-color:rgba(255,140,0,0.3)!important;
+  }
+  
+  /* Ensure views are scrollable */
+  .view{
+    touch-action:pan-y!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  
+  /* Main app container */
+  .app{
+    touch-action:pan-y;
+    overflow:hidden;
+  }
   
   /* Hide advanced tabs on mobile (keep only essentials) */
   .tab[data-tab="orderbook"]{display:none}
@@ -203,9 +223,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
   .tab[data-tab="analysis"]{display:none}
   
   /* Header: cleaner mobile layout */
-  .header{flex-wrap:wrap;height:auto;padding:12px}
-  .hdr-coin{width:100%;order:1;margin-bottom:10px}
-  .hdr-coin-input{font-size:15px;width:100%;padding:10px 14px}
+  .header{flex-wrap:wrap;height:auto;padding:12px;position:relative;z-index:90;pointer-events:auto}
+  .hdr-coin{width:100%;order:1;margin-bottom:10px;position:relative;z-index:95}
+  .hdr-coin-input{font-size:15px;width:100%;padding:10px 14px;pointer-events:auto;touch-action:manipulation}
   .hdr-label{font-size:17px;order:2;font-weight:800}
   .hdr-type{display:none} /* hide asset type label */
   .hdr-price{font-size:22px;order:4;margin-left:0;width:auto}
@@ -214,23 +234,23 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
   .hdr-brand{order:6;width:100%;text-align:center;margin-top:10px;font-size:10px;opacity:0.5}
   
   /* Tabs: bigger, easier to tap */
-  .tabs{overflow-x:auto;padding:0 12px;gap:6px;height:48px;-webkit-overflow-scrolling:touch}
-  .tab{font-size:12px;padding:12px 20px;white-space:nowrap;min-width:100px;border-bottom-width:3px}
+  .tabs{overflow-x:auto;padding:0 12px;gap:6px;height:48px;-webkit-overflow-scrolling:touch;position:relative;z-index:100;pointer-events:auto}
+  .tab{font-size:12px;padding:12px 20px;white-space:nowrap;min-width:100px;border-bottom-width:3px;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:rgba(255,140,0,0.3)}
   .tab .num{display:none}
   
   /* Overview: stack chart above watchlist */
-  .overview{flex-direction:column}
-  .ov-left{width:100%!important;min-height:450px;display:flex;flex-direction:column}
-  .ov-right{width:100%!important;max-height:none;border-left:none;border-top:2px solid #1a1a1a}
+  .overview{flex-direction:column;touch-action:pan-y}
+  .ov-left{width:100%!important;min-height:450px;display:flex;flex-direction:column;pointer-events:auto}
+  .ov-right{width:100%!important;max-height:none;border-left:none;border-top:2px solid #1a1a1a;touch-action:pan-y;overflow-y:auto;-webkit-overflow-scrolling:touch}
   
   /* Chart container: ensure proper rendering */
   .chart-container{flex:1;min-height:400px}
-  .chart-body{min-height:350px;position:relative}
-  .chart-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+  .chart-body{min-height:350px;position:relative;touch-action:pan-y;pointer-events:auto}
+  .chart-body canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;pointer-events:none;z-index:0}
   
   /* Chart toolbar: hide advanced features */
-  .chart-toolbar{flex-wrap:wrap;padding:8px 12px;gap:6px}
-  .tf-btn{font-size:11px;padding:7px 12px;border-radius:4px}
+  .chart-toolbar{flex-wrap:wrap;padding:8px 12px;gap:6px;position:relative;z-index:80;pointer-events:auto}
+  .tf-btn{font-size:11px;padding:7px 12px;border-radius:4px;cursor:pointer;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:rgba(255,140,0,0.3)}
   .type-btn,.chart-sep,.draw-btn{display:none} /* hide drawing tools & chart types */
   button[onclick*="exportChartPNG"],button[onclick*="downloadCSV"],button[onclick*="shareChart"]{display:none} /* hide export buttons */
   #ind-bb,#ind-vwap,#ind-rsi,#ind-volProfile,#ind-liqLevels{display:none} /* hide advanced indicators */
@@ -243,10 +263,18 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     display:flex!important;
     flex-direction:column!important;
     gap:1px;
+    touch-action:pan-y;
+    overflow-y:auto;
   }
   #view-gmm > div > div{
     width:100%!important;
     min-height:300px;
+    pointer-events:auto;
+    touch-action:pan-y;
+  }
+  #view-gmm > div > div > div{
+    touch-action:pan-y;
+    overflow-y:auto;
   }
   
   /* Screener: mobile-friendly columns */
@@ -270,8 +298,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
   }
   
   /* Watchlist: bigger tap targets */
-  .ov-right-row{padding:12px 16px;min-height:56px;font-size:12px}
-  .ov-section-title{padding:12px 16px;font-size:11px}
+  .ov-right{pointer-events:auto;position:relative;z-index:10}
+  .ov-right-row{padding:12px 16px;min-height:56px;font-size:12px;cursor:pointer;pointer-events:auto;-webkit-tap-highlight-color:rgba(255,140,0,0.2)}
+  .ov-section-title{padding:12px 16px;font-size:11px;pointer-events:none}
   
   /* News: larger, easier to read */
   .news-card{padding:16px;min-height:72px}
