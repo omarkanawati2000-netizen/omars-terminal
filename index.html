@@ -861,14 +861,18 @@ function closeContextMenu(){
 function findDrawingNear(x, y, cW, cH, yMin, yMax){
   const yRange = yMax - yMin;
   const clickPrice = yMax - (y / cH) * yRange;
-  const threshold = yRange * 0.02; // 2% of range
+  const threshold = yRange * 0.05; // 5% of range (more lenient)
+  
+  console.log('Click price:', clickPrice.toFixed(2), 'threshold:', threshold.toFixed(2));
   
   for(let i = drawings.length - 1; i >= 0; i--){
     const d = drawings[i];
     if(d.coin !== activeCoin || d.tf !== activeTF) continue;
     
     if(d.type === 'hline'){
-      if(Math.abs(d.price - clickPrice) < threshold){
+      const diff = Math.abs(d.price - clickPrice);
+      console.log('Drawing', i, 'price:', d.price.toFixed(2), 'diff:', diff.toFixed(2));
+      if(diff < threshold){
         return i;
       }
     }
@@ -888,13 +892,12 @@ function initDrawingHandlers(){
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    const canvas = document.getElementById('chart');
     const candles = candleData[candleKey(activeCoin, activeTF)];
     if(!candles || candles.length < 2) return;
     
     const mB = 30, mR = 80;
-    const cH = canvas.height / (window.devicePixelRatio || 1) - mB;
-    const cW = canvas.width / (window.devicePixelRatio || 1) - mR;
+    const cH = rect.height - mB;
+    const cW = rect.width - mR;
     
     const visibleCandles = candles.slice(-100);
     const prices = visibleCandles.flatMap(c => [c.h, c.l]);
@@ -905,9 +908,14 @@ function initDrawingHandlers(){
     const yMin = min - padding;
     const yMax = max + padding;
     
+    console.log('Right-click at', x, y, 'checking for drawings...');
     const drawingIndex = findDrawingNear(x, y, cW, cH, yMin, yMax);
+    console.log('Found drawing index:', drawingIndex);
+    
     if(drawingIndex >= 0){
       showContextMenu(e.clientX, e.clientY, drawingIndex);
+    } else {
+      console.log('No drawing found near click');
     }
   });
   
