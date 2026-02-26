@@ -1546,14 +1546,72 @@ function renderAccount(el){
    ═══════════════════════════════════════════ */
 document.addEventListener('keydown',e=>{
   if(document.activeElement===coinInput)return;
-  if(e.key==='1'){switchTab('overview')}
-  else if(e.key==='2'){switchTab('analysis')}
-  else if(e.key==='3'){switchTab('orderbook')}
-  else if(e.key==='4'){switchTab('relvalue')}
-  else if(e.key==='5'){switchTab('news')}
-  else if(e.key==='6'){switchTab('positions')}
-  else if(e.key==='Escape'){chartZoomX=1;chartZoomY=1;chartPanX=0;document.getElementById('chartScroll').value=100;renderChart()}
+  
+  // Tab switching (1-6)
+  if(e.key==='1')switchTab('overview');
+  else if(e.key==='2')switchTab('analysis');
+  else if(e.key==='3')switchTab('orderbook');
+  else if(e.key==='4')switchTab('relvalue');
+  else if(e.key==='5')switchTab('news');
+  else if(e.key==='6')switchTab('positions');
+  
+  // Search
   else if(e.key==='/'){e.preventDefault();coinInput.focus()}
+  
+  // Timeframe switching (Shift + 1-7)
+  else if(e.shiftKey&&e.key==='!'){switchTimeframe('1m')} // Shift+1
+  else if(e.shiftKey&&e.key==='@'){switchTimeframe('5m')} // Shift+2
+  else if(e.shiftKey&&e.key==='#'){switchTimeframe('15m')} // Shift+3
+  else if(e.shiftKey&&e.key==='$'){switchTimeframe('1h')} // Shift+4
+  else if(e.shiftKey&&e.key==='%'){switchTimeframe('4h')} // Shift+5
+  else if(e.shiftKey&&e.key==='^'){switchTimeframe('1d')} // Shift+6
+  else if(e.shiftKey&&e.key==='&'){switchTimeframe('1w')} // Shift+7
+  
+  // Watchlist navigation (j/k vim-style)
+  else if(e.key==='j'){
+    const idx=ALL_TICKERS.indexOf(activeCoin);
+    if(idx<ALL_TICKERS.length-1)selectCoin(ALL_TICKERS[idx+1]);
+  }
+  else if(e.key==='k'){
+    const idx=ALL_TICKERS.indexOf(activeCoin);
+    if(idx>0)selectCoin(ALL_TICKERS[idx-1]);
+  }
+  
+  // Category cycling (c)
+  else if(e.key==='c'){
+    const cats=['all','favorites','crypto','stocks','commodities','forex'];
+    const idx=cats.indexOf(activeCategory);
+    activeCategory=cats[(idx+1)%cats.length];
+    renderWatchlist();
+  }
+  
+  // Toggle favorite (f)
+  else if(e.key==='f'){toggleFavorite(activeCoin)}
+  
+  // Indicator toggles (Alt + letter)
+  else if(e.altKey&&e.key==='s'){indicators.sma20=!indicators.sma20;document.getElementById('ind-sma20')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='e'){indicators.ema20=!indicators.ema20;document.getElementById('ind-ema20')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='b'){indicators.bb=!indicators.bb;document.getElementById('ind-bb')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='v'){indicators.vwap=!indicators.vwap;document.getElementById('ind-vwap')?.classList.toggle('active');saveSettings();renderChart()}
+  
+  // Reset zoom (Escape or r)
+  else if(e.key==='Escape'||e.key==='r'){chartZoomX=1;chartZoomY=1;chartPanX=0;document.getElementById('chartScroll').value=100;renderChart()}
+  
+  // Refresh data (Ctrl+R or F5)
+  else if((e.ctrlKey&&e.key==='r')||e.key==='F5'){e.preventDefault();fetchPrices();fetchStocks();fetchOrderBook(activeCoin)}
+  
+  // Help (?)
+  else if(e.key==='?'){alert(`KEYBOARD SHORTCUTS:
+1-6: Switch tabs
+Shift+1-7: Change timeframe
+j/k: Next/prev coin (vim-style)
+c: Cycle category filters
+f: Toggle favorite
+/: Focus search
+Alt+S/E/B/V: Toggle indicators
+r/Esc: Reset zoom
+Ctrl+R/F5: Refresh data
+?: This help`);}
 });
 
 /* ═══════════════════════════════════════════
