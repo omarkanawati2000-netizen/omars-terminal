@@ -149,7 +149,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .news-card .headline{font-size:13px;color:var(--white);margin:4px 0;font-weight:500;line-height:1.5}
 .news-card .source{font-size:10px;color:var(--dim)}
 
-/* ═══ POSITIONS TAB ═══ */
+/* ═══ PORTFOLIO TAB ═══ */
 .pos-view{display:flex;flex-direction:column;flex:1;overflow:hidden}
 .pos-subtabs{display:flex;padding:0 16px;border-bottom:1px solid #1a1a1a;background:#0d0d0d}
 .pos-subtab{padding:8px 16px;font-size:10px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
@@ -292,10 +292,11 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="tab active" data-tab="overview"><span class="num">[1]</span>OVERVIEW</div>
     <div class="tab" data-tab="analysis"><span class="num">[2]</span>ANALYSIS</div>
     <div class="tab" data-tab="orderbook"><span class="num">[3]</span>ORDER BOOK</div>
-    <div class="tab" data-tab="relvalue"><span class="num">[4]</span>REL VALUE</div>
+    <div class="tab" data-tab="gmm"><span class="num">[4]</span>MARKET MONITOR</div>
     <div class="tab" data-tab="screener"><span class="num">[5]</span>SCREENER</div>
-    <div class="tab" data-tab="news"><span class="num">[6]</span>NEWS</div>
-    <div class="tab" data-tab="positions"><span class="num">[7]</span>POSITIONS</div>
+    <div class="tab" data-tab="positions"><span class="num">[6]</span>PORTFOLIO</div>
+    <div class="tab" data-tab="news"><span class="num">[7]</span>NEWS</div>
+    <div class="tab" data-tab="relvalue"><span class="num">[8]</span>REL VALUE</div>
   </div>
 
   <!-- ═══ [1] OVERVIEW ═══ -->
@@ -378,7 +379,15 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     </div>
   </div>
 
-  <!-- ═══ [4] REL VALUE ═══ -->
+  <!-- ═══ [4] MARKET MONITOR (GMM) ═══ -->
+  <div class="view" id="view-gmm">
+    <div id="gmmContainer" style="padding:20px;overflow-y:auto;height:100%">
+      <h2 style="color:var(--orange);margin-bottom:20px;font-size:18px">GLOBAL MARKET MONITOR</h2>
+      <p style="color:var(--dim)">Market data will appear here...</p>
+    </div>
+  </div>
+
+  <!-- ═══ [8] REL VALUE ═══ -->
   <div class="view" id="view-relvalue">
     <div class="rv-toolbar" id="rvToolbar">
       <button class="rv-btn active" data-period="1d">1D</button>
@@ -415,12 +424,12 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div style="overflow-y:auto;flex:1" id="screenerTable"></div>
   </div>
 
-  <!-- ═══ [6] NEWS ═══ -->
+  <!-- ═══ [7] NEWS ═══ -->
   <div class="view" id="view-news">
     <div class="news-list" id="newsList"></div>
   </div>
 
-  <!-- ═══ [6] POSITIONS ═══ -->
+  <!-- ═══ [6] PORTFOLIO ═══ -->
   <div class="view" id="view-positions">
     <div class="pos-view">
       <div class="pos-subtabs">
