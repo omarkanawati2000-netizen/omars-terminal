@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>OMAR TERMINAL</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -207,10 +210,14 @@ html, body {
 .tf-btn.active { background: var(--orange); color: #000; font-weight: 700; }
 .type-btn.active { color: var(--orange); border-color: var(--orange-dim); }
 
-.chart-body { flex: 1; position: relative; overflow: hidden; }
-.chart-body canvas { width: 100%; height: 100%; }
-.chart-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--font-sans); font-weight: 900; font-size: 60px; color: rgba(255,140,0,0.03); letter-spacing: 0.1em; pointer-events: none; }
-.chart-ohlc { position: absolute; top: 8px; left: 12px; display: flex; gap: 14px; font-size: 10px; pointer-events: none; z-index: 2; }
+.chart-body { flex: 1; position: relative; overflow: hidden; cursor: crosshair; }
+.chart-scrollbar { height: 20px; padding: 4px 80px 4px 0; background: #050505; border-top: 1px solid var(--border); }
+.chart-scrollbar input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 10px; background: #111; border-radius: 2px; outline: none; cursor: pointer; }
+.chart-scrollbar input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 40px; height: 10px; background: var(--orange); border-radius: 2px; cursor: grab; }
+.chart-scrollbar input[type=range]::-moz-range-thumb { width: 40px; height: 10px; background: var(--orange); border-radius: 2px; cursor: grab; border: none; }
+.chart-body canvas { width: 100%; height: 100%; pointer-events: none; }
+.chart-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: var(--font-sans); font-weight: 900; font-size: 60px; color: rgba(255,140,0,0.03); letter-spacing: 0.1em; pointer-events: none; user-select: none; }
+.chart-ohlc { position: absolute; top: 8px; left: 12px; display: flex; gap: 14px; font-size: 10px; pointer-events: none; user-select: none; z-index: 2; }
 .chart-ohlc span { color: var(--text-dim); }
 .chart-ohlc .label { color: var(--text-muted); font-size: 9px; }
 
@@ -399,20 +406,31 @@ html, body {
           </div>
           <canvas id="chart"></canvas>
         </div>
+        <div class="chart-scrollbar">
+          <input type="range" id="chartScroll" min="0" max="100" value="100" style="width:100%">
+        </div>
       </div>
 
       <div class="splitter-v" id="splitterRight"></div>
 
-      <div class="right-panel" id="rightPanel" style="width:300px">
-        <div class="rp-title">ORDER BOOK</div>
-        <div class="ob-head"><span>PRICE (USD)</span><span style="text-align:right">SIZE</span><span style="text-align:right">TOTAL</span></div>
-        <div id="orderbook"></div>
-        <div class="depth-label"><span id="bidPct">50%</span><span>BID / ASK</span><span id="askPct">50%</span></div>
-        <div class="depth-bar-container"><div class="depth-bid-bar" id="depthBid" style="width:50%"></div><div class="depth-ask-bar" id="depthAsk" style="width:50%"></div></div>
-        <div class="rp-title">MARKET DATA</div>
-        <div class="stats-grid" id="statsGrid"></div>
-        <div class="rp-title">NEWS & SIGNALS</div>
-        <div class="news-feed" id="newsFeed"></div>
+      <div class="right-col" id="rightPanel" style="width:300px; display:flex; flex-direction:column; overflow:hidden; min-width:140px;">
+        <!-- Order Book + Market Data (top) -->
+        <div class="right-panel" id="rightTop" style="flex:1; overflow-y:auto; overflow-x:hidden;">
+          <div class="rp-title">ORDER BOOK</div>
+          <div class="ob-head"><span>PRICE (USD)</span><span style="text-align:right">SIZE</span><span style="text-align:right">TOTAL</span></div>
+          <div id="orderbook"></div>
+          <div class="depth-label"><span id="bidPct">50%</span><span>BID / ASK</span><span id="askPct">50%</span></div>
+          <div class="depth-bar-container"><div class="depth-bid-bar" id="depthBid" style="width:50%"></div><div class="depth-ask-bar" id="depthAsk" style="width:50%"></div></div>
+          <div class="rp-title">MARKET DATA</div>
+          <div class="stats-grid" id="statsGrid"></div>
+        </div>
+        <!-- Splitter -->
+        <div class="splitter-h" id="splitterNews"></div>
+        <!-- News (bottom) -->
+        <div class="right-panel" id="rightBottom" style="height:200px; min-height:60px; overflow-y:auto; overflow-x:hidden;">
+          <div class="rp-title" style="position:sticky; top:0; z-index:1;">NEWS & SIGNALS</div>
+          <div class="news-feed" id="newsFeed"></div>
+        </div>
       </div>
     </div>
 
@@ -478,12 +496,17 @@ html, body {
   if (layout.rightW) rightPanel.style.width = layout.rightW + 'px';
   if (layout.bottomH) bottomPanel.style.height = layout.bottomH + 'px';
 
+  const rightBottom = document.getElementById('rightBottom');
+  if (layout.newsH) rightBottom.style.height = layout.newsH + 'px';
+
   // Left splitter (watchlist width)
   initVSplitter('splitterLeft', watchlistPanel, 'left');
   // Right splitter (right panel width)
   initVSplitter('splitterRight', rightPanel, 'right');
   // Bottom splitter (bottom panel height)
   initHSplitter('splitterBottom', bottomPanel);
+  // News splitter (news panel height within right column)
+  initHSplitter('splitterNews', rightBottom, 'newsH');
 
   function initVSplitter(id, panel, side) {
     const el = document.getElementById(id);
@@ -517,8 +540,9 @@ html, body {
     }
   }
 
-  function initHSplitter(id, panel) {
+  function initHSplitter(id, panel, saveKey) {
     const el = document.getElementById(id);
+    if (!el) return;
     let startY, startH;
     el.addEventListener('mousedown', e => {
       e.preventDefault();
@@ -532,16 +556,18 @@ html, body {
     function onMove(e) {
       const dy = e.clientY - startY;
       let newH = startH - dy;
-      newH = Math.max(60, Math.min(newH, window.innerHeight * 0.5));
+      const maxH = saveKey === 'newsH' ? panel.parentElement.getBoundingClientRect().height * 0.7 : window.innerHeight * 0.5;
+      newH = Math.max(60, Math.min(newH, maxH));
       panel.style.height = newH + 'px';
-      renderChart();
+      if (!saveKey) renderChart();
     }
     function onUp() {
       el.classList.remove('active');
       document.body.classList.remove('dragging-h');
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
-      saveLayout({ bottomH: panel.getBoundingClientRect().height });
+      const key = saveKey || 'bottomH';
+      saveLayout({ [key]: panel.getBoundingClientRect().height });
     }
   }
 })();
@@ -554,17 +580,18 @@ let activeCoin = 'BTC';
 let chartType = 'candle';
 let activeTF = '1h';
 let priceData = {};
-let candleData = {};  // keyed by coin:tf
+let candleData = {};  // keyed by coin:tf — v2 with deep history
 
 const TF_MS = { '1m':60000, '5m':300000, '15m':900000, '1h':3600000, '4h':14400000, '1d':86400000, '1w':604800000 };
 const TF_VOLATILITY = { '1m':0.0008, '5m':0.0015, '15m':0.002, '1h':0.003, '4h':0.006, '1d':0.012, '1w':0.025 };
-const TF_BARS = { '1m':80, '5m':72, '15m':64, '1h':60, '4h':48, '1d':60, '1w':52 };
+const TF_BARS = { '1m':500, '5m':500, '15m':400, '1h':300, '4h':200, '1d':365, '1w':150 };
 
 function candleKey(coin, tf) { return coin + ':' + tf; }
 
 function initCandles(coin, price, force) {
   const key = candleKey(coin, activeTF);
-  if (!force && candleData[key] && candleData[key].length > 10) return;
+  const targetBars = TF_BARS[activeTF] || 300;
+  if (!force && candleData[key] && candleData[key].length >= targetBars * 0.9) return;
   candleData[key] = [];
   const bars = TF_BARS[activeTF] || 60;
   const interval = TF_MS[activeTF] || 3600000;
@@ -666,7 +693,7 @@ async function fetchPrices() {
           const interval = TF_MS[tf];
           if (Date.now() - last.t > interval) {
             candleData[key].push({ o: last.c, h: price, l: price, c: price, v: Math.random()*30+5, t: Date.now() });
-            if (candleData[key].length > 100) candleData[key].shift();
+            if (candleData[key].length > 600) candleData[key].shift();
           } else {
             last.c = price;
             last.h = Math.max(last.h, price);
@@ -742,6 +769,93 @@ function renderHeatmap() {
   }).join('');
 }
 
+// ─── CHART ZOOM/PAN STATE ───
+let chartZoomX = 1.0;    // horizontal zoom (1 = default, >1 = zoomed in / stretched)
+let chartZoomY = 1.0;    // vertical zoom
+let chartPanX = 0;       // horizontal pan (in candle units, 0 = rightmost)
+let chartDragState = null;
+
+// Reset zoom when switching coins or timeframes
+const _origSelectCoin = selectCoin;
+selectCoin = function(coin) { chartZoomX = 1; chartZoomY = 1; chartPanX = 0; _origSelectCoin(coin); };
+const _origSwitchTF = switchTimeframe;
+switchTimeframe = function(tf) { chartZoomX = 1; chartZoomY = 1; chartPanX = 0; _origSwitchTF(tf); };
+
+(function() {
+  const chartBody = document.querySelector('.chart-body');
+
+  // Drag on chart = pan horizontally
+  // Drag on price axis (right 80px) = vertical zoom
+  // Drag on time axis (bottom 30px) = horizontal zoom
+  chartBody.addEventListener('mousedown', e => {
+    const rect = chartBody.getBoundingClientRect();
+    const isOnPriceAxis = e.clientX > rect.right - 80;
+    const isOnTimeAxis = e.clientY > rect.bottom - 30;
+    let mode = 'panX';
+    if (isOnPriceAxis) mode = 'zoomY';
+    else if (isOnTimeAxis) mode = 'zoomX';
+    chartDragState = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startPanX: chartPanX,
+      startZoomX: chartZoomX,
+      startZoomY: chartZoomY,
+      mode
+    };
+    chartBody.style.cursor = mode === 'zoomY' ? 'ns-resize' : mode === 'zoomX' ? 'ew-resize' : 'grab';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!chartDragState) return;
+    if (chartDragState.mode === 'panX') {
+      const dx = e.clientX - chartDragState.startX;
+      const candles = candleData[candleKey(activeCoin, activeTF)];
+      if (!candles) return;
+      // Scale: 1px drag = ~0.5 candles at default zoom
+      const sensitivity = 0.5 / chartZoomX;
+      chartPanX = Math.max(0, Math.min(candles.length - 5, chartDragState.startPanX - dx * sensitivity));
+      chartBody.style.cursor = 'grabbing';
+    } else if (chartDragState.mode === 'zoomY') {
+      const dy = e.clientY - chartDragState.startY;
+      chartZoomY = Math.max(0.2, Math.min(5, chartDragState.startZoomY * (1 + dy * 0.005)));
+      chartBody.style.cursor = 'ns-resize';
+    } else if (chartDragState.mode === 'zoomX') {
+      const dx = e.clientX - chartDragState.startX;
+      chartZoomX = Math.max(0.3, Math.min(8, chartDragState.startZoomX * (1 + dx * 0.005)));
+      chartBody.style.cursor = 'ew-resize';
+    }
+    renderChart();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (chartDragState) {
+      chartDragState = null;
+      chartBody.style.cursor = 'crosshair';
+    }
+  });
+
+  // Double-click to reset zoom
+  chartBody.addEventListener('dblclick', () => {
+    chartZoomX = 1; chartZoomY = 1; chartPanX = 0;
+    document.getElementById('chartScroll').value = 100;
+    renderChart();
+  });
+
+  // Scrollbar for panning
+  const scrollBar = document.getElementById('chartScroll');
+  scrollBar.addEventListener('input', () => {
+    const candles = candleData[candleKey(activeCoin, activeTF)];
+    if (!candles) return;
+    const maxPan = candles.length - 5;
+    // value 100 = rightmost (panX=0), value 0 = leftmost (panX=max)
+    chartPanX = maxPan * (1 - scrollBar.value / 100);
+    renderChart();
+  });
+
+  chartBody.style.cursor = 'crosshair';
+})();
+
 function renderChart() {
   const canvas = document.getElementById('chart');
   const ctx = canvas.getContext('2d');
@@ -772,13 +886,28 @@ function renderChart() {
   else drawLine(ctx, W, H, d);
 }
 
-function drawCandles(ctx, W, H, candles) {
+function drawCandles(ctx, W, H, allCandles) {
   const mR = 80, mB = 30;
   const cW = W - mR, cH = H - mB;
-  const min = Math.min(...candles.map(c=>c.l)) * 0.9995;
-  const max = Math.max(...candles.map(c=>c.h)) * 1.0005;
+
+  // Apply horizontal zoom: how many candles fit in view
+  const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+  const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+  const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
+  const candles = allCandles.slice(startIdx, endIdx);
+  if (candles.length < 1) return;
+
+  // Price range with vertical zoom
+  const dataMin = Math.min(...candles.map(c=>c.l));
+  const dataMax = Math.max(...candles.map(c=>c.h));
+  const dataMid = (dataMax + dataMin) / 2;
+  const dataRange = (dataMax - dataMin) || 1;
+  const zoomedRange = dataRange / chartZoomY;
+  const min = dataMid - zoomedRange / 2;
+  const max = dataMid + zoomedRange / 2;
   const range = max - min || 1;
-  const barW = Math.max(3, (cW / candles.length) - 2);
+
+  const barW = Math.max(2, Math.min(30, (cW / candles.length) - 2));
   const gap = cW / candles.length;
 
   ctx.strokeStyle = '#111'; ctx.lineWidth = 0.5; ctx.font = '9px JetBrains Mono'; ctx.fillStyle = '#333';
