@@ -519,13 +519,16 @@ button,a,[onclick],.tf-btn,.type-btn,.draw-btn,.ov-right-row{pointer-events:auto
 
 <script>
 // ═══ ERROR OVERLAY - Shows console errors on-screen ═══
+const errorLog = [];
 window.onerror = function(msg, url, line, col, error) {
-  alert('ERROR: ' + msg + ' at line ' + line);
+  errorLog.push(`ERROR at line ${line}: ${msg}`);
+  alert('JAVASCRIPT ERROR at line ' + line + ': ' + msg);
   return false;
 };
 
 // ═══ EARLY DIAGNOSTIC ═══
 console.log('SCRIPT STARTED - Waiting for DOM...');
+alert('SCRIPT TAG EXECUTED - JavaScript is loading...');
 
 /* ═══════════════════════════════════════════
    CONFIG
