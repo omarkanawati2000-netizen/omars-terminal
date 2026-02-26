@@ -323,6 +323,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-vwap" style="font-size:9px;padding:3px 6px">VWAP</button>
             <button class="tf-btn" id="ind-rsi" style="font-size:9px;padding:3px 6px">RSI</button>
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
+            <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
             <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
             <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
@@ -482,7 +483,7 @@ let fearGreedData = null; // {value, classification}
 let newsData = [];
 let aiInsight = null;
 let economicEvents = [];
-let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false,volProfile:false};
+let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false,volProfile:false,liqLevels:false};
 let favorites = []; // favorite coins
 let priceAlerts = [];
 let soundEnabled = true;
@@ -1239,6 +1240,19 @@ function calcVolumeProfile(candles,bins=30){
   return profile;
 }
 
+function calcLiquidationLevels(price){
+  // Estimate common leverage liquidation levels
+  // Assumes typical leverage: 5x, 10x, 20x, 50x
+  // Liq price for LONG = entry * (1 - 1/leverage)
+  // Liq price for SHORT = entry * (1 + 1/leverage)
+  const levels=[];
+  [5,10,20,50].forEach(lev=>{
+    levels.push({price:price*(1-1/lev),label:`${lev}x LONG`,type:'long',leverage:lev});
+    levels.push({price:price*(1+1/lev),label:`${lev}x SHORT`,type:'short',leverage:lev});
+  });
+  return levels;
+}
+
 /* ═══════════════════════════════════════════
    RENDER ALL
    ═══════════════════════════════════════════ */
@@ -1638,7 +1652,7 @@ function drawCandles(ctx,W,H,allCandles){
   if(indicators.volProfile){
     const profile=calcVolumeProfile(allCandles,20);
     const maxVol=Math.max(...Object.values(profile));
-    const profileW=60; // width of volume profile bars
+    const profileW=60;
     Object.keys(profile).forEach(priceStr=>{
       const price=parseFloat(priceStr);
       const vol=profile[priceStr];
@@ -1646,6 +1660,24 @@ function drawCandles(ctx,W,H,allCandles){
       const barW=(vol/maxVol)*profileW;
       ctx.fillStyle='rgba(255,140,0,0.2)';
       ctx.fillRect(cW-profileW,y-2,barW,4);
+    });
+  }
+  
+  // Liquidation Levels
+  if(indicators.liqLevels){
+    const currentPrice=candles[candles.length-1].c;
+    const levels=calcLiquidationLevels(currentPrice);
+    levels.forEach(liq=>{
+      if(liq.price<min||liq.price>max)return; // out of view
+      const y=Math.max(0,Math.min(cH,cH-((liq.price-min)/range)*cH));
+      ctx.setLineDash([2,4]);
+      ctx.strokeStyle=liq.type==='long'?'rgba(0,200,83,0.3)':'rgba(255,23,68,0.3)';
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cW,y);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font='8px JetBrains Mono';
+      ctx.fillStyle=liq.type==='long'?'rgba(0,200,83,0.6)':'rgba(255,23,68,0.6)';
+      ctx.fillText(liq.label,cW-60,y-2);
     });
   }
 
@@ -2271,7 +2303,7 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
 }));
 
 // Indicator toggles
-['sma20','sma50','ema20','bb','vwap','rsi','volProfile'].forEach(ind=>{
+['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
   const btn=document.getElementById('ind-'+ind);
   if(!btn)return;
   if(indicators[ind])btn.classList.add('active');
