@@ -2466,14 +2466,22 @@ function renderAccount(el){
 document.addEventListener('keydown',e=>{
   if(document.activeElement===coinInput)return;
   
-  // Tab switching (1-7)
+  // Tab switching (1-8)
   if(e.key==='1')switchTab('overview');
   else if(e.key==='2')switchTab('analysis');
   else if(e.key==='3')switchTab('orderbook');
-  else if(e.key==='4')switchTab('relvalue');
+  else if(e.key==='4')switchTab('gmm');
   else if(e.key==='5')switchTab('screener');
-  else if(e.key==='6')switchTab('news');
-  else if(e.key==='7')switchTab('positions');
+  else if(e.key==='6')switchTab('positions');
+  else if(e.key==='7')switchTab('news');
+  else if(e.key==='8')switchTab('relvalue');
+  
+  // Bloomberg shortcuts
+  else if(e.altKey&&e.key==='g'){switchTab('gmm')} // Alt+G → GMM (Market Monitor)
+  else if(e.altKey&&e.key==='p'){switchTab('positions')} // Alt+P → Portfolio
+  else if(e.altKey&&e.key==='q'){switchTab('screener')} // Alt+Q → Screener (EQS)
+  else if(e.altKey&&e.key==='n'){switchTab('news')} // Alt+N → News
+  else if(e.ctrlKey&&e.key==='p'){e.preventDefault();showAddPositionModal()} // Ctrl+P → Add Position
   
   // Search
   else if(e.key==='/'){e.preventDefault();coinInput.focus()}
@@ -2549,15 +2557,29 @@ document.addEventListener('keydown',e=>{
   
   // Help (?)
   else if(e.key==='?'){alert(`KEYBOARD SHORTCUTS:
-1-6: Switch tabs
-Shift+1-7: Change timeframe
-j/k: Next/prev coin (vim-style)
+
+TABS:
+1-8: Switch tabs directly
+Alt+G: GMM (Market Monitor)
+Alt+P: Portfolio
+Alt+Q: Screener (EQS)
+Alt+N: News
+Ctrl+P: Add Position
+
+TRADING:
+j/k: Next/prev coin (vim)
 c: Cycle category filters
 f: Toggle favorite
 /: Focus search
+
+CHART:
+Shift+1-7: Change timeframe
 Alt+S/E/B/V: Toggle indicators
 r/Esc: Reset zoom
+
+OTHER:
 Ctrl+R/F5: Refresh data
+Alt+T: Toggle theme
 ?: This help`);}
 });
 
