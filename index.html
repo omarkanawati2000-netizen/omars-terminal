@@ -518,6 +518,12 @@ button,a,[onclick],.tf-btn,.type-btn,.draw-btn,.ov-right-row{pointer-events:auto
 </div>
 
 <script>
+// ═══ ERROR OVERLAY - Shows console errors on-screen ═══
+window.onerror = function(msg, url, line, col, error) {
+  alert('ERROR: ' + msg + ' at line ' + line);
+  return false;
+};
+
 // ═══ EARLY DIAGNOSTIC ═══
 console.log('SCRIPT STARTED');
 window.addEventListener('DOMContentLoaded', () => {
@@ -529,6 +535,7 @@ window.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => earlyDiag.remove(), 3000);
   } catch (e) {
     console.error('Early diagnostic failed:', e);
+    alert('Early diagnostic error: ' + e.message);
   }
 });
 
