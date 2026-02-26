@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Minimal Test</title>
+<style>
+body{margin:0;background:#0a0a0a;color:#fff;font-family:monospace}
+.tabs{display:flex;gap:10px;padding:20px;background:#111}
+.tab{padding:10px 20px;background:#222;cursor:pointer;border:2px solid #ff8c00}
+.tab:hover{background:#333}
+.tab.active{background:#ff8c00;color:#000}
+.status{padding:20px;margin:20px;background:#111;border:2px solid #0f0}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <div class="tab active" data-tab="1">Tab 1</div>
+  <div class="tab" data-tab="2">Tab 2</div>
+  <div class="tab" data-tab="3">Tab 3</div>
+</div>
+
+<div class="status" id="status">
+  Loading...
+</div>
+
+<script>
+// STEP 1: Show we're alive
+const status = document.getElementById('status');
+status.innerHTML = '<strong style="color:#0f0">✓ SCRIPT RUNNING</strong><br><br>';
+
+// STEP 2: Find tabs
+const tabs = document.querySelectorAll('.tab');
+status.innerHTML += `✓ Found ${tabs.length} tabs<br>`;
+
+// STEP 3: Attach listeners
+try {
+  tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => {
+      status.innerHTML += `<br><span style="color:yellow">✓ TAB ${i+1} CLICKED!</span>`;
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+  status.innerHTML += '✓ Listeners attached<br><br>';
+  status.innerHTML += '<strong>Click a tab above to test!</strong>';
+} catch (e) {
+  status.innerHTML += `<br><span style="color:red">✗ ERROR: ${e.message}</span>`;
+}
+</script>
+
+</body>
+</html>
