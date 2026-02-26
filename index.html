@@ -292,8 +292,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="tab" data-tab="analysis"><span class="num">[2]</span>ANALYSIS</div>
     <div class="tab" data-tab="orderbook"><span class="num">[3]</span>ORDER BOOK</div>
     <div class="tab" data-tab="relvalue"><span class="num">[4]</span>REL VALUE</div>
-    <div class="tab" data-tab="news"><span class="num">[5]</span>NEWS</div>
-    <div class="tab" data-tab="positions"><span class="num">[6]</span>POSITIONS</div>
+    <div class="tab" data-tab="screener"><span class="num">[5]</span>SCREENER</div>
+    <div class="tab" data-tab="news"><span class="num">[6]</span>NEWS</div>
+    <div class="tab" data-tab="positions"><span class="num">[7]</span>POSITIONS</div>
   </div>
 
   <!-- ═══ [1] OVERVIEW ═══ -->
@@ -388,7 +389,29 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     </div>
   </div>
 
-  <!-- ═══ [5] NEWS ═══ -->
+  <!-- ═══ [5] SCREENER ═══ -->
+  <div class="view" id="view-screener">
+    <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0d0d0d">
+      <span style="font-size:10px;color:var(--dim);font-weight:600">FILTER:</span>
+      <select id="screenFilter" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+        <option value="all">All Assets</option>
+        <option value="gainers">Top Gainers</option>
+        <option value="losers">Top Losers</option>
+        <option value="volume">High Volume</option>
+        <option value="volatile">Most Volatile</option>
+      </select>
+      <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:16px">SORT:</span>
+      <select id="screenSort" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+        <option value="change">% Change</option>
+        <option value="price">Price</option>
+        <option value="volume">Volume</option>
+        <option value="name">Name</option>
+      </select>
+    </div>
+    <div style="overflow-y:auto;flex:1" id="screenerTable"></div>
+  </div>
+
+  <!-- ═══ [6] NEWS ═══ -->
   <div class="view" id="view-news">
     <div class="news-list" id="newsList"></div>
   </div>
@@ -1149,6 +1172,8 @@ function renderAll(){
   else if(activeTab==='analysis')renderAnalysis();
   else if(activeTab==='orderbook')renderOrderBookFull();
   else if(activeTab==='relvalue')renderRelValue();
+  else if(activeTab==='screener')renderScreener();
+  else if(activeTab==='news')renderNewsFull();
   else if(activeTab==='positions')renderPositionsSub();
 }
 
@@ -1865,6 +1890,55 @@ document.querySelectorAll('.rv-btn').forEach(b=>b.addEventListener('click',()=>{
 /* ═══════════════════════════════════════════
    [5] NEWS
    ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   [5] SCREENER
+   ═══════════════════════════════════════════ */
+function renderScreener(){
+  const filter=document.getElementById('screenFilter')?.value||'all';
+  const sortBy=document.getElementById('screenSort')?.value||'change';
+  
+  let assets=ALL_TICKERS.map(sym=>{
+    const d=priceData[sym];
+    if(!d)return null;
+    const change=((d.price-d.open)/d.open*100);
+    const volatility=d.high&&d.low?((d.high-d.low)/d.low*100):0;
+    return{sym,price:d.price,change,volume:d.volume||0,volatility,cat:assetCategory(sym)};
+  }).filter(Boolean);
+  
+  // Apply filter
+  if(filter==='gainers')assets=assets.filter(a=>a.change>0).sort((a,b)=>b.change-a.change);
+  else if(filter==='losers')assets=assets.filter(a=>a.change<0).sort((a,b)=>a.change-b.change);
+  else if(filter==='volume')assets.sort((a,b)=>b.volume-a.volume);
+  else if(filter==='volatile')assets.sort((a,b)=>b.volatility-a.volatility);
+  
+  // Apply sort
+  if(sortBy==='change')assets.sort((a,b)=>b.change-a.change);
+  else if(sortBy==='price')assets.sort((a,b)=>b.price-a.price);
+  else if(sortBy==='volume')assets.sort((a,b)=>b.volume-a.volume);
+  else if(sortBy==='name')assets.sort((a,b)=>a.sym.localeCompare(b.sym));
+  
+  const el=document.getElementById('screenerTable');
+  const header=`<div style="display:grid;grid-template-columns:80px 1fr 100px 80px 90px 80px 1fr;padding:8px 16px;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid #1a1a1a;position:sticky;top:0;background:#0d0d0d;z-index:1">
+    <span>SYMBOL</span><span>NAME</span><span style="text-align:right">PRICE</span><span style="text-align:right">24H %</span><span style="text-align:right">VOLUME</span><span style="text-align:right">VOLATILITY</span><span>CATEGORY</span>
+  </div>`;
+  const rows=assets.slice(0,100).map(a=>{
+    const isUp=a.change>=0;
+    return `<div style="display:grid;grid-template-columns:80px 1fr 100px 80px 90px 80px 1fr;padding:6px 16px;font-size:11px;border-bottom:1px solid #0f0f0f;cursor:pointer" onclick="selectCoin('${a.sym}')" onmouseover="this.style.background='#111'" onmouseout="this.style.background='transparent'">
+      <span style="font-weight:700;color:${categoryColor(a.sym)}">${cleanSym(a.sym)}</span>
+      <span style="color:var(--dim);font-size:10px">${displayName(a.sym)}</span>
+      <span style="text-align:right;font-weight:600">$${fmtPrice(a.price)}</span>
+      <span style="text-align:right;font-weight:700;color:${isUp?'var(--green)':'var(--red)'}">${isUp?'+':''}${a.change.toFixed(2)}%</span>
+      <span style="text-align:right;color:var(--dim)">$${fmtCompact(a.volume)}</span>
+      <span style="text-align:right;color:var(--orange)">${a.volatility.toFixed(2)}%</span>
+      <span style="font-size:9px;color:var(--muted)">${a.cat.toUpperCase()}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML=header+rows;
+}
+
+document.getElementById('screenFilter')?.addEventListener('change',renderScreener);
+document.getElementById('screenSort')?.addEventListener('change',renderScreener);
+
 function timeAgo(date){
   const now=Date.now();
   const diff=now-date.getTime();
@@ -1990,13 +2064,14 @@ function renderAccount(el){
 document.addEventListener('keydown',e=>{
   if(document.activeElement===coinInput)return;
   
-  // Tab switching (1-6)
+  // Tab switching (1-7)
   if(e.key==='1')switchTab('overview');
   else if(e.key==='2')switchTab('analysis');
   else if(e.key==='3')switchTab('orderbook');
   else if(e.key==='4')switchTab('relvalue');
-  else if(e.key==='5')switchTab('news');
-  else if(e.key==='6')switchTab('positions');
+  else if(e.key==='5')switchTab('screener');
+  else if(e.key==='6')switchTab('news');
+  else if(e.key==='7')switchTab('positions');
   
   // Search
   else if(e.key==='/'){e.preventDefault();coinInput.focus()}
