@@ -27,11 +27,6 @@ body.light{
 }
 html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:12px;line-height:1.4;overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
 
-/* ═══ CRITICAL: ENSURE ALL CLICKS WORK ═══ */
-* {pointer-events:auto !important}
-canvas {pointer-events:none !important}
-.chart-watermark {pointer-events:none !important}
-
 /* ═══ APP SHELL ═══ */
 .app{display:flex;flex-direction:column;height:100vh}
 
@@ -64,8 +59,8 @@ canvas {pointer-events:none !important}
 .hdr-brand{color:var(--orange);font-weight:800;font-size:13px;letter-spacing:0.12em}
 
 /* ═══ TAB NAVIGATION ═══ */
-.tabs{display:flex;align-items:center;height:36px;background:#080808;border-bottom:1px solid #1a1a1a;padding:0 16px;gap:2px}
-.tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.03em;border-bottom:2px solid transparent;transition:all 0.15s}
+.tabs{display:flex;align-items:center;height:36px;background:#080808;border-bottom:1px solid #1a1a1a;padding:0 16px;gap:2px;position:relative;z-index:100}
+.tab{padding:8px 16px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;letter-spacing:0.03em;border-bottom:2px solid transparent;transition:all 0.15s;pointer-events:auto}
 .tab:hover{color:var(--dim)}
 .tab.active{color:var(--orange);border-bottom-color:var(--orange)}
 .tab .num{color:var(--orange-dim);margin-right:4px;font-size:10px}
@@ -78,34 +73,30 @@ canvas {pointer-events:none !important}
 .overview{display:flex;flex:1;overflow:hidden}
 .ov-left{flex:1;display:flex;flex-direction:column;min-width:300px}
 .ov-right{width:340px;border-left:1px solid #1a1a1a;overflow-y:auto;background:#0d0d0d}
-.ov-right-row{display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #141414;font-size:11px}
+.ov-right-row{display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #141414;font-size:11px;cursor:pointer;pointer-events:auto}
 .ov-right-row .lbl{color:var(--dim)}
 .ov-right-row .val{font-weight:600;color:var(--white)}
 .ov-section-title{padding:10px 16px;font-size:10px;font-weight:700;color:var(--orange);letter-spacing:0.1em;text-transform:uppercase;background:#0a0a0a;border-bottom:1px solid #1a1a1a;position:sticky;top:0;z-index:1}
 
 /* Chart */
 .chart-container{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.chart-toolbar{display:flex;align-items:center;padding:6px 12px;gap:4px;background:#0d0d0d;border-bottom:1px solid #1a1a1a}
-.tf-btn{padding:4px 10px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;font-weight:600}
+.chart-toolbar{display:flex;align-items:center;padding:6px 12px;gap:4px;background:#0d0d0d;border-bottom:1px solid #1a1a1a;position:relative;z-index:50}
+.tf-btn{padding:4px 10px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;font-weight:600;pointer-events:auto}
 .tf-btn:hover{color:var(--dim);background:#1a1a1a}
 .tf-btn.active{background:var(--orange);color:#000}
-.chart-sep{width:1px;height:16px;background:#222;margin:0 4px}
-.type-btn{padding:4px 8px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px}
+.chart-sep{width:1px;height:16px;background:#222;margin:0 4px;pointer-events:none}
+.type-btn{padding:4px 8px;background:transparent;border:none;color:var(--muted);font-family:var(--font);font-size:10px;cursor:pointer;border-radius:3px;pointer-events:auto}
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
-.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s}
+.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s;pointer-events:auto}
 .draw-btn:hover{color:var(--orange-dim);border-color:var(--orange-dim);background:#1a1a1a}
 .draw-btn.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
 .draw-btn-icon{font-size:12px;margin-right:3px}
+button{pointer-events:auto}
 
 .chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
-.chart-body canvas{width:100%;height:100%;pointer-events:none;position:absolute;top:0;left:0}
-
-/* Ensure all interactive elements work on both desktop and mobile */
-button,a,.tab,.ov-right-row,.coin-opt,.news-card,.ticker-item,.tf-btn,.type-btn,.draw-btn,[onclick],.hdr-coin-input{
-  pointer-events:auto !important;
-  cursor:pointer !important;
-}
+.chart-body canvas{width:100%;height:100%;pointer-events:none;position:absolute;top:0;left:0;z-index:0}
+.chart-ohlc,.chart-watermark{pointer-events:none;z-index:1}
 .chart-ohlc{position:absolute;top:8px;left:12px;display:flex;gap:12px;font-size:10px;pointer-events:none;z-index:2}
 .chart-ohlc span{color:var(--dim)}
 .chart-ohlc .lbl{color:var(--muted);font-size:9px}
