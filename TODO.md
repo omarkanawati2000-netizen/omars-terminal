@@ -39,5 +39,11 @@
 - Created TODO list
 - Starting with: Real order book, chart indicators, search, settings
 
+### ✅ Completed (2026-02-26)
+- [x] Real Hyperliquid order book (L2)
+- [x] Technical indicators (SMA, EMA, BB, VWAP)
+- [x] Persistent settings (localStorage)
+- [x] Keyboard shortcuts expansion
+
 ### Working Now
-- [ ] Real Hyperliquid order book (L2)
+- [ ] Fuzzy search autocomplete

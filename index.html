@@ -477,9 +477,30 @@ coinInput.addEventListener('keydown',e=>{
 });
 document.addEventListener('click',e=>{if(!e.target.closest('.hdr-coin'))coinDropdown.classList.remove('show')});
 
+// Fuzzy match scoring
+function fuzzyScore(str,query){
+  if(!query)return 1;
+  str=str.toUpperCase();query=query.toUpperCase();
+  if(str===query)return 1000; // exact match
+  if(str.startsWith(query))return 100; // starts with
+  let score=0,lastIdx=-1;
+  for(const char of query){
+    const idx=str.indexOf(char,lastIdx+1);
+    if(idx===-1)return 0; // no match
+    score+=50/(idx-lastIdx); // closer chars = higher score
+    lastIdx=idx;
+  }
+  return score;
+}
+
 function renderCoinDropdown(filter){
-  const all=ALL_TICKERS.filter(c=>!filter||cleanSym(c).includes(filter)||(ASSET_NAMES[c]||'').toUpperCase().includes(filter));
-  coinDropdown.innerHTML=all.map(c=>{
+  const scored=ALL_TICKERS.map(c=>{
+    const symScore=fuzzyScore(cleanSym(c),filter);
+    const nameScore=fuzzyScore(ASSET_NAMES[c]||'',filter);
+    return{coin:c,score:Math.max(symScore,nameScore)};
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,20); // top 20 matches
+  
+  coinDropdown.innerHTML=scored.map(({coin:c})=>{
     const d=priceData[c];
     const price=d?'$'+fmtPrice(d.price):'—';
     const change=d?((d.price-d.open)/d.open*100):0;
