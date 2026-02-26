@@ -256,6 +256,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div id="keyStats"></div>
         <div class="ov-section-title">CONTRACT INFO</div>
         <div id="contractInfo"></div>
+        <div class="ov-section-title">MARKET SENTIMENT</div>
+        <div id="fearGreedGauge"></div>
         <div class="ov-section-title">WATCHLIST</div>
         <div id="watchlist"></div>
       </div>
@@ -356,7 +358,8 @@ let activePosSub = 'positions';
 let priceData = {};
 let candleData = {};
 let metaData = null;
-let orderBookData = {}; // L2 book keyed by coin
+let orderBookData = {};
+let fearGreedData = null; // {value, classification}
 let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false}; // active indicators
 let favorites = []; // favorite coins
 let priceAlerts = []; // {coin, price, condition: 'above'|'below', triggered: false}
@@ -720,6 +723,19 @@ async function fetchOrderBook(coin){
   }catch(e){console.error('Order book fetch error:',coin,e)}
 }
 
+/* ═══════════════════════════════════════════
+   FEAR & GREED INDEX
+   ═══════════════════════════════════════════ */
+async function fetchFearGreed(){
+  try{
+    const resp=await fetch('https://api.alternative.me/fng/');
+    const data=await resp.json();
+    if(data&&data.data&&data.data[0]){
+      fearGreedData={value:parseInt(data.data[0].value),classification:data.data[0].value_classification};
+    }
+  }catch(e){console.error('Fear & Greed fetch error:',e)}
+}
+
 // Fetch Yahoo Finance candles for stocks
 async function fetchStockCandles(sym,tf){
   const key=candleKey(sym,tf);
@@ -884,8 +900,37 @@ function renderOverview(){
   renderChart();
   renderKeyStats();
   renderContractInfo();
+  renderFearGreed();
   renderWatchlist();
   renderRecentTrades();
+}
+
+function renderFearGreed(){
+  const el=document.getElementById('fearGreedGauge');
+  if(!fearGreedData){
+    el.innerHTML='<div style="padding:12px;text-align:center;color:var(--muted);font-size:10px">Loading...</div>';
+    return;
+  }
+  const v=fearGreedData.value;
+  const cls=fearGreedData.classification;
+  let color;
+  if(v<=25)color='var(--red)';
+  else if(v<=45)color='#ff9800';
+  else if(v<=55)color='#ffeb3b';
+  else if(v<=75)color='#8bc34a';
+  else color='var(--green)';
+  el.innerHTML=`
+    <div style="padding:12px;text-align:center">
+      <div style="font-size:32px;font-weight:800;color:${color}">${v}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:2px">${cls}</div>
+      <div style="width:100%;height:6px;background:#1a1a1a;border-radius:3px;margin-top:8px;position:relative;overflow:hidden">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:${v}%;background:${color};transition:width 0.5s"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:4px">
+        <span>Extreme Fear</span><span>Extreme Greed</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderKeyStats(){
@@ -1725,15 +1770,17 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 /* ═══════════════════════════════════════════
    BOOT
    ═══════════════════════════════════════════ */
-loadSettings(); // Load saved preferences first
+loadSettings();
 fetchPrices();
 fetchMeta();
 fetchStocks();
 fetchOrderBook(activeCoin);
+fetchFearGreed();
 setInterval(fetchPrices,3000);
 setInterval(fetchMeta,15000);
 setInterval(fetchStocks,10000);
-setInterval(()=>fetchOrderBook(activeCoin),2000); // L2 book every 2s
+setInterval(()=>fetchOrderBook(activeCoin),2000);
+setInterval(fetchFearGreed,60000); // Fear & Greed every 60s
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
 </body>
