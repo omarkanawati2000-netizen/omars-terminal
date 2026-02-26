@@ -590,6 +590,8 @@ let theme = 'dark';
 let customLayouts = {}; // saved layouts
 let activeLayout = 'default';
 let portfolio = []; // {id, asset, side, entry, size, timestamp}
+let drawingTool = null; // hline, trendline, fib_ret, fib_ext, rectangle, ruler, text
+let drawings = []; // {type, data, color, label, alert}
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -751,6 +753,28 @@ function shareChart(){
   }).catch(()=>{
     prompt('Share this URL:',url.toString());
   });
+}
+
+/* ═══════════════════════════════════════════
+   DRAWING TOOLS (Basic Setup)
+   ═══════════════════════════════════════════ */
+function setDrawingTool(tool){
+  drawingTool = drawingTool === tool ? null : tool; // toggle off if clicking same tool
+  
+  // Update button states
+  document.querySelectorAll('.draw-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tool === drawingTool);
+  });
+  
+  // Change cursor
+  const chartBody = document.getElementById('chartBody');
+  if(drawingTool){
+    chartBody.style.cursor = 'crosshair';
+  } else {
+    chartBody.style.cursor = 'default';
+  }
+  
+  console.log('Drawing tool:', drawingTool || 'none');
 }
 
 // Load state from URL params on boot
