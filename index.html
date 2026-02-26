@@ -777,6 +777,107 @@ function setDrawingTool(tool){
   console.log('Drawing tool:', drawingTool || 'none');
 }
 
+// Save/load drawings
+function saveDrawings(){
+  try{
+    localStorage.setItem('omar_terminal_drawings', JSON.stringify(drawings));
+  }catch(e){console.error('Failed to save drawings:', e)}
+}
+
+function loadDrawings(){
+  try{
+    const saved = localStorage.getItem('omar_terminal_drawings');
+    if(saved) drawings = JSON.parse(saved);
+  }catch(e){console.error('Failed to load drawings:', e)}
+}
+
+// Mouse handler for drawing tools
+function initDrawingHandlers(){
+  const chartBody = document.getElementById('chartBody');
+  
+  chartBody.addEventListener('click', (e) => {
+    if(!drawingTool) return;
+    
+    const rect = chartBody.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // Convert pixel Y to price
+    const canvas = document.getElementById('chart');
+    const candles = candleData[candleKey(activeCoin, activeTF)];
+    if(!candles || candles.length < 2) return;
+    
+    const mB = 30, cH = canvas.height - mB;
+    const visibleCandles = candles.slice(-100);
+    const prices = visibleCandles.flatMap(c => [c.h, c.l]);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min;
+    const padding = range * 0.05;
+    const yMin = min - padding;
+    const yMax = max + padding;
+    const yRange = yMax - yMin;
+    
+    const price = yMax - (y / cH) * yRange;
+    
+    if(drawingTool === 'hline'){
+      drawings.push({
+        type: 'hline',
+        price: price,
+        color: '#ff8c00',
+        label: null,
+        alert: false,
+        coin: activeCoin,
+        tf: activeTF,
+        timestamp: Date.now()
+      });
+      
+      saveDrawings();
+      renderChart(); // Redraw chart with new line
+      
+      // Deselect tool after drawing
+      setDrawingTool(null);
+    }
+  });
+}
+
+// Render drawings on chart
+function renderDrawings(ctx, cW, cH, yMin, yMax){
+  if(!drawings || drawings.length === 0) return;
+  
+  const yRange = yMax - yMin;
+  
+  drawings.forEach((d, idx) => {
+    // Only render drawings for current coin/timeframe
+    if(d.coin !== activeCoin || d.tf !== activeTF) return;
+    
+    if(d.type === 'hline'){
+      const y = cH * (1 - (d.price - yMin) / yRange);
+      
+      ctx.strokeStyle = d.color || '#ff8c00';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(cW, y);
+      ctx.stroke();
+      
+      // Draw price label
+      ctx.fillStyle = d.color || '#ff8c00';
+      ctx.font = '10px JetBrains Mono';
+      ctx.fillText(d.price.toFixed(2), cW + 5, y + 3);
+      
+      // Draw custom label if set
+      if(d.label){
+        ctx.fillStyle = '#000';
+        ctx.fillRect(10, y - 12, ctx.measureText(d.label).width + 6, 14);
+        ctx.fillStyle = d.color || '#ff8c00';
+        ctx.fillText(d.label, 13, y - 2);
+      }
+    }
+  });
+}
+
 // Load state from URL params on boot
 function loadFromURL(){
   const params=new URLSearchParams(window.location.search);
@@ -1863,6 +1964,9 @@ function drawCandles(ctx,W,H,allCandles){
   ctx.fillStyle='#000';ctx.font='600 10px JetBrains Mono';
   ctx.fillText(fmtPrice(lastC),cW+4,lastY+3);
 
+  // Render drawings
+  renderDrawings(ctx, cW, cH, min, max);
+
   // OHLC
   const last=candles[candles.length-1];
   document.getElementById('ohlcO').textContent=fmtPrice(last.o);
@@ -2652,6 +2756,8 @@ loadFromURL();
 loadSavedLayouts();
 loadSettings();
 loadPortfolio();
+loadDrawings();
+initDrawingHandlers();
 fetchPrices();
 fetchMeta();
 fetchStocks();
