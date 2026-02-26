@@ -352,6 +352,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div id="contractInfo"></div>
         <div class="ov-section-title">MARKET SENTIMENT</div>
         <div id="fearGreedGauge"></div>
+        <div class="ov-section-title">🐋 WHALE ALERTS</div>
+        <div id="whaleAlerts"></div>
         <div class="ov-section-title">WATCHLIST</div>
         <div id="watchlist"></div>
       </div>
@@ -1210,8 +1212,33 @@ function renderOverview(){
   renderKeyStats();
   renderContractInfo();
   renderFearGreed();
+  renderWhaleAlerts();
   renderWatchlist();
   renderRecentTrades();
+}
+
+function renderWhaleAlerts(){
+  const el=document.getElementById('whaleAlerts');
+  // Simulated whale alerts (in production, fetch from whale-alert.io API)
+  const whales=[
+    {coin:'BTC',amount:250,usd:17.5e6,type:'transfer',from:'Binance',to:'Unknown',age:'3m ago'},
+    {coin:'ETH',amount:8500,usd:23.5e6,type:'transfer',from:'Coinbase',to:'Unknown',age:'12m ago'},
+    {coin:'USDT',amount:50e6,usd:50e6,type:'transfer',from:'Tether Treasury',to:'Binance',age:'18m ago'},
+    {coin:'SOL',amount:145000,usd:24.9e6,type:'transfer',from:'FTX (Cold)',to:'Unknown',age:'1h ago'},
+    {coin:'XRP',amount:92e6,usd:55e6,type:'transfer',from:'Ripple',to:'Bitstamp',age:'2h ago'}
+  ];
+  
+  el.innerHTML=`<div style="font-size:9px;color:var(--muted);padding:8px 12px;background:#0a0a0a">Large transactions (>$10M)</div>`+whales.map(w=>{
+    const icon=w.type==='transfer'?'📤':'🔄';
+    return `<div style="padding:8px 12px;border-bottom:1px solid #0f0f0f;font-size:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <span style="font-weight:700;color:${categoryColor(w.coin)}">${icon} ${w.coin}</span>
+        <span style="font-size:9px;color:var(--muted)">${w.age}</span>
+      </div>
+      <div style="color:var(--text);font-weight:600">${fmtCompact(w.amount)} ${w.coin} ($${fmtCompact(w.usd)})</div>
+      <div style="font-size:9px;color:var(--dim);margin-top:2px">${w.from} → ${w.to}</div>
+    </div>`;
+  }).join('')+`<div style="padding:6px 12px;background:#0a0a0a;font-size:8px;color:var(--muted);text-align:center">Demo data • Add whale-alert.io API key for live feeds</div>`;
 }
 
 function renderFearGreed(){
