@@ -38,8 +38,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .hdr-coin-input::placeholder{color:#444}
 .coin-dropdown{position:absolute;top:100%;left:0;width:240px;background:#111;border:1px solid #333;max-height:300px;overflow-y:auto;z-index:100;display:none}
 .coin-dropdown.show{display:block}
-.coin-opt{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;font-size:11px}
+.coin-opt{padding:8px 12px;cursor:pointer;display:flex;justify-content:space-between;font-size:11px;min-height:44px;align-items:center}
 .coin-opt:hover{background:#1a1a1a}
+.coin-opt:active{background:#222}
 .coin-opt .sym{font-weight:700;color:var(--white)}
 
 .hdr-label{font-family:var(--sans);font-weight:800;font-size:18px;color:var(--white);letter-spacing:-0.02em}
@@ -184,6 +185,85 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media (max-width: 768px) {
+  html,body{font-size:10px}
+  
+  /* Header: stack vertically */
+  .header{flex-wrap:wrap;height:auto;padding:8px}
+  .hdr-coin{width:100%;order:1;margin-bottom:6px}
+  .hdr-coin-input{font-size:13px}
+  .hdr-label{font-size:14px;order:2}
+  .hdr-type{order:3}
+  .hdr-price{font-size:16px;order:4}
+  .hdr-change{order:5}
+  .hdr-right{width:100%;order:6;justify-content:space-between;margin-top:6px}
+  
+  /* Tabs: smaller, scrollable */
+  .tabs{overflow-x:auto;padding:0 8px}
+  .tab{font-size:9px;padding:6px 10px;white-space:nowrap}
+  
+  /* Overview: stack left/right vertically */
+  .overview{flex-direction:column}
+  .ov-left{width:100%!important}
+  .ov-right{width:100%!important;max-height:400px}
+  
+  /* Chart toolbar: wrap, smaller buttons */
+  .chart-toolbar{flex-wrap:wrap;padding:4px 8px;gap:2px}
+  .tf-btn,.type-btn{font-size:8px;padding:3px 6px}
+  .chart-sep{display:none} /* hide separators on mobile */
+  
+  /* Hide OHLC overlay on mobile (too cluttered) */
+  .chart-ohlc{display:none}
+  
+  /* Order book view: stack side-by-side */
+  .ob-view{flex-direction:column}
+  .ob-list{width:100%!important;max-height:300px}
+  .ob-depth-chart{width:100%!important;height:200px}
+  
+  /* Position table: smaller fonts, horizontal scroll */
+  .pos-head,.pos-row{grid-template-columns:60px 45px 70px 75px 75px 65px 60px 60px 1fr;font-size:9px;padding:4px 6px}
+  .pos-badge{font-size:8px;padding:1px 4px}
+  
+  /* Relative value table: horizontal scroll */
+  .rv-head,.rv-row{grid-template-columns:70px 90px 80px 70px 70px 70px 70px 70px 1fr;font-size:9px}
+  
+  /* Ticker: slower scroll, bigger text */
+  .ticker-bar{height:32px}
+  .ticker-item{font-size:10px;padding:0 16px}
+  
+  /* Watchlist: bigger tap targets */
+  .ov-right-row{padding:8px 12px}
+  
+  /* News cards: more padding */
+  .news-card{padding:10px 16px}
+  
+  /* Hide watermark on mobile */
+  .chart-watermark{display:none}
+  
+  /* Coin dropdown: full width on mobile */
+  .coin-dropdown{width:calc(100vw - 16px);left:0;right:0}
+  .coin-opt{min-height:48px;padding:10px 16px}
+}
+
+@media (max-width: 480px) {
+  /* Extra small phones: even tighter */
+  html,body{font-size:9px}
+  .header{padding:6px}
+  .hdr-label{font-size:12px}
+  .hdr-price{font-size:14px}
+  .tab{font-size:8px;padding:5px 8px}
+  .tf-btn,.type-btn{font-size:7px;padding:2px 5px}
+  
+  /* Single column for everything */
+  .analysis-grid{grid-template-columns:1fr}
+  .account-grid{grid-template-columns:1fr}
+  
+  /* Hide some stat columns on tiny screens */
+  .rv-head,.rv-row{grid-template-columns:60px 70px 70px 60px 1fr;font-size:8px}
+  .rv-head span:nth-child(n+6),.rv-row span:nth-child(n+6){display:none}
+}
 </style>
 </head>
 <body>
