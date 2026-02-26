@@ -359,6 +359,8 @@ let metaData = null;
 let orderBookData = {}; // L2 book keyed by coin
 let indicators = {sma20:true,sma50:false,ema20:false,rsi:false,bb:false,vwap:false}; // active indicators
 let favorites = []; // favorite coins
+let priceAlerts = []; // {coin, price, condition: 'above'|'below', triggered: false}
+let soundEnabled = true;
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -373,12 +375,14 @@ function loadSettings(){
     if(saved.indicators)indicators={...indicators,...saved.indicators};
     if(saved.favorites&&Array.isArray(saved.favorites))favorites=saved.favorites.filter(c=>ALL_TICKERS.includes(c));
     if(saved.activeCategory)activeCategory=saved.activeCategory;
+    if(saved.priceAlerts&&Array.isArray(saved.priceAlerts))priceAlerts=saved.priceAlerts;
+    if(saved.soundEnabled!==undefined)soundEnabled=saved.soundEnabled;
   }catch(e){console.error('Settings load error:',e)}
 }
 
 function saveSettings(){
   try{
-    const settings={activeCoin,activeTF,indicators,favorites,activeCategory};
+    const settings={activeCoin,activeTF,indicators,favorites,activeCategory,priceAlerts,soundEnabled};
     localStorage.setItem('omar_terminal_settings',JSON.stringify(settings));
   }catch(e){console.error('Settings save error:',e)}
 }
@@ -389,6 +393,49 @@ function toggleFavorite(coin){
   else favorites.push(coin);
   saveSettings();
   renderWatchlist();
+}
+
+/* ═══════════════════════════════════════════
+   PRICE ALERTS & SOUND
+   ═══════════════════════════════════════════ */
+function playAlertSound(){
+  if(!soundEnabled)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.frequency.value=880; // A5 note
+    osc.type='sine';
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.3);
+  }catch(e){console.error('Audio error:',e)}
+}
+
+function addPriceAlert(coin,price,condition){
+  priceAlerts.push({coin,price,condition,triggered:false});
+  saveSettings();
+}
+
+function checkPriceAlerts(){
+  priceAlerts.forEach(alert=>{
+    if(alert.triggered)return;
+    const d=priceData[alert.coin];
+    if(!d)return;
+    const hit=(alert.condition==='above'&&d.price>=alert.price)||(alert.condition==='below'&&d.price<=alert.price);
+    if(hit){
+      alert.triggered=true;
+      playAlertSound();
+      const msg=`🔔 PRICE ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
+      console.log(msg);
+      if('Notification' in window&&Notification.permission==='granted'){
+        new Notification('Price Alert',{body:msg,icon:'https://omarkanawati2000-netizen.github.io/omars-terminal/favicon.ico'});
+      }
+      saveSettings();
+    }
+  });
 }
 const TF_BARS = {'1m':500,'5m':500,'15m':400,'1h':300,'4h':200,'1d':365,'1w':150};
 const TF_API = {'1m':'1m','5m':'5m','15m':'15m','1h':'1h','4h':'4h','1d':'1d','1w':'1w'};
@@ -580,6 +627,7 @@ async function fetchPrices(){
         }
       }
     }
+    checkPriceAlerts(); // Check if any alerts triggered
     renderAll();
   }catch(e){console.error('Fetch error:',e)}
 }
@@ -1620,6 +1668,21 @@ document.addEventListener('keydown',e=>{
   
   // Refresh data (Ctrl+R or F5)
   else if((e.ctrlKey&&e.key==='r')||e.key==='F5'){e.preventDefault();fetchPrices();fetchStocks();fetchOrderBook(activeCoin)}
+  
+  // Create price alert (Alt+A)
+  else if(e.altKey&&e.key==='a'){
+    const d=priceData[activeCoin];
+    if(!d)return;
+    const target=prompt(`Create price alert for ${activeCoin} (current: $${fmtPrice(d.price)})\nEnter target price:`);
+    if(!target||isNaN(parseFloat(target)))return;
+    const price=parseFloat(target);
+    const condition=price>d.price?'above':'below';
+    addPriceAlert(activeCoin,price,condition);
+    alert(`Alert set: ${activeCoin} ${condition} $${fmtPrice(price)}`);
+  }
+  
+  // Toggle sound (Alt+M for mute)
+  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'🔊 Sound enabled':'🔇 Sound muted')}
   
   // Help (?)
   else if(e.key==='?'){alert(`KEYBOARD SHORTCUTS:
