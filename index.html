@@ -179,11 +179,36 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .pos-sym{font-weight:700;color:var(--white)}
 .up{color:var(--green)}.down{color:var(--red)}
 
+/* Portfolio summary */
+.port-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#1a1a1a;border-bottom:1px solid #1a1a1a}
+.port-summary-cell{background:#0d0d0d;padding:12px 16px;text-align:center}
+.port-summary-cell .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
+.port-summary-cell .val{font-size:16px;font-weight:700}
+.port-toolbar{padding:10px 16px;background:#080808;border-bottom:1px solid #1a1a1a;display:flex;gap:8px}
+.port-btn{background:var(--orange);color:#000;border:none;padding:6px 12px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;border-radius:3px;letter-spacing:0.05em}
+.port-btn:hover{background:var(--orange-dim)}
+
 /* Account summary */
 .account-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#1a1a1a}
 .account-cell{background:var(--bg);padding:16px 20px}
 .account-cell .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
 .account-cell .val{font-size:18px;font-weight:700;color:var(--white)}
+
+/* Modal */
+.modal{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;z-index:1000}
+.modal.show{display:flex}
+.modal-content{background:var(--bg2);border:1px solid #333;border-radius:4px;width:90%;max-width:500px;padding:20px}
+.modal-title{font-size:14px;font-weight:700;color:var(--orange);margin-bottom:16px}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em}
+.modal-field input,.modal-field select{width:100%;background:var(--bg3);border:1px solid #333;color:var(--white);padding:8px;font-family:var(--font);font-size:11px;border-radius:2px}
+.modal-field input:focus,.modal-field select:focus{outline:none;border-color:var(--orange)}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions button{flex:1;padding:8px;font-family:var(--font);font-size:10px;font-weight:600;cursor:pointer;border-radius:3px;letter-spacing:0.05em}
+.modal-btn-primary{background:var(--orange);color:#000;border:none}
+.modal-btn-primary:hover{background:var(--orange-dim)}
+.modal-btn-secondary{background:transparent;color:var(--text);border:1px solid #333}
+.modal-btn-secondary:hover{background:#1a1a1a}
 
 /* ═══ SCROLLING TICKER ═══ */
 .ticker-bar{height:28px;background:#050505;border-top:1px solid #1a1a1a;overflow:hidden;position:relative}
@@ -445,6 +470,10 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
   <!-- ═══ [6] PORTFOLIO ═══ -->
   <div class="view" id="view-positions">
     <div class="pos-view">
+      <div class="port-summary" id="portSummary"></div>
+      <div class="port-toolbar">
+        <button class="port-btn" onclick="showAddPositionModal()">+ ADD POSITION</button>
+      </div>
       <div class="pos-subtabs">
         <div class="pos-subtab active" data-sub="positions">POSITIONS</div>
         <div class="pos-subtab" data-sub="orders">OPEN ORDERS</div>
@@ -452,6 +481,40 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div class="pos-subtab" data-sub="account">ACCOUNT</div>
       </div>
       <div class="pos-content" id="posContent"></div>
+    </div>
+  </div>
+
+  <!-- Add Position Modal -->
+  <div class="modal" id="addPositionModal">
+    <div class="modal-content">
+      <div class="modal-title">ADD POSITION</div>
+      <div class="modal-field">
+        <label>Asset</label>
+        <select id="modalAsset">
+          <option value="BTC">BTC</option>
+          <option value="ETH">ETH</option>
+          <option value="SOL">SOL</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Side</label>
+        <select id="modalSide">
+          <option value="LONG">LONG</option>
+          <option value="SHORT">SHORT</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Entry Price</label>
+        <input type="number" id="modalEntry" placeholder="0.00" step="0.01">
+      </div>
+      <div class="modal-field">
+        <label>Size</label>
+        <input type="number" id="modalSize" placeholder="0.0" step="0.001">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn-secondary" onclick="closeAddPositionModal()">CANCEL</button>
+        <button class="modal-btn-primary" onclick="addPosition()">ADD</button>
+      </div>
     </div>
   </div>
 
@@ -512,6 +575,7 @@ let soundEnabled = true;
 let theme = 'dark';
 let customLayouts = {}; // saved layouts
 let activeLayout = 'default';
+let portfolio = []; // {id, asset, side, entry, size, timestamp}
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -2167,8 +2231,101 @@ function renderNewsFull(){
 }
 
 /* ═══════════════════════════════════════════
-   [6] POSITIONS
+   [6] PORTFOLIO
    ═══════════════════════════════════════════ */
+function loadPortfolio(){
+  try{
+    const saved=localStorage.getItem('omar_terminal_portfolio');
+    if(saved)portfolio=JSON.parse(saved);
+  }catch(e){}
+}
+
+function savePortfolio(){
+  localStorage.setItem('omar_terminal_portfolio',JSON.stringify(portfolio));
+}
+
+function showAddPositionModal(){
+  const modal=document.getElementById('addPositionModal');
+  const assetSelect=document.getElementById('modalAsset');
+  assetSelect.innerHTML=ALL_TICKERS.map(t=>`<option value="${t}">${cleanSym(t)}</option>`).join('');
+  modal.classList.add('show');
+}
+
+function closeAddPositionModal(){
+  document.getElementById('addPositionModal').classList.remove('show');
+}
+
+function addPosition(){
+  const asset=document.getElementById('modalAsset').value;
+  const side=document.getElementById('modalSide').value;
+  const entry=parseFloat(document.getElementById('modalEntry').value);
+  const size=parseFloat(document.getElementById('modalSize').value);
+  
+  if(!entry||!size||entry<=0||size<=0){
+    alert('Please enter valid entry price and size');
+    return;
+  }
+  
+  portfolio.push({
+    id:Date.now(),
+    asset,
+    side,
+    entry,
+    size,
+    timestamp:Date.now()
+  });
+  
+  savePortfolio();
+  closeAddPositionModal();
+  renderPortfolioSummary();
+  if(activePosSub==='positions')renderPositions(document.getElementById('posContent'));
+}
+
+function renderPortfolioSummary(){
+  const el=document.getElementById('portSummary');
+  if(!el)return;
+  
+  let totalValue=0;
+  let totalPnL=0;
+  let dayPnL=0;
+  let wins=0;
+  let total=portfolio.length;
+  
+  portfolio.forEach(p=>{
+    const current=priceData[p.asset]?.price||p.entry;
+    const value=current*p.size;
+    const pnl=p.side==='LONG'?(current-p.entry)*p.size:(p.entry-current)*p.size;
+    totalValue+=value;
+    totalPnL+=pnl;
+    if(pnl>0)wins++;
+  });
+  
+  const winRate=total>0?(wins/total*100):0;
+  
+  el.innerHTML=`
+    <div class="port-summary-cell">
+      <div class="lbl">TOTAL VALUE</div>
+      <div class="val" style="color:var(--white)">$${totalValue.toFixed(2)}</div>
+    </div>
+    <div class="port-summary-cell">
+      <div class="lbl">TOTAL P&L</div>
+      <div class="val" style="color:${totalPnL>=0?'var(--green)':'var(--red)'}">${totalPnL>=0?'+':''}$${totalPnL.toFixed(2)}</div>
+    </div>
+    <div class="port-summary-cell">
+      <div class="lbl">DAY P&L</div>
+      <div class="val" style="color:${dayPnL>=0?'var(--green)':'var(--red)'}">${dayPnL>=0?'+':''}$${dayPnL.toFixed(2)}</div>
+    </div>
+    <div class="port-summary-cell">
+      <div class="lbl">POSITIONS</div>
+      <div class="val" style="color:var(--white)">${total}</div>
+    </div>
+    <div class="port-summary-cell">
+      <div class="lbl">WIN RATE</div>
+      <div class="val" style="color:var(--orange)">${winRate.toFixed(0)}%</div>
+    </div>
+  `;
+}
+
 document.querySelectorAll('.pos-subtab').forEach(t=>t.addEventListener('click',()=>{
   activePosSub=t.dataset.sub;
   document.querySelectorAll('.pos-subtab').forEach(x=>x.classList.toggle('active',x.dataset.sub===activePosSub));
@@ -2177,6 +2334,7 @@ document.querySelectorAll('.pos-subtab').forEach(t=>t.addEventListener('click',(
 
 function renderPositionsSub(){
   const el=document.getElementById('posContent');
+  renderPortfolioSummary();
   if(activePosSub==='positions')renderPositions(el);
   else if(activePosSub==='orders')renderOrders(el);
   else if(activePosSub==='history')renderHistory(el);
@@ -2184,6 +2342,47 @@ function renderPositionsSub(){
 }
 
 function renderPositions(el){
+  if(portfolio.length===0){
+    el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No positions yet. Click "+ ADD POSITION" to add one.</div>';
+    return;
+  }
+  
+  const rows=portfolio.map(p=>{
+    const current=priceData[p.asset]?.price||p.entry;
+    const value=current*p.size;
+    const pnl=p.side==='LONG'?(current-p.entry)*p.size:(p.entry-current)*p.size;
+    const pnlPct=p.side==='LONG'?((current-p.entry)/p.entry*100):((p.entry-current)/p.entry*100);
+    const isUp=pnl>=0;
+    
+    return `<div class="pos-row">
+      <span class="pos-sym">${cleanSym(p.asset)}</span>
+      <span><span class="pos-badge ${p.side==='LONG'?'pos-long':'pos-short'}">${p.side}</span></span>
+      <span>$${fmtPrice(p.entry)}</span>
+      <span>$${fmtPrice(current)}</span>
+      <span>${p.size}</span>
+      <span>$${value.toFixed(2)}</span>
+      <span class="${isUp?'up':'down'}" style="font-weight:700">${isUp?'+':''}$${pnl.toFixed(2)}</span>
+      <span class="${isUp?'up':'down'}" style="font-weight:600">${isUp?'+':''}${pnlPct.toFixed(2)}%</span>
+      <button onclick="closePosition(${p.id})" style="background:var(--red-bg);color:var(--red);border:none;padding:4px 8px;font-size:9px;cursor:pointer;border-radius:2px;font-family:var(--font);font-weight:600">CLOSE</button>
+    </div>`;
+  }).join('');
+  
+  el.innerHTML=`
+    <div class="pos-head"><span>ASSET</span><span>SIDE</span><span>ENTRY</span><span>CURRENT</span><span>SIZE</span><span>VALUE</span><span>P&L</span><span>P&L %</span><span></span></div>
+    ${rows}
+  `;
+}
+
+function closePosition(id){
+  if(confirm('Close this position?')){
+    portfolio=portfolio.filter(p=>p.id!==id);
+    savePortfolio();
+    renderPortfolioSummary();
+    renderPositions(document.getElementById('posContent'));
+  }
+}
+
+function renderPositions_OLD(el){
   const positions=[
     {sym:'BTC',side:'LONG',size:'0.150',entry:'96,842.50',mark:'97,220.00',liq:'91,200.00',pnl:'+$56.63',roe:'+4.15%',margin:'$1,452',up:true},
     {sym:'ETH',side:'SHORT',size:'2.500',entry:'2,784.20',mark:'2,758.40',liq:'3,012.00',pnl:'+$64.50',roe:'+3.72%',margin:'$834',up:true},
@@ -2392,6 +2591,7 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 loadFromURL();
 loadSavedLayouts();
 loadSettings();
+loadPortfolio();
 fetchPrices();
 fetchMeta();
 fetchStocks();
