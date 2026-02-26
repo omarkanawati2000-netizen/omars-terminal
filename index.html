@@ -174,12 +174,12 @@ html, body {
 
 /* Heatmap */
 .heatmap-section { border-top: 1px solid var(--border); }
-.heatmap { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; padding: 6px; background: var(--border); }
-.hm-cell { padding: 8px 4px; text-align: center; border-radius: 2px; cursor: pointer; transition: all 0.15s; }
-.hm-cell:hover { filter: brightness(1.3); }
-.hm-sym { font-weight: 700; font-size: 10px; color: #fff; }
-.hm-pct { font-size: 9px; font-weight: 600; margin-top: 1px; }
-.hm-price { font-size: 7px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+.heatmap { display: grid; grid-template-columns: repeat(5,1fr); gap: 2px; padding: 6px; background: var(--bg); }
+.hm-cell { padding: 10px 4px; text-align: center; border-radius: 3px; cursor: pointer; transition: all 0.2s; }
+.hm-cell:hover { filter: brightness(1.4); transform: scale(1.03); }
+.hm-sym { font-weight: 800; font-size: 11px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); letter-spacing: 0.05em; }
+.hm-pct { font-size: 10px; font-weight: 700; margin-top: 2px; }
+.hm-price { font-size: 8px; margin-top: 2px; }
 
 /* ═══ CHART (center) ═══ */
 .chart-area {
@@ -714,6 +714,7 @@ function renderAll() {
   renderOrderbook();
   renderStats();
   renderNews();
+  if (depthVisible) renderDepthChart();
 }
 
 function fmtPrice(p) {
@@ -759,12 +760,20 @@ function renderHeatmap() {
     const d = priceData[coin];
     if (!d) return '';
     const change = ((d.price - d.open) / d.open * 100);
-    const intensity = Math.min(Math.abs(change)*20, 80);
-    const bg = change >= 0 ? `rgba(0,200,83,${intensity/100})` : `rgba(255,23,68,${intensity/100})`;
-    return `<div class="hm-cell" onclick="selectCoin('${coin}')" style="background:${bg}">
+    const absChange = Math.abs(change);
+    const intensity = Math.min(absChange * 30 + 15, 90);
+    const isUp = change >= 0;
+    // Richer gradient backgrounds
+    const bg = isUp
+      ? `linear-gradient(135deg, rgba(0,200,83,${intensity/100}) 0%, rgba(0,140,60,${intensity/120}) 100%)`
+      : `linear-gradient(135deg, rgba(255,23,68,${intensity/100}) 0%, rgba(180,10,40,${intensity/120}) 100%)`;
+    const border = isUp ? `rgba(0,200,83,${Math.min(absChange*15+10,50)/100})` : `rgba(255,23,68,${Math.min(absChange*15+10,50)/100})`;
+    const glow = isUp ? `0 0 ${absChange*3+2}px rgba(0,200,83,0.15)` : `0 0 ${absChange*3+2}px rgba(255,23,68,0.15)`;
+    const arrow = isUp ? '▲' : '▼';
+    return `<div class="hm-cell" onclick="selectCoin('${coin}')" style="background:${bg};border:1px solid ${border};box-shadow:${glow};">
       <div class="hm-sym">${coin}</div>
-      <div class="hm-pct" style="color:${change>=0?'#aaffcc':'#ffaaaa'}">${change>=0?'+':''}${change.toFixed(2)}%</div>
-      <div class="hm-price">$${fmtPrice(d.price)}</div>
+      <div class="hm-pct" style="color:${isUp?'#ffffff':'#ffffff'};font-weight:800;font-size:11px;">${arrow} ${change>=0?'+':''}${change.toFixed(2)}%</div>
+      <div class="hm-price" style="color:rgba(255,255,255,0.7);font-size:8px;">$${fmtPrice(d.price)}</div>
     </div>`;
   }).join('');
 }
@@ -1345,7 +1354,7 @@ document.querySelectorAll('.fn-key').forEach(btn => {
     else if (text.includes('NEWS')) document.getElementById('newsFeed')?.scrollIntoView({behavior:'smooth'});
     else if (text.includes('QUOTE')) document.getElementById('cmdInput')?.focus();
     else if (text.includes('CHART')) { switchBottomTab('positions'); chartZoomX=1;chartZoomY=1;chartPanX=0;renderChart(); }
-    else if (text.includes('DEPTH')) { /* scroll right panel to order book */ document.querySelector('.ob-head')?.scrollIntoView({behavior:'smooth'}); }
+    else if (text.includes('DEPTH')) toggleDepthChart();
     else if (text.includes('TRADES') && !text.includes('HISTORY')) switchBottomTab('trades');
     else if (text.includes('PORTFOLIO')) switchBottomTab('account');
     else if (text.includes('ALERTS')) showAlerts();
@@ -1367,7 +1376,7 @@ document.addEventListener('keydown', e => {
     case 'F2': e.preventDefault(); document.getElementById('newsFeed')?.scrollIntoView({behavior:'smooth'}); break;
     case 'F3': e.preventDefault(); document.getElementById('cmdInput')?.focus(); break;
     case 'F5': e.preventDefault(); switchBottomTab('positions'); break;
-    case 'F6': e.preventDefault(); document.querySelector('.ob-head')?.scrollIntoView({behavior:'smooth'}); break;
+    case 'F6': e.preventDefault(); toggleDepthChart(); break;
     case 'F7': e.preventDefault(); switchBottomTab('trades'); break;
     case 'F9': e.preventDefault(); switchBottomTab('account'); break;
     case 'F10': e.preventDefault(); showAlerts(); break;
@@ -1382,6 +1391,153 @@ document.addEventListener('keydown', e => {
       break;
   }
 });
+
+/* ═══════════════════════════════════════════
+   DEPTH CHART (F6)
+   ═══════════════════════════════════════════ */
+let depthVisible = false;
+function toggleDepthChart() {
+  depthVisible = !depthVisible;
+  let overlay = document.getElementById('depthOverlay');
+  if (!depthVisible && overlay) { overlay.remove(); return; }
+  if (!overlay) {
+    overlay = document.createElement('canvas');
+    overlay.id = 'depthOverlay';
+    overlay.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;pointer-events:none;';
+    document.querySelector('.chart-body').appendChild(overlay);
+  }
+  renderDepthChart();
+}
+
+function renderDepthChart() {
+  const overlay = document.getElementById('depthOverlay');
+  if (!overlay || !depthVisible) return;
+  const d = priceData[activeCoin];
+  if (!d) return;
+  const rect = overlay.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  overlay.width = rect.width * dpr;
+  overlay.height = rect.height * dpr;
+  const ctx = overlay.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  
+  ctx.fillStyle = 'rgba(0,0,0,0.85)';
+  ctx.fillRect(0, 0, W, H);
+  
+  const price = d.price;
+  const spread = price * 0.05;
+  const levels = 40;
+  
+  // Generate cumulative depth
+  let bidCum = [], askCum = [], bidTotal = 0, askTotal = 0;
+  for (let i = 0; i < levels; i++) {
+    const bidSize = Math.random() * 50 + 5 + (levels - i) * 2;
+    const askSize = Math.random() * 50 + 5 + (levels - i) * 1.5;
+    bidTotal += bidSize;
+    askTotal += askSize;
+    bidCum.push({ price: price - (i/levels) * spread, cum: bidTotal });
+    askCum.push({ price: price + (i/levels) * spread, cum: askTotal });
+  }
+  
+  const maxCum = Math.max(bidTotal, askTotal);
+  const midX = W / 2;
+  const mB = 30;
+  const cH = H - mB;
+  
+  // Title
+  ctx.font = '600 12px JetBrains Mono';
+  ctx.fillStyle = '#ff8c00';
+  ctx.fillText('DEPTH CHART — ' + activeCoin + '-PERP', 12, 20);
+  ctx.font = '9px JetBrains Mono';
+  ctx.fillStyle = '#555';
+  ctx.fillText('Press F6 to close', 12, 34);
+  
+  // Bid side (left, green)
+  const bidGrad = ctx.createLinearGradient(0, 0, 0, cH);
+  bidGrad.addColorStop(0, 'rgba(0,200,83,0.25)');
+  bidGrad.addColorStop(1, 'rgba(0,200,83,0.02)');
+  ctx.beginPath();
+  ctx.moveTo(midX, cH);
+  bidCum.forEach((b, i) => {
+    const x = midX - (i / levels) * midX;
+    const y = cH - (b.cum / maxCum) * (cH - 50);
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(midX - midX, cH);
+  ctx.closePath();
+  ctx.fillStyle = bidGrad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(midX, cH);
+  bidCum.forEach((b, i) => {
+    const x = midX - (i / levels) * midX;
+    const y = cH - (b.cum / maxCum) * (cH - 50);
+    ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#00c853';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  // Ask side (right, red)
+  const askGrad = ctx.createLinearGradient(0, 0, 0, cH);
+  askGrad.addColorStop(0, 'rgba(255,23,68,0.25)');
+  askGrad.addColorStop(1, 'rgba(255,23,68,0.02)');
+  ctx.beginPath();
+  ctx.moveTo(midX, cH);
+  askCum.forEach((a, i) => {
+    const x = midX + (i / levels) * midX;
+    const y = cH - (a.cum / maxCum) * (cH - 50);
+    ctx.lineTo(x, y);
+  });
+  ctx.lineTo(W, cH);
+  ctx.closePath();
+  ctx.fillStyle = askGrad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(midX, cH);
+  askCum.forEach((a, i) => {
+    const x = midX + (i / levels) * midX;
+    const y = cH - (a.cum / maxCum) * (cH - 50);
+    ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#ff1744';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  // Mid price line
+  ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = '#ff8c00';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(midX, 40);
+  ctx.lineTo(midX, cH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  
+  // Labels
+  ctx.font = '600 11px JetBrains Mono';
+  ctx.fillStyle = '#ff8c00';
+  ctx.textAlign = 'center';
+  ctx.fillText('$' + fmtPrice(price), midX, cH + 15);
+  ctx.fillStyle = '#00c853';
+  ctx.textAlign = 'left';
+  ctx.fillText('BIDS: ' + fmtCompact(bidTotal), 12, cH + 15);
+  ctx.fillStyle = '#ff1744';
+  ctx.textAlign = 'right';
+  ctx.fillText('ASKS: ' + fmtCompact(askTotal), W - 12, cH + 15);
+  ctx.textAlign = 'left';
+  
+  // Price labels along bottom
+  ctx.font = '8px JetBrains Mono';
+  ctx.fillStyle = '#333';
+  for (let i = 1; i < 5; i++) {
+    const bx = midX - (i / 5) * midX;
+    ctx.fillText('$' + fmtPrice(price - (i/5) * spread), bx, cH + 25);
+    const ax = midX + (i / 5) * midX;
+    ctx.fillText('$' + fmtPrice(price + (i/5) * spread), ax, cH + 25);
+  }
+}
 
 renderPositions();
 fetchPrices();
