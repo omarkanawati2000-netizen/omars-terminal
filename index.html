@@ -27,6 +27,11 @@ body.light{
 }
 html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:12px;line-height:1.4;overflow:hidden;height:100%;-webkit-font-smoothing:antialiased}
 
+/* ═══ CRITICAL: ENSURE ALL CLICKS WORK ═══ */
+* {pointer-events:auto !important}
+canvas {pointer-events:none !important}
+.chart-watermark {pointer-events:none !important}
+
 /* ═══ APP SHELL ═══ */
 .app{display:flex;flex-direction:column;height:100vh}
 
