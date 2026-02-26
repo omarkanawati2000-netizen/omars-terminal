@@ -588,57 +588,64 @@ const TF_BARS = { '1m':500, '5m':500, '15m':400, '1h':300, '4h':200, '1d':365, '
 
 function candleKey(coin, tf) { return coin + ':' + tf; }
 
-function initCandles(coin, price, force) {
-  const key = candleKey(coin, activeTF);
-  const targetBars = TF_BARS[activeTF] || 300;
-  if (!force && candleData[key] && candleData[key].length >= targetBars * 0.9) return;
-  candleData[key] = [];
-  const bars = TF_BARS[activeTF] || 60;
-  const interval = TF_MS[activeTF] || 3600000;
-  const vol = price * (TF_VOLATILITY[activeTF] || 0.003);
-  let p = price * (0.95 + Math.random() * 0.10);
-  for (let i = bars; i >= 0; i--) {
-    const o = p;
-    const c = o + (Math.random() - 0.48) * vol;
-    const h = Math.max(o, c) + Math.random() * vol * 0.6;
-    const l = Math.min(o, c) - Math.random() * vol * 0.6;
-    const v = Math.random() * 100 + 10;
-    candleData[key].push({ o, h, l, c, v, t: Date.now() - i * interval });
-    p = c;
+// Map our TF keys to Hyperliquid API interval strings
+const TF_API = { '1m':'1m', '5m':'5m', '15m':'15m', '1h':'1h', '4h':'4h', '1d':'1d', '1w':'1w' };
+let candleLoading = {};  // track in-flight requests
+
+async function fetchRealCandles(coin, tf) {
+  const key = candleKey(coin, tf);
+  if (candleLoading[key]) return; // already fetching
+  candleLoading[key] = true;
+  try {
+    const bars = TF_BARS[tf] || 300;
+    const interval = TF_MS[tf] || 3600000;
+    const endTime = Date.now();
+    const startTime = endTime - bars * interval;
+    const resp = await fetch('https://api.hyperliquid.xyz/info', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'candleSnapshot', req: { coin: coin, interval: TF_API[tf] || '1h', startTime: startTime, endTime: endTime } })
+    });
+    const data = await resp.json();
+    if (Array.isArray(data) && data.length > 0) {
+      candleData[key] = data.map(c => ({
+        o: parseFloat(c.o),
+        h: parseFloat(c.h),
+        l: parseFloat(c.l),
+        c: parseFloat(c.c),
+        v: parseFloat(c.v),
+        t: c.t  // epoch ms
+      }));
+      if (coin === activeCoin && tf === activeTF) renderChart();
+    }
+  } catch(e) {
+    console.error('Candle fetch error:', coin, tf, e);
+  } finally {
+    candleLoading[key] = false;
   }
 }
 
+// Fetch candles for active coin + timeframe (called on coin/tf switch)
+async function loadCandles(coin, tf) {
+  const key = candleKey(coin, tf);
+  if (candleData[key] && candleData[key].length > 10) return; // use cache
+  await fetchRealCandles(coin, tf);
+}
+
+// Legacy compat — no longer generates fake data
+function initCandles(coin, price, force) {
+  loadCandles(coin, activeTF);
+}
 function initCandlesEndAt(coin, endPrice) {
-  const key = candleKey(coin, activeTF);
-  candleData[key] = [];
-  const bars = TF_BARS[activeTF] || 60;
-  const interval = TF_MS[activeTF] || 3600000;
-  const volPct = TF_VOLATILITY[activeTF] || 0.003;
-  // Work backwards from endPrice
-  const candles = [];
-  let c = endPrice;
-  for (let i = 0; i < bars; i++) {
-    const vol = endPrice * volPct;
-    const move = (Math.random() - 0.48) * vol;
-    const o = c - move;
-    const h = Math.max(o, c) + Math.random() * vol * 0.4;
-    const l = Math.min(o, c) - Math.random() * vol * 0.4;
-    const v = Math.random() * 100 + 10;
-    candles.unshift({ o, h, l, c, v, t: Date.now() - i * interval });
-    c = o; // previous candle's close = this candle's open
-  }
-  candleData[key] = candles;
+  // replaced by real data fetch — just trigger async load for active TF
+  loadCandles(coin, activeTF);
 }
 
 function switchTimeframe(tf) {
   activeTF = tf;
-  // Generate candles for active coin at new TF if not already cached
-  const d = priceData[activeCoin];
-  if (d) {
-    const key = candleKey(activeCoin, tf);
-    if (!candleData[key] || candleData[key].length < 2) {
-      initCandles(activeCoin, d.price, true);
-    }
+  const key = candleKey(activeCoin, tf);
+  if (!candleData[key] || candleData[key].length < 2) {
+    fetchRealCandles(activeCoin, tf); // async fetch, will re-render on completion
   }
   renderChart();
 }
@@ -673,10 +680,8 @@ async function fetchPrices() {
       if (!price) continue;
       if (!priceData[coin]) {
         priceData[coin] = { price, prevPrice: price, open: price, high: price, low: price, history: [], volume: Math.random()*500+50 };
-        // Init candles for ALL timeframes, ending at current price
-        const savedTF = activeTF;
-        for (const tf of Object.keys(TF_MS)) { activeTF = tf; initCandlesEndAt(coin, price); }
-        activeTF = savedTF;
+        // Fetch real candles for active coin's current timeframe
+        if (coin === activeCoin) fetchRealCandles(coin, activeTF);
       } else {
         priceData[coin].prevPrice = priceData[coin].price;
         priceData[coin].price = price;
@@ -685,20 +690,20 @@ async function fetchPrices() {
       }
       priceData[coin].history.push({ time: Date.now(), price });
       if (priceData[coin].history.length > 300) priceData[coin].history.shift();
-      // Update candles for all cached timeframes for this coin
+      // Update last candle with live price (only for cached timeframes)
       for (const tf of Object.keys(TF_MS)) {
         const key = candleKey(coin, tf);
         if (candleData[key] && candleData[key].length > 0) {
           const last = candleData[key][candleData[key].length - 1];
           const interval = TF_MS[tf];
           if (Date.now() - last.t > interval) {
-            candleData[key].push({ o: last.c, h: price, l: price, c: price, v: Math.random()*30+5, t: Date.now() });
-            if (candleData[key].length > 600) candleData[key].shift();
+            // New candle period — refetch real data instead of appending fake candle
+            if (coin === activeCoin && tf === activeTF) fetchRealCandles(coin, tf);
           } else {
+            // Update current candle's close/high/low with live tick
             last.c = price;
             last.h = Math.max(last.h, price);
             last.l = Math.min(last.l, price);
-            last.v += Math.random() * 2;
           }
         }
       }
@@ -734,6 +739,11 @@ function fmtCompact(n) {
 function selectCoin(coin) {
   activeCoin = coin;
   document.getElementById('chartPair').textContent = coin + '-PERP';
+  // Fetch real candles if not cached
+  const key = candleKey(coin, activeTF);
+  if (!candleData[key] || candleData[key].length < 2) {
+    fetchRealCandles(coin, activeTF);
+  }
   renderAll();
 }
 
