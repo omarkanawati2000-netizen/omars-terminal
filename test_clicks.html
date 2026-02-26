@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Click Test</title>
+<style>
+body{margin:0;padding:20px;font-family:monospace;background:#0a0a0a;color:#fff}
+.tab{display:inline-block;padding:10px 20px;background:#222;margin:5px;cursor:pointer;border:2px solid #ff8c00}
+.tab:hover{background:#333}
+.tab.active{background:#ff8c00;color:#000}
+.status{margin-top:20px;padding:10px;background:#111;border:1px solid #333}
+</style>
+</head>
+<body>
+<h1>CLICK TEST - Does this work?</h1>
+
+<div id="tabs">
+  <div class="tab active" onclick="switchTab(1)">Tab 1</div>
+  <div class="tab" onclick="switchTab(2)">Tab 2</div>
+  <div class="tab" onclick="switchTab(3)">Tab 3</div>
+  <div class="tab" onclick="switchTab(4)">Tab 4</div>
+</div>
+
+<div class="status" id="status">
+  Click a tab to test...
+</div>
+
+<script>
+let activeTab = 1;
+
+function switchTab(num){
+  activeTab = num;
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active', i+1 === num);
+  });
+  document.getElementById('status').innerHTML = `
+    <strong>SUCCESS!</strong> Switched to Tab ${num}<br>
+    Time: ${new Date().toLocaleTimeString()}<br>
+    Clicks are working properly!
+  `;
+}
+
+// Log all clicks
+document.addEventListener('click', (e)=>{
+  console.log('Click detected at:', e.clientX, e.clientY, 'Target:', e.target);
+});
+</script>
+</body>
+</html>
