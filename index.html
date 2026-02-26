@@ -948,6 +948,15 @@ function initDrawingHandlers(){
     const price = yMax - (y / cH) * yRange;
     
     if(drawingTool === 'hline'){
+      console.log('Creating H-LINE:');
+      console.log('  Click Y:', y, 'Chart Height:', cH);
+      console.log('  Price range:', yMin.toFixed(2), '-', yMax.toFixed(2));
+      console.log('  Calculated price:', price.toFixed(2));
+      
+      // Verify: convert price back to Y and see if it matches
+      const verifyY = cH * (1 - (price - yMin) / yRange);
+      console.log('  Verify Y (should match click):', verifyY.toFixed(1), 'vs clicked:', y);
+      
       drawings.push({
         type: 'hline',
         price: price,
@@ -974,12 +983,16 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
   
   const yRange = yMax - yMin;
   
+  console.log('Rendering drawings, cH:', cH, 'yMin:', yMin.toFixed(2), 'yMax:', yMax.toFixed(2));
+  
   drawings.forEach((d, idx) => {
     // Only render drawings for current coin/timeframe
     if(d.coin !== activeCoin || d.tf !== activeTF) return;
     
     if(d.type === 'hline'){
       const y = cH * (1 - (d.price - yMin) / yRange);
+      
+      console.log('Rendering drawing', idx, 'price:', d.price.toFixed(2), 'at Y:', y.toFixed(1));
       
       ctx.strokeStyle = d.color || '#ff8c00';
       ctx.lineWidth = 2;
