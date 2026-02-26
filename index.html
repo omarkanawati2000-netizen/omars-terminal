@@ -87,6 +87,12 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
 
+/* Drawing tools */
+.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s}
+.draw-btn:hover{color:var(--orange-dim);border-color:var(--orange-dim);background:#1a1a1a}
+.draw-btn.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
+.draw-btn-icon{font-size:12px;margin-right:3px}
+
 .chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
 .chart-body canvas{width:100%;height:100%;pointer-events:none}
 .chart-ohlc{position:absolute;top:8px;left:12px;display:flex;gap:12px;font-size:10px;pointer-events:none;z-index:2}
