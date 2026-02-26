@@ -53,6 +53,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .hdr-live{display:flex;align-items:center;gap:5px;color:var(--green);font-size:10px;font-weight:600}
 .hdr-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.5s ease infinite;box-shadow:0 0 8px rgba(0,200,83,0.5)}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+@keyframes slideIn{from{transform:translateX(400px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(400px);opacity:0}}
 .hdr-time{color:var(--orange);font-size:12px;font-weight:600}
 .hdr-brand{color:var(--orange);font-weight:800;font-size:13px;letter-spacing:0.12em}
 
@@ -2499,6 +2501,9 @@ function createDrawing(tool, x1, y1, x2, y2) {
     color: '#ff8c00',
     lineWidth: 2,
     text: tool === TOOLS.TEXT ? 'Text' : null,
+    label: null, // Custom label for any drawing
+    alertEnabled: false, // Alert when price crosses this drawing
+    alertCrossed: false, // Track if alert has triggered
     timestamp: Date.now()
   };
   
@@ -2839,6 +2844,34 @@ function renderSingleDrawing(ctx, drawing, cW, cH, isActive) {
       ctx.fillRect(x1 - 3, y1 - 3, 6, 6);
       break;
   }
+  
+  // Draw label if exists (for any drawing type)
+  if (drawing.label && drawing.tool !== TOOLS.TEXT) {
+    const labelX = drawing.tool === TOOLS.HLINE ? 10 : Math.min(x1, x2);
+    const labelY = drawing.tool === TOOLS.HLINE ? y1 - 12 : Math.min(y1, y2) - 12;
+    
+    ctx.font = '600 11px JetBrains Mono';
+    ctx.textBaseline = 'bottom';
+    const labelMetrics = ctx.measureText(drawing.label);
+    
+    // Background
+    ctx.fillStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillRect(labelX - 2, labelY - 13, labelMetrics.width + 4, 15);
+    
+    // Text
+    ctx.fillStyle = drawing.color;
+    ctx.fillText(drawing.label, labelX, labelY);
+  }
+  
+  // Draw alert indicator if enabled
+  if (drawing.alertEnabled) {
+    const alertX = drawing.tool === TOOLS.HLINE ? cW - 20 : Math.max(x1, x2) + 5;
+    const alertY = drawing.tool === TOOLS.HLINE ? y1 : Math.min(y1, y2);
+    
+    ctx.font = '12px Arial';
+    ctx.fillStyle = drawing.alertCrossed ? '#4caf50' : '#ffeb3b';
+    ctx.fillText('🔔', alertX, alertY);
+  }
 }
 
 // Mouse event handlers for drawing
@@ -2948,6 +2981,284 @@ function initDrawingHandlers() {
       renderChart();
     }
   });
+  
+  // Right-click context menu for drawings
+  chartBody.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    
+    const rect = chartBody.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Find drawing near click
+    const nearbyDrawing = findDrawingNearClick(clickX, clickY);
+    
+    if (nearbyDrawing) {
+      showDrawingContextMenu(e.clientX, e.clientY, nearbyDrawing.index, nearbyDrawing.drawing);
+    }
+  });
+}
+
+// Find drawing near click position
+function findDrawingNearClick(clickX, clickY) {
+  const currentDrawings = getCurrentDrawings();
+  const threshold = 10; // pixels
+  
+  for (let i = currentDrawings.length - 1; i >= 0; i--) {
+    const drawing = currentDrawings[i];
+    const canvas = document.getElementById('chart');
+    
+    const pt1 = canvasToPriceTime(canvas, drawing.x1, drawing.y1);
+    const pt2 = canvasToPriceTime(canvas, drawing.x2, drawing.y2);
+    
+    if (!pt1 || !pt2) continue;
+    
+    const coords1 = priceTimeToCanvas(canvas, pt1.price, pt1.candleIdx);
+    const coords2 = priceTimeToCanvas(canvas, pt2.price, pt2.candleIdx);
+    
+    if (!coords1 || !coords2) continue;
+    
+    const x1 = coords1.x, y1 = coords1.y;
+    const x2 = coords2.x, y2 = coords2.y;
+    
+    // Check if click is near this drawing
+    if (drawing.tool === TOOLS.HLINE) {
+      if (Math.abs(clickY - y1) < threshold) {
+        return { drawing, index: i };
+      }
+    } else if (drawing.tool === TOOLS.RECTANGLE) {
+      const minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+      const minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+      if (clickX >= minX && clickX <= maxX && clickY >= minY && clickY <= maxY) {
+        return { drawing, index: i };
+      }
+    } else {
+      // Line-based tools: check distance to line segment
+      const dist = distanceToLineSegment(clickX, clickY, x1, y1, x2, y2);
+      if (dist < threshold) {
+        return { drawing, index: i };
+      }
+    }
+  }
+  
+  return null;
+}
+
+// Calculate distance from point to line segment
+function distanceToLineSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const lengthSq = dx * dx + dy * dy;
+  
+  if (lengthSq === 0) return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+  
+  let t = ((px - x1) * dx + (py - y1) * dy) / lengthSq;
+  t = Math.max(0, Math.min(1, t));
+  
+  const nearX = x1 + t * dx;
+  const nearY = y1 + t * dy;
+  
+  return Math.sqrt((px - nearX) ** 2 + (py - nearY) ** 2);
+}
+
+// Show context menu for drawing
+function showDrawingContextMenu(x, y, drawingIndex, drawing) {
+  // Remove existing context menu
+  const existingMenu = document.getElementById('drawing-context-menu');
+  if (existingMenu) existingMenu.remove();
+  
+  // Create context menu
+  const menu = document.createElement('div');
+  menu.id = 'drawing-context-menu';
+  menu.style.cssText = `
+    position: fixed;
+    left: ${x}px;
+    top: ${y}px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 4px 0;
+    z-index: 10000;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  `;
+  
+  const options = [
+    { label: '📝 Edit Label', action: () => editDrawingLabel(drawingIndex, drawing) },
+    { label: drawing.alertEnabled ? '🔕 Disable Alert' : '🔔 Enable Alert', action: () => toggleDrawingAlert(drawingIndex, drawing) },
+    { label: '🎨 Change Color', action: () => changeDrawingColor(drawingIndex, drawing) },
+    { label: '❌ Delete', action: () => deleteDrawing(drawingIndex), danger: true }
+  ];
+  
+  options.forEach(opt => {
+    const item = document.createElement('div');
+    item.textContent = opt.label;
+    item.style.cssText = `
+      padding: 8px 16px;
+      cursor: pointer;
+      color: ${opt.danger ? '#ff1744' : '#e8e8e8'};
+      transition: background 0.15s;
+    `;
+    item.onmouseenter = () => item.style.background = '#2a2a2a';
+    item.onmouseleave = () => item.style.background = 'transparent';
+    item.onclick = () => {
+      opt.action();
+      menu.remove();
+    };
+    menu.appendChild(item);
+  });
+  
+  document.body.appendChild(menu);
+  
+  // Close menu on click outside
+  setTimeout(() => {
+    document.addEventListener('click', function closeMenu() {
+      menu.remove();
+      document.removeEventListener('click', closeMenu);
+    });
+  }, 100);
+}
+
+// Edit drawing label
+function editDrawingLabel(index, drawing) {
+  const currentLabel = drawing.label || '';
+  const newLabel = prompt('Enter label for this drawing:', currentLabel);
+  
+  if (newLabel !== null) {
+    const drawings = getCurrentDrawings();
+    drawings[index].label = newLabel || null;
+    saveDrawings();
+    renderChart();
+  }
+}
+
+// Toggle drawing alert
+function toggleDrawingAlert(index, drawing) {
+  const drawings = getCurrentDrawings();
+  drawings[index].alertEnabled = !drawing.alertEnabled;
+  drawings[index].alertCrossed = false; // Reset alert state
+  saveDrawings();
+  renderChart();
+}
+
+// Change drawing color
+function changeDrawingColor(index, drawing) {
+  const colors = ['#ff8c00', '#f44336', '#4caf50', '#2196f3', '#ffeb3b', '#9c27b0', '#00bcd4', '#ffffff'];
+  const colorNames = ['Orange', 'Red', 'Green', 'Blue', 'Yellow', 'Purple', 'Cyan', 'White'];
+  
+  let choice = '';
+  colors.forEach((c, i) => {
+    choice += `${i + 1}. ${colorNames[i]}\n`;
+  });
+  
+  const input = prompt('Choose color (1-8):\n' + choice);
+  const colorIdx = parseInt(input) - 1;
+  
+  if (colorIdx >= 0 && colorIdx < colors.length) {
+    const drawings = getCurrentDrawings();
+    drawings[index].color = colors[colorIdx];
+    saveDrawings();
+    renderChart();
+  }
+}
+
+// Delete drawing
+function deleteDrawing(index) {
+  if (confirm('Delete this drawing?')) {
+    const drawings = getCurrentDrawings();
+    drawings.splice(index, 1);
+    saveDrawings();
+    renderChart();
+  }
+}
+
+// Check drawing alerts on price update
+function checkDrawingAlerts() {
+  const d = priceData[activeCoin];
+  if (!d) return;
+  
+  const currentPrice = d.price;
+  const drawings = getCurrentDrawings();
+  
+  drawings.forEach((drawing, idx) => {
+    if (!drawing.alertEnabled || drawing.alertCrossed) return;
+    
+    const canvas = document.getElementById('chart');
+    const pt1 = canvasToPriceTime(canvas, drawing.x1, drawing.y1);
+    const pt2 = canvasToPriceTime(canvas, drawing.x2, drawing.y2);
+    
+    if (!pt1 || !pt2) return;
+    
+    let alertPrice = null;
+    
+    // Determine alert price based on drawing type
+    if (drawing.tool === TOOLS.HLINE) {
+      alertPrice = pt1.price;
+    } else if (drawing.tool === TOOLS.TRENDLINE || drawing.tool === TOOLS.FIB_RET || drawing.tool === TOOLS.FIB_EXT) {
+      // For trendlines/fibs, check if price crosses any level
+      // Simplified: check if price is near start or end point
+      if (Math.abs(currentPrice - pt1.price) < pt1.price * 0.002 || 
+          Math.abs(currentPrice - pt2.price) < pt2.price * 0.002) {
+        alertPrice = currentPrice;
+      }
+    }
+    
+    if (alertPrice && Math.abs(currentPrice - alertPrice) < alertPrice * 0.001) {
+      // Price crossed the drawing! Trigger alert
+      drawings[idx].alertCrossed = true;
+      saveDrawings();
+      
+      const label = drawing.label || `${drawing.tool.toUpperCase()} @ ${fmtPrice(alertPrice)}`;
+      
+      // Show notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Drawing Alert Triggered', {
+          body: `${activeCoin} crossed ${label}`,
+          icon: '/favicon.ico'
+        });
+      }
+      
+      // Play sound
+      if (soundEnabled) {
+        playAlertSound();
+      }
+      
+      // Visual alert
+      const alertDiv = document.createElement('div');
+      alertDiv.style.cssText = `
+        position: fixed;
+        top: 60px;
+        right: 20px;
+        background: linear-gradient(135deg, #ff8c00, #ff6f00);
+        color: #000;
+        padding: 16px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 13px;
+        z-index: 9999;
+        box-shadow: 0 4px 16px rgba(255,140,0,0.4);
+        animation: slideIn 0.3s ease;
+      `;
+      alertDiv.textContent = `🔔 Drawing Alert: ${label}`;
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => alertDiv.remove(), 300);
+      }, 5000);
+    }
+  });
+}
+
+// Add drawing alert checking to price update interval
+const originalFetchPrices = window.fetchPrices;
+if (originalFetchPrices) {
+  window.fetchPrices = async function() {
+    await originalFetchPrices();
+    checkDrawingAlerts();
+  };
 }
 
 // Initialize drawing tools
