@@ -578,9 +578,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
    ═══════════════════════════════════════════ */
 // ═══ ASSET CATEGORIES ═══
 const CRYPTO = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE','PUMP'];
-const STOCKS = ['SPY','QQQ','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','JPM','AMD','COIN','MSTR','PLTR'];
-const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F'];
-const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB'];
+const STOCKS = ['SPY','QQQ','DIA','IWM','^VIX','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','NFLX','JPM','AMD','COIN','MSTR','PLTR','DIS','BA','INTC','UBER','SHOP','SQ','BABA','NIO'];
+const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F','HG=F','PL=F','ZW=F','ZC=F'];
+const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB','AUDUSD=X','USDCAD=X','USDCHF=X','NZDUSD=X'];
 const ALL_TICKERS = [...CRYPTO,...STOCKS,...COMMODITIES,...FOREX];
 const COINS = CRYPTO; // backward compat
 
@@ -588,11 +588,15 @@ const ASSET_NAMES = {
   // Crypto
   BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XRP:'XRP',DOGE:'Dogecoin',SUI:'Sui',AVAX:'Avalanche',LINK:'Chainlink',ADA:'Cardano',HYPE:'Hyperliquid',PEPE:'Pepe',WIF:'dogwifhat',JTO:'Jito',TIA:'Celestia',SEI:'Sei',INJ:'Injective',ONDO:'Ondo',PENDLE:'Pendle',PUMP:'Pump.fun',
   // Stocks & ETFs
-  SPY:'S&P 500 ETF',QQQ:'Nasdaq 100 ETF',AAPL:'Apple',MSFT:'Microsoft',NVDA:'NVIDIA',TSLA:'Tesla',AMZN:'Amazon',META:'Meta',GOOGL:'Alphabet',JPM:'JPMorgan',AMD:'AMD',COIN:'Coinbase',MSTR:'MicroStrategy',PLTR:'Palantir',
+  SPY:'S&P 500 ETF',QQQ:'Nasdaq 100 ETF',DIA:'Dow Jones ETF',IWM:'Russell 2000 ETF','^VIX':'Volatility Index',
+  AAPL:'Apple',MSFT:'Microsoft',NVDA:'NVIDIA',TSLA:'Tesla',AMZN:'Amazon',META:'Meta',GOOGL:'Alphabet',NFLX:'Netflix',
+  JPM:'JPMorgan',AMD:'AMD',COIN:'Coinbase',MSTR:'MicroStrategy',PLTR:'Palantir',DIS:'Disney',BA:'Boeing',INTC:'Intel',
+  UBER:'Uber',SHOP:'Shopify',SQ:'Block',BABA:'Alibaba',NIO:'NIO',
   // Commodities
-  'GC=F':'Gold','SI=F':'Silver','CL=F':'Crude Oil','NG=F':'Natural Gas',
+  'GC=F':'Gold','SI=F':'Silver','CL=F':'Crude Oil','NG=F':'Natural Gas','HG=F':'Copper','PL=F':'Platinum','ZW=F':'Wheat','ZC=F':'Corn',
   // Forex
-  'EURUSD=X':'EUR/USD','GBPUSD=X':'GBP/USD','USDJPY=X':'USD/JPY','DX-Y.NYB':'US Dollar Index'
+  'EURUSD=X':'EUR/USD','GBPUSD=X':'GBP/USD','USDJPY=X':'USD/JPY','DX-Y.NYB':'US Dollar Index',
+  'AUDUSD=X':'AUD/USD','USDCAD=X':'USD/CAD','USDCHF=X':'USD/CHF','NZDUSD=X':'NZD/USD'
 };
 const COIN_NAMES = ASSET_NAMES; // backward compat
 
