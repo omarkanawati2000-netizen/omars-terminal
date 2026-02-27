@@ -1854,7 +1854,7 @@ Provide actionable market outlook in 2-3 sentences max. Be concise and specific.
    ═══════════════════════════════════════════ */
 async function fetchEconomicCalendar(){
   try{
-    const resp=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    const resp=await fetch('https://corsproxy.io/?https://nfs.faireconomy.media/ff_calendar_thisweek.json');
     const data=await resp.json();
     if(Array.isArray(data)){
       economicEvents=data.filter(e=>e.impact==='High'||e.impact==='Medium').slice(0,15).map(e=>({
