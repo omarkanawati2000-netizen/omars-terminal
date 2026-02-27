@@ -1004,7 +1004,10 @@ function initDrawingHandlers(){
           startY: y,
           startX: x,
           originalPrice: target.type === 'start' ? d.start.price : (target.type === 'end' ? d.end.price : d.price),
-          originalIdx: target.type === 'start' ? d.start.candleIndex : (target.type === 'end' ? d.end.candleIndex : null)
+          originalIdx: target.type === 'start' ? d.start.candleIndex : (target.type === 'end' ? d.end.candleIndex : null),
+          // For trendline move, store both original prices
+          originalStartPrice: d.type === 'trendline' ? d.start.price : null,
+          originalEndPrice: d.type === 'trendline' ? d.end.price : null
         };
         chartBody.style.cursor = target.type === 'move' ? 'move' : 'grab';
         e.preventDefault();
@@ -1051,10 +1054,11 @@ function initDrawingHandlers(){
       if(d.type === 'hline'){
         d.price = newPrice;
       } else if(d.type === 'trendline'){
-        const deltaPrice = newPrice - dragState.originalPrice;
-        d.start.price += deltaPrice;
-        d.end.price += deltaPrice;
-        dragState.originalPrice = newPrice;
+        // Calculate delta from ORIGINAL mouse position
+        const originalMousePrice = yMax - (dragState.startY / cH) * yRange;
+        const deltaPrice = newPrice - originalMousePrice;
+        d.start.price = dragState.originalStartPrice + deltaPrice;
+        d.end.price = dragState.originalEndPrice + deltaPrice;
       }
     } else if(dragState.dragType === 'start'){
       d.start.price = newPrice;
