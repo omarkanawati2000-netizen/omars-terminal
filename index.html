@@ -2701,7 +2701,7 @@ function renderDepthCanvas(){
   
   const price=d.price;
   const ob=orderBookData[activeCoin];
-  let bidCum=[],askCum=[],bidTotal=0,askTotal=0;
+  let bidCum=[],askCum=[],bidTotal=0,askTotal=0,levels;
   
   // Use real L2 data if available
   if(ob&&ob.bids&&ob.asks){
@@ -2714,9 +2714,11 @@ function renderDepthCanvas(){
       askTotal+=a.size;
       askCum.push({price:a.price,cum:askTotal});
     });
+    levels=Math.max(bidCum.length,askCum.length);
   }else{
     // Fake data fallback
-    const spread=price*0.05,levels=40;
+    const spread=price*0.05;
+    levels=40;
     for(let i=0;i<levels;i++){
       bidTotal+=Math.random()*50+5+(levels-i)*2;
       askTotal+=Math.random()*50+5+(levels-i)*1.5;
