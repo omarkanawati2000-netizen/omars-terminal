@@ -862,8 +862,6 @@ function findDrawingNear(x, y, cW, cH, yMin, yMax){
   const yRange = yMax - yMin;
   const pixelThreshold = 10; // 10 pixels tolerance
   
-  console.log('Click at y:', y);
-  
   for(let i = drawings.length - 1; i >= 0; i--){
     const d = drawings[i];
     if(d.coin !== activeCoin || d.tf !== activeTF) continue;
@@ -872,8 +870,6 @@ function findDrawingNear(x, y, cW, cH, yMin, yMax){
       // Convert drawing price to Y pixel
       const drawingY = cH * (1 - (d.price - yMin) / yRange);
       const pixelDiff = Math.abs(drawingY - y);
-      
-      console.log('Drawing', i, 'at y:', drawingY.toFixed(1), 'pixelDiff:', pixelDiff.toFixed(1));
       
       if(pixelDiff < pixelThreshold){
         return i;
@@ -916,14 +912,10 @@ function initDrawingHandlers(){
     const yMin = dataMid - zr / 2;
     const yMax = dataMid + zr / 2;
     
-    console.log('Right-click at', x, y, 'checking for drawings...');
     const drawingIndex = findDrawingNear(x, y, cW, cH, yMin, yMax);
-    console.log('Found drawing index:', drawingIndex);
     
     if(drawingIndex >= 0){
       showContextMenu(e.clientX, e.clientY, drawingIndex);
-    } else {
-      console.log('No drawing found near click');
     }
   });
   
@@ -947,11 +939,6 @@ function initDrawingHandlers(){
     const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
     const candles = allCandles.slice(startIdx, endIdx);
     
-    console.log('CLICK CALCULATION:');
-    console.log('  allCandles:', allCandles.length, 'visibleCount:', visibleCount, 'startIdx:', startIdx, 'endIdx:', endIdx);
-    console.log('  candles slice:', candles.length);
-    console.log('  chartZoomX:', chartZoomX, 'chartZoomY:', chartZoomY, 'chartPanX:', chartPanX);
-    
     const dataMin = Math.min(...candles.map(c => c.l));
     const dataMax = Math.max(...candles.map(c => c.h));
     const dataMid = (dataMax + dataMin) / 2;
@@ -961,22 +948,9 @@ function initDrawingHandlers(){
     const yMax = dataMid + zr / 2;
     const yRange = yMax - yMin;
     
-    console.log('  dataMin:', dataMin.toFixed(2), 'dataMax:', dataMax.toFixed(2));
-    console.log('  dataMid:', dataMid.toFixed(2), 'dataRange:', dataRange.toFixed(2), 'zr:', zr.toFixed(2));
-    console.log('  FINAL yMin:', yMin.toFixed(2), 'yMax:', yMax.toFixed(2));
-    
     const price = yMax - (y / cH) * yRange;
     
     if(drawingTool === 'hline'){
-      console.log('Creating H-LINE:');
-      console.log('  Click Y:', y, 'Chart Height:', cH);
-      console.log('  Price range:', yMin.toFixed(2), '-', yMax.toFixed(2));
-      console.log('  Calculated price:', price.toFixed(2));
-      
-      // Verify: convert price back to Y and see if it matches
-      const verifyY = cH * (1 - (price - yMin) / yRange);
-      console.log('  Verify Y (should match click):', verifyY.toFixed(1), 'vs clicked:', y);
-      
       drawings.push({
         type: 'hline',
         price: price,
@@ -1003,16 +977,12 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
   
   const yRange = yMax - yMin;
   
-  console.log('Rendering drawings, cH:', cH, 'yMin:', yMin.toFixed(2), 'yMax:', yMax.toFixed(2));
-  
   drawings.forEach((d, idx) => {
     // Only render drawings for current coin/timeframe
     if(d.coin !== activeCoin || d.tf !== activeTF) return;
     
     if(d.type === 'hline'){
       const y = cH * (1 - (d.price - yMin) / yRange);
-      
-      console.log('Rendering drawing', idx, 'price:', d.price.toFixed(2), 'at Y:', y.toFixed(1));
       
       ctx.strokeStyle = d.color || '#ff8c00';
       ctx.lineWidth = 2;
@@ -1938,21 +1908,12 @@ function drawCandles(ctx,W,H,allCandles){
   const candles=allCandles.slice(startIdx,endIdx);
   if(candles.length<1)return;
 
-  console.log('DRAWCANDLES CALCULATION:');
-  console.log('  allCandles:', allCandles.length, 'visibleCount:', visibleCount, 'startIdx:', startIdx, 'endIdx:', endIdx);
-  console.log('  candles slice:', candles.length);
-  console.log('  chartZoomX:', chartZoomX, 'chartZoomY:', chartZoomY, 'chartPanX:', chartPanX);
-
   const dataMin=Math.min(...candles.map(c=>c.l));
   const dataMax=Math.max(...candles.map(c=>c.h));
   const dataMid=(dataMax+dataMin)/2;
   const dataRange=(dataMax-dataMin)||1;
   const zr=dataRange/chartZoomY;
   const min=dataMid-zr/2,max=dataMid+zr/2,range=max-min||1;
-  
-  console.log('  dataMin:', dataMin.toFixed(2), 'dataMax:', dataMax.toFixed(2));
-  console.log('  dataMid:', dataMid.toFixed(2), 'dataRange:', dataRange.toFixed(2), 'zr:', zr.toFixed(2));
-  console.log('  FINAL min:', min.toFixed(2), 'max:', max.toFixed(2));
 
   const barW=Math.max(2,Math.min(30,(cW/candles.length)-2));
   const gap=cW/candles.length;
