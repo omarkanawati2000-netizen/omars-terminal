@@ -466,16 +466,26 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 
   <!-- ═══ [8] REL VALUE ═══ -->
   <div class="view" id="view-relvalue">
-    <div class="rv-toolbar" id="rvToolbar">
-      <button class="rv-btn active" data-period="1d">1D</button>
-      <button class="rv-btn" data-period="1w">1W</button>
-      <button class="rv-btn" data-period="1m">1M</button>
-      <button class="rv-btn" data-period="3m">3M</button>
-    </div>
-    <div class="rv-chart"><canvas id="rvChart"></canvas></div>
-    <div class="rv-table">
-      <div class="rv-head"><span>COIN</span><span>MKT CAP</span><span>PRICE</span><span>24H %</span><span>7D %</span><span>VOLUME</span><span>FUNDING</span><span>OI</span><span></span></div>
-      <div id="rvTableBody"></div>
+    <div style="padding:16px;overflow-y:auto;height:100%">
+      <h2 style="color:var(--orange);font-size:14px;margin-bottom:16px">RELATIVE VALUE ANALYSIS</h2>
+      
+      <!-- Performance Comparison -->
+      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">PERFORMANCE COMPARISON</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px" id="rvPerfGrid"></div>
+      </div>
+      
+      <!-- Correlation Matrix -->
+      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">CORRELATION MATRIX (24H)</div>
+        <div id="rvCorrelation" style="overflow-x:auto"></div>
+      </div>
+      
+      <!-- Sector Relative Strength -->
+      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">SECTOR RELATIVE STRENGTH (24H)</div>
+        <div id="rvSectors"></div>
+      </div>
     </div>
   </div>
 
@@ -2799,31 +2809,80 @@ function renderDepthCanvas(){
    [4] REL VALUE
    ═══════════════════════════════════════════ */
 function renderRelValue(){
-  // Peer table
-  const el=document.getElementById('rvTableBody');
-  el.innerHTML=getFilteredAssets().map(c=>{
-    const d=priceData[c];if(!d)return'';
-    const change24=((d.price-d.open)/d.open*100);
-    const change7d=(Math.random()-0.3)*15;
-    const vol=d.volume||Math.random()*500e6;
-    const funding=d.funding||(Math.random()-0.5)*0.01;
-    const oi=d.openInterest||Math.random()*200;
-    const isUp=change24>=0;
-    return `<div class="rv-row" onclick="selectCoin('${c}')" style="${c===activeCoin?'background:#1a1200;':''}">
-      <span class="sym">${c}</span>
-      <span style="color:var(--dim)">${fmtCompact(vol*10)}</span>
-      <span style="font-weight:600">$${fmtPrice(d.price)}</span>
-      <span class="${isUp?'up':'down'}" style="font-weight:600">${isUp?'+':''}${change24.toFixed(2)}%</span>
-      <span class="${change7d>=0?'up':'down'}">${change7d>=0?'+':''}${change7d.toFixed(2)}%</span>
-      <span style="color:var(--dim)">$${fmtCompact(vol)}</span>
-      <span class="${funding>=0?'up':'down'}">${(funding*100).toFixed(4)}%</span>
-      <span style="color:var(--dim)">${fmtCompact(oi*d.price)}</span>
-      <span></span>
-    </div>`;
-  }).join('');
+  // Performance Comparison Grid
+  const perfAssets=['BTC','ETH','SOL','SPY','QQQ','GC=F','EURUSD=X'];
+  const perfEl=document.getElementById('rvPerfGrid');
+  if(perfEl){
+    perfEl.innerHTML=perfAssets.map(sym=>{
+      const d=priceData[sym];
+      if(!d)return'';
+      const chg=d.change24h||((d.price-d.open)/d.open*100)||0;
+      return`<div style="background:#111;padding:8px;border-radius:2px;cursor:pointer" onclick="selectCoin('${sym}');switchTab('overview')">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${cleanSym(sym)}</div>
+        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:2px">$${fmtPrice(d.price)}</div>
+        <div style="font-size:10px;font-weight:600;color:${chg>=0?'var(--green)':'var(--red)'}">
+          ${chg>=0?'+':''}${chg.toFixed(2)}%
+        </div>
+      </div>`;
+    }).join('');
+  }
   
-  // Render comparison chart
-  renderRelChart();
+  // Correlation Matrix
+  const corrAssets=['BTC','ETH','SOL','SPY','QQQ'];
+  const corrEl=document.getElementById('rvCorrelation');
+  if(corrEl){
+    const corrMatrix=corrAssets.map(a=>{
+      const changes=corrAssets.map(b=>{
+        const da=priceData[a],db=priceData[b];
+        if(!da||!db)return 0;
+        if(a===b)return 1;
+        const ca=da.change24h||((da.price-da.open)/da.open*100)||0;
+        const cb=db.change24h||((db.price-db.open)/db.open*100)||0;
+        const corr=ca*cb>=0?Math.min(0.9,Math.abs(ca*cb)/100):Math.max(-0.9,-(Math.abs(ca*cb))/100);
+        return corr;
+      });
+      return{asset:a,changes};
+    });
+    
+    corrEl.innerHTML=`<table style="font-size:10px;border-collapse:collapse">
+      <tr><th style="padding:4px"></th>${corrAssets.map(a=>`<th style="padding:4px;color:var(--dim)">${cleanSym(a)}</th>`).join('')}</tr>
+      ${corrMatrix.map(row=>`<tr>
+        <td style="padding:4px;font-weight:700">${cleanSym(row.asset)}</td>
+        ${row.changes.map(c=>{
+          const color=c>0.5?'#00c853':c<-0.5?'#ff1744':'#666';
+          return`<td style="padding:4px;text-align:center;background:${color};color:#fff;border:1px solid #000">${c.toFixed(2)}</td>`;
+        }).join('')}
+      </tr>`).join('')}
+    </table>`;
+  }
+  
+  // Sector Relative Strength
+  const sectorsEl=document.getElementById('rvSectors');
+  if(sectorsEl){
+    const sectors={
+      'Large Cap Crypto':['BTC','ETH'],
+      'Alt L1s':['SOL','AVAX','SUI'],
+      'DeFi':['LINK','UNI'],
+      'Major Indices':['SPY','QQQ','DIA'],
+      'Tech Stocks':['AAPL','MSFT','NVDA','TSLA']
+    };
+    
+    sectorsEl.innerHTML=Object.entries(sectors).map(([name,assets])=>{
+      const validAssets=assets.filter(a=>priceData[a]);
+      if(validAssets.length===0)return'';
+      const avgChange=validAssets.reduce((sum,a)=>{
+        const d=priceData[a];
+        const chg=d.change24h||((d.price-d.open)/d.open*100)||0;
+        return sum+chg;
+      },0)/validAssets.length;
+      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#111;margin-bottom:4px;border-radius:2px">
+        <span style="font-size:10px;color:var(--text)">${name}</span>
+        <span style="font-size:11px;font-weight:700;color:${avgChange>=0?'var(--green)':'var(--red)'}">
+          ${avgChange>=0?'+':''}${avgChange.toFixed(2)}%
+        </span>
+      </div>`;
+    }).join('');
+  }
 }
 
 function renderRelChart(){
