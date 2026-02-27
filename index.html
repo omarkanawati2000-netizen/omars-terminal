@@ -873,10 +873,19 @@ function findDrawingNear(x, y, cW, cH, yMin, yMax){
     }
     
     else if(d.type === 'trendline'){
+      // Get current visible range for X conversion
+      const allCandles = candleData[candleKey(activeCoin, activeTF)];
+      if(!allCandles) continue;
+      const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+      const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+      const gap = cW / visibleCount;
+      
       const y1 = cH * (1 - (d.start.price - yMin) / yRange);
       const y2 = cH * (1 - (d.end.price - yMin) / yRange);
-      const x1 = d.start.x;
-      const x2 = d.end.x;
+      
+      // Convert candle indices to screen X coordinates
+      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
+      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
       
       // Calculate distance from point to line segment
       const A = x - x1;
@@ -956,7 +965,9 @@ function initDrawingHandlers(){
     const allCandles = candleData[candleKey(activeCoin, activeTF)];
     if(!allCandles || allCandles.length < 2) return;
     
-    const mB = 30, cH = rect.height - mB;
+    const mB = 30, mR = 80;
+    const cH = rect.height - mB;
+    const cW = rect.width - mR;
     
     // Calculate visible range exactly like drawCandles does
     const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
@@ -994,15 +1005,17 @@ function initDrawingHandlers(){
     
     else if(drawingTool === 'trendline'){
       if(!drawingStart){
-        // First click - store start point
-        drawingStart = {x, y, price};
+        // First click - store start point (use candle index for X)
+        const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
+        drawingStart = {candleIndex, price};
         chartBody.style.cursor = 'crosshair';
       } else {
         // Second click - create trendline
+        const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
         drawings.push({
           type: 'trendline',
           start: drawingStart,
-          end: {x, y, price},
+          end: {candleIndex, price},
           color: '#ff8c00',
           label: null,
           coin: activeCoin,
@@ -1024,6 +1037,13 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
   if(!drawings || drawings.length === 0) return;
   
   const yRange = yMax - yMin;
+  
+  // Get current visible candle range for X coordinate conversion
+  const allCandles = candleData[candleKey(activeCoin, activeTF)];
+  if(!allCandles) return;
+  const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+  const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+  const gap = cW / visibleCount;
   
   drawings.forEach((d, idx) => {
     // Only render drawings for current coin/timeframe
@@ -1057,8 +1077,10 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
     else if(d.type === 'trendline'){
       const y1 = cH * (1 - (d.start.price - yMin) / yRange);
       const y2 = cH * (1 - (d.end.price - yMin) / yRange);
-      const x1 = d.start.x;
-      const x2 = d.end.x;
+      
+      // Convert candle indices to screen X coordinates
+      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
+      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
       
       // Extend line beyond endpoints
       const dx = x2 - x1;
