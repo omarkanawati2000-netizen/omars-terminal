@@ -1007,14 +1007,11 @@ function initDrawingHandlers(){
       if(!drawingStart){
         // First click - store start point (use candle index for X)
         const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
-        console.log('TREND Click 1: x=', x, 'cW=', cW, 'candles.length=', candles.length, 'startIdx=', startIdx, '=> candleIndex=', candleIndex);
         drawingStart = {candleIndex, price};
         chartBody.style.cursor = 'crosshair';
       } else {
         // Second click - create trendline
         const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
-        console.log('TREND Click 2: x=', x, 'cW=', cW, 'candles.length=', candles.length, 'startIdx=', startIdx, '=> candleIndex=', candleIndex);
-        console.log('Creating trendline from', drawingStart.candleIndex, 'to', candleIndex);
         drawings.push({
           type: 'trendline',
           start: drawingStart,
@@ -1086,10 +1083,6 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
       const relativeIdx2 = d.end.candleIndex - startIdx;
       const x1 = relativeIdx1 * gap + gap / 2;
       const x2 = relativeIdx2 * gap + gap / 2;
-      
-      console.log('TREND Render: startIdx=', startIdx, 'gap=', gap.toFixed(2), 'visibleCount=', visibleCount);
-      console.log('  Point 1: candleIdx=', d.start.candleIndex, 'relative=', relativeIdx1, '=> x=', x1.toFixed(1));
-      console.log('  Point 2: candleIdx=', d.end.candleIndex, 'relative=', relativeIdx2, '=> x=', x2.toFixed(1));
       
       // Draw line connecting the two points (no extension)
       ctx.strokeStyle = d.color || '#ff8c00';
