@@ -605,7 +605,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
    ═══════════════════════════════════════════ */
 // ═══ ASSET CATEGORIES ═══
 const CRYPTO = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE','PUMP'];
-const STOCKS = ['SPY','QQQ','DIA','IWM','^VIX','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','NFLX','JPM','AMD','COIN','MSTR','PLTR','DIS','BA','INTC','UBER','SHOP','SQ','BABA','NIO'];
+const STOCKS = ['SPY','QQQ','DIA','IWM','VIX','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','NFLX','JPM','AMD','COIN','MSTR','PLTR','DIS','BA','INTC','UBER','SHOP','SQ','BABA','NIO'];
 const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F','HG=F','PL=F','ZW=F','ZC=F'];
 const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB','AUDUSD=X','USDCAD=X','USDCHF=X','NZDUSD=X'];
 const ALL_TICKERS = [...CRYPTO,...STOCKS,...COMMODITIES,...FOREX];
@@ -1752,6 +1752,7 @@ async function fetchStocks(){
     try{
       const url=CORS_PROXY+encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`);
       const resp=await fetch(url);
+      if(!resp.ok)return; // Silently skip 404s and other errors
       const data=await resp.json();
       const result=data.chart&&data.chart.result&&data.chart.result[0];
       if(!result||!result.meta)return;
