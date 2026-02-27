@@ -3208,26 +3208,22 @@ document.addEventListener('keydown',e=>{
   // Indicator toggles (Alt + letter)
   else if(e.altKey&&e.key==='s'){
     indicators.sma20=!indicators.sma20;
-    const btn=document.getElementById('ind-sma20');
-    if(btn){indicators.sma20?btn.classList.add('active'):btn.classList.remove('active')}
+    syncIndicatorButtons();
     saveSettings();renderChart();
   }
   else if(e.altKey&&e.key==='e'){
     indicators.ema20=!indicators.ema20;
-    const btn=document.getElementById('ind-ema20');
-    if(btn){indicators.ema20?btn.classList.add('active'):btn.classList.remove('active')}
+    syncIndicatorButtons();
     saveSettings();renderChart();
   }
   else if(e.altKey&&e.key==='b'){
     indicators.bb=!indicators.bb;
-    const btn=document.getElementById('ind-bb');
-    if(btn){indicators.bb?btn.classList.add('active'):btn.classList.remove('active')}
+    syncIndicatorButtons();
     saveSettings();renderChart();
   }
   else if(e.altKey&&e.key==='v'){
     indicators.vwap=!indicators.vwap;
-    const btn=document.getElementById('ind-vwap');
-    if(btn){indicators.vwap?btn.classList.add('active'):btn.classList.remove('active')}
+    syncIndicatorButtons();
     saveSettings();renderChart();
   }
   
@@ -3301,20 +3297,26 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
   chartType=b.dataset.type;renderChart();
 }));
 
-// Indicator toggles
-['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
-  const btn=document.getElementById('ind-'+ind);
-  if(!btn)return;
-  // Set initial state
-  if(indicators[ind])btn.classList.add('active');
-  btn.addEventListener('click',()=>{
-    indicators[ind]=!indicators[ind];
-    // Always sync visual state with actual state
+// Sync indicator button states with actual state
+function syncIndicatorButtons(){
+  ['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
+    const btn=document.getElementById('ind-'+ind);
+    if(!btn)return;
     if(indicators[ind]){
       btn.classList.add('active');
     } else {
       btn.classList.remove('active');
     }
+  });
+}
+
+// Indicator toggles
+['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
+  const btn=document.getElementById('ind-'+ind);
+  if(!btn)return;
+  btn.addEventListener('click',()=>{
+    indicators[ind]=!indicators[ind];
+    syncIndicatorButtons();
     saveSettings();
     renderChart();
   });
@@ -3328,6 +3330,7 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 loadFromURL();
 loadSavedLayouts();
 loadSettings();
+syncIndicatorButtons(); // Sync button states after loading settings
 loadPortfolio();
 loadDrawings();
 initDrawingHandlers();
