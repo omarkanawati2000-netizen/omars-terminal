@@ -87,7 +87,12 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
 
+/* Utility buttons (export, data, share, draw) */
+.tool-btn{padding:3px 6px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:600}
+.tool-btn:hover{color:var(--dim);background:#1a1a1a}
+
 /* Drawing tools dropdown */
+.draw-toggle-btn:hover{color:var(--dim);background:#1a1a1a}
 .draw-menu-item{padding:8px 12px;cursor:pointer;font-size:11px;color:var(--text);font-family:var(--font);transition:background 0.15s}
 .draw-menu-item:hover{background:#2a2a2a;color:var(--orange)}
 .draw-menu-item.active{color:var(--orange);font-weight:600}
@@ -382,25 +387,25 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
-            <div style="position:relative;display:inline-block">
-              <button class="tf-btn" onclick="toggleDrawingMenu()" id="drawingMenuBtn" style="font-size:9px;padding:3px 8px">DRAW ▼</button>
-              <div id="drawingMenu" style="display:none;position:absolute;top:100%;left:0;background:#1a1a1a;border:1px solid #333;border-radius:3px;margin-top:2px;z-index:100;min-width:140px">
-                <div class="draw-menu-item" onclick="setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
-                <div class="draw-menu-item" onclick="setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
+            <div style="position:relative;display:inline-block;isolation:isolate">
+              <button class="draw-toggle-btn" onclick="toggleDrawingMenu();event.stopPropagation()" id="drawingMenuBtn" style="font-size:9px;padding:3px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);cursor:pointer;border-radius:3px;font-weight:600">DRAW ▼</button>
+              <div id="drawingMenu" style="display:none;position:absolute;top:100%;left:0;background:#1a1a1a;border:1px solid #333;border-radius:3px;margin-top:2px;z-index:1000;min-width:140px;box-shadow:0 4px 8px rgba(0,0,0,0.5)">
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
                 <div style="border-top:1px solid #333;margin:2px 0"></div>
-                <div class="draw-menu-item" onclick="toggleDrawingsPanel()" style="color:var(--orange)">OBJECTS</div>
-                <div class="draw-menu-item" onclick="clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();toggleDrawingsPanel()" style="color:var(--orange)">OBJECTS</div>
+                <div class="draw-menu-item" onclick="event.stopPropagation();clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
               </div>
             </div>
             <div class="chart-sep"></div>
-            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
-            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">DATA</button>
-            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">SHARE</button>
+            <button class="tool-btn" onclick="exportChartPNG()" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
+            <button class="tool-btn" onclick="downloadCSV()" title="Download CSV data (Ctrl+D)">DATA</button>
+            <button class="tool-btn" onclick="shareChart()" title="Copy share URL">SHARE</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
