@@ -1007,11 +1007,14 @@ function initDrawingHandlers(){
       if(!drawingStart){
         // First click - store start point (use candle index for X)
         const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
+        console.log('TREND Click 1: x=', x, 'cW=', cW, 'candles.length=', candles.length, 'startIdx=', startIdx, '=> candleIndex=', candleIndex);
         drawingStart = {candleIndex, price};
         chartBody.style.cursor = 'crosshair';
       } else {
         // Second click - create trendline
         const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
+        console.log('TREND Click 2: x=', x, 'cW=', cW, 'candles.length=', candles.length, 'startIdx=', startIdx, '=> candleIndex=', candleIndex);
+        console.log('Creating trendline from', drawingStart.candleIndex, 'to', candleIndex);
         drawings.push({
           type: 'trendline',
           start: drawingStart,
@@ -1078,34 +1081,32 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
       const y1 = cH * (1 - (d.start.price - yMin) / yRange);
       const y2 = cH * (1 - (d.end.price - yMin) / yRange);
       
-      // Convert candle indices to screen X coordinates
-      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
-      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
+      // Convert candle indices to screen X coordinates  
+      const relativeIdx1 = d.start.candleIndex - startIdx;
+      const relativeIdx2 = d.end.candleIndex - startIdx;
+      const x1 = relativeIdx1 * gap + gap / 2;
+      const x2 = relativeIdx2 * gap + gap / 2;
       
-      // Extend line beyond endpoints
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const extendFactor = 10;
-      const startX = x1 - dx * extendFactor;
-      const startY = y1 - dy * extendFactor;
-      const endX = x2 + dx * extendFactor;
-      const endY = y2 + dy * extendFactor;
+      console.log('TREND Render: startIdx=', startIdx, 'gap=', gap.toFixed(2), 'visibleCount=', visibleCount);
+      console.log('  Point 1: candleIdx=', d.start.candleIndex, 'relative=', relativeIdx1, '=> x=', x1.toFixed(1));
+      console.log('  Point 2: candleIdx=', d.end.candleIndex, 'relative=', relativeIdx2, '=> x=', x2.toFixed(1));
       
+      // Draw line connecting the two points (no extension)
       ctx.strokeStyle = d.color || '#ff8c00';
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
       ctx.beginPath();
-      ctx.moveTo(Math.max(0, startX), startY);
-      ctx.lineTo(Math.min(cW, endX), endY);
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
       ctx.stroke();
       
-      // Draw points
+      // Draw endpoint circles
       ctx.fillStyle = d.color || '#ff8c00';
       ctx.beginPath();
-      ctx.arc(x1, y1, 4, 0, Math.PI * 2);
+      ctx.arc(x1, y1, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+      ctx.arc(x2, y2, 5, 0, Math.PI * 2);
       ctx.fill();
       
       // Draw custom label if set
