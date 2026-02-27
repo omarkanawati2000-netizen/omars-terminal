@@ -595,6 +595,7 @@ let drawingTool = null; // hline, trendline, fib_ret, fib_ext, rectangle, ruler,
 let drawings = []; // {type, data, color, label, alert}
 let drawingStart = null; // For two-click tools (trendline, fib, etc.)
 let dragState = null; // {drawingIndex, dragType: 'move'|'start'|'end', offsetY, offsetIdx}
+let didDrag = false; // Track if we just finished a drag (prevent click event)
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -996,6 +997,7 @@ function initDrawingHandlers(){
       const target = findClickTarget(x, y, cW, cH, yMin, yMax);
       if(target){
         const d = drawings[target.index];
+        didDrag = false; // Reset before starting new drag
         dragState = {
           drawingIndex: target.index,
           dragType: target.type,
@@ -1013,6 +1015,7 @@ function initDrawingHandlers(){
   // Mouse move - update drag or cursor
   chartBody.addEventListener('mousemove', (e) => {
     if(dragState){
+      didDrag = true; // Mark that we moved during drag
       // Update drag position
     
     const rect = chartBody.getBoundingClientRect();
@@ -1103,6 +1106,8 @@ function initDrawingHandlers(){
       saveDrawings();
       dragState = null;
       chartBody.style.cursor = 'default';
+      // Keep didDrag true briefly to prevent click event
+      setTimeout(() => { didDrag = false; }, 50);
     }
   });
   
@@ -1143,6 +1148,7 @@ function initDrawingHandlers(){
   });
   
   chartBody.addEventListener('click', (e) => {
+    if(didDrag) return; // Prevent click after drag
     if(!drawingTool) return;
     
     const rect = chartBody.getBoundingClientRect();
