@@ -87,11 +87,23 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
 
-/* Drawing tools */
-.draw-btn{padding:4px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:500;transition:all 0.15s}
-.draw-btn:hover{color:var(--orange-dim);border-color:var(--orange-dim);background:#1a1a1a}
-.draw-btn.active{background:var(--orange);color:#000;border-color:var(--orange);font-weight:700}
-.draw-btn-icon{font-size:12px;margin-right:3px}
+/* Drawing tools dropdown */
+.draw-menu-item{padding:8px 12px;cursor:pointer;font-size:11px;color:var(--text);font-family:var(--font);transition:background 0.15s}
+.draw-menu-item:hover{background:#2a2a2a;color:var(--orange)}
+.draw-menu-item.active{color:var(--orange);font-weight:600}
+
+/* Drawings panel */
+.drawings-panel{position:fixed;top:100px;right:20px;width:280px;max-height:calc(100vh - 140px);background:#0d0d0d;border:1px solid #333;border-radius:4px;z-index:1000;display:none;flex-direction:column;box-shadow:0 4px 16px rgba(0,0,0,0.6)}
+.drawings-panel.show{display:flex}
+.drawings-panel-head{padding:10px 12px;background:#080808;border-bottom:1px solid #333;font-size:11px;font-weight:700;color:var(--orange);display:flex;justify-content:space-between;align-items:center}
+.drawings-panel-body{flex:1;overflow-y:auto;padding:4px}
+.drawing-item{padding:6px 8px;margin:2px 0;background:#111;border-radius:2px;font-size:10px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.drawing-item:hover{background:#1a1a1a}
+.drawing-item-icon{width:16px;height:16px;border-radius:2px;flex-shrink:0}
+.drawing-item-label{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.drawing-item-actions{display:flex;gap:4px}
+.drawing-item-btn{padding:2px 6px;background:transparent;border:1px solid #333;color:var(--muted);font-size:8px;cursor:pointer;border-radius:2px}
+.drawing-item-btn:hover{color:var(--orange);border-color:var(--orange)}
 
 .chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
 .chart-body canvas{width:100%;height:100%;pointer-events:none}
@@ -370,14 +382,21 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
-            <button class="draw-btn" data-tool="hline" onclick="setDrawingTool('hline')" title="Horizontal Line (H)"><span class="draw-btn-icon">━</span>H-LINE</button>
-            <button class="draw-btn" data-tool="trendline" onclick="setDrawingTool('trendline')" title="Trend Line (T)"><span class="draw-btn-icon">╱</span>TREND</button>
-            <button class="draw-btn" data-tool="fib_ret" onclick="setDrawingTool('fib_ret')" title="Fibonacci Retracement (F)"><span class="draw-btn-icon">F</span>FIB</button>
-            <button class="draw-btn" data-tool="fib_ext" onclick="setDrawingTool('fib_ext')" title="Fibonacci Extension"><span class="draw-btn-icon">E</span>FIB-E</button>
-            <button class="draw-btn" data-tool="rectangle" onclick="setDrawingTool('rectangle')" title="Rectangle (R)"><span class="draw-btn-icon">▭</span>RECT</button>
-            <button class="draw-btn" data-tool="ruler" onclick="setDrawingTool('ruler')" title="Ruler/Measure (M)"><span class="draw-btn-icon">M</span>RULER</button>
-            <button class="draw-btn" data-tool="text" onclick="setDrawingTool('text')" title="Text Label (L)"><span class="draw-btn-icon">T</span>TEXT</button>
-            <button class="tf-btn" onclick="clearDrawings()" style="font-size:9px;padding:3px 6px;color:#ff1744" title="Clear all drawings">CLEAR</button>
+            <div style="position:relative;display:inline-block">
+              <button class="tf-btn" onclick="toggleDrawingMenu()" id="drawingMenuBtn" style="font-size:9px;padding:3px 8px">DRAW ▼</button>
+              <div id="drawingMenu" style="display:none;position:absolute;top:100%;left:0;background:#1a1a1a;border:1px solid #333;border-radius:3px;margin-top:2px;z-index:100;min-width:140px">
+                <div class="draw-menu-item" onclick="setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
+                <div class="draw-menu-item" onclick="setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
+                <div style="border-top:1px solid #333;margin:2px 0"></div>
+                <div class="draw-menu-item" onclick="toggleDrawingsPanel()" style="color:var(--orange)">📋 OBJECTS</div>
+                <div class="draw-menu-item" onclick="clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
+              </div>
+            </div>
             <div class="chart-sep"></div>
             <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
             <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
@@ -497,6 +516,15 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
       </div>
       <div class="pos-content" id="posContent"></div>
     </div>
+  </div>
+
+  <!-- Drawings Panel -->
+  <div class="drawings-panel" id="drawingsPanel">
+    <div class="drawings-panel-head">
+      <span>OBJECTS</span>
+      <span onclick="toggleDrawingsPanel()" style="cursor:pointer;color:var(--muted)">✕</span>
+    </div>
+    <div class="drawings-panel-body" id="drawingsPanelBody"></div>
   </div>
 
   <!-- Add Position Modal -->
@@ -766,10 +794,21 @@ function setDrawingTool(tool){
   drawingTool = drawingTool === tool ? null : tool; // toggle off if clicking same tool
   drawingStart = null; // Reset any in-progress drawing
   
-  // Update button states
-  document.querySelectorAll('.draw-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.tool === drawingTool);
+  // Update menu item states
+  document.querySelectorAll('.draw-menu-item').forEach(item => {
+    item.classList.remove('active');
   });
+  if(drawingTool){
+    event.target.closest('.draw-menu-item')?.classList.add('active');
+  }
+  
+  // Close menu
+  const menu = document.getElementById('drawingMenu');
+  const btn = document.getElementById('drawingMenuBtn');
+  if(menu && btn){
+    menu.style.display = 'none';
+    btn.textContent = 'DRAW ▼';
+  }
   
   // Change cursor
   const chartBody = document.getElementById('chartBody');
@@ -799,13 +838,69 @@ function clearDrawings(){
     drawings = drawings.filter(d => d.coin !== activeCoin || d.tf !== activeTF);
     saveDrawings();
     renderChart();
+    renderDrawingsPanel();
   }
+}
+
+function toggleDrawingMenu(){
+  const menu = document.getElementById('drawingMenu');
+  const btn = document.getElementById('drawingMenuBtn');
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? 'DRAW ▼' : 'DRAW ▲';
+  
+  if(!isOpen){
+    // Close when clicking outside
+    setTimeout(() => {
+      const closeMenu = (e) => {
+        if(!menu.contains(e.target) && !btn.contains(e.target)){
+          menu.style.display = 'none';
+          btn.textContent = 'DRAW ▼';
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      document.addEventListener('click', closeMenu);
+    }, 10);
+  }
+}
+
+function toggleDrawingsPanel(){
+  const panel = document.getElementById('drawingsPanel');
+  panel.classList.toggle('show');
+  renderDrawingsPanel();
+}
+
+function renderDrawingsPanel(){
+  const panel = document.getElementById('drawingsPanelBody');
+  if(!panel) return;
+  
+  const currentDrawings = drawings.filter(d => d.coin === activeCoin && d.tf === activeTF);
+  
+  if(currentDrawings.length === 0){
+    panel.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:10px">No drawings</div>';
+    return;
+  }
+  
+  panel.innerHTML = currentDrawings.map((d, idx) => {
+    const actualIndex = drawings.indexOf(d);
+    const typeLabel = d.type === 'hline' ? 'H-LINE' : d.type === 'trendline' ? 'TREND' : d.type.toUpperCase();
+    const label = d.label || typeLabel;
+    
+    return `<div class="drawing-item">
+      <div class="drawing-item-icon" style="background:${d.color || '#ff8c00'}"></div>
+      <div class="drawing-item-label" title="${label}">${label}</div>
+      <div class="drawing-item-actions">
+        <button class="drawing-item-btn" onclick="event.stopPropagation();deleteDrawing(${actualIndex})" title="Delete">DEL</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function deleteDrawing(index){
   drawings.splice(index, 1);
   saveDrawings();
   renderChart();
+  renderDrawingsPanel();
   closeContextMenu();
 }
 
@@ -815,6 +910,7 @@ function editDrawingLabel(index){
     drawings[index].label = label || null;
     saveDrawings();
     renderChart();
+    renderDrawingsPanel();
   }
   closeContextMenu();
 }
@@ -823,6 +919,7 @@ function changeDrawingColor(index, color){
   drawings[index].color = color;
   saveDrawings();
   renderChart();
+  renderDrawingsPanel();
   closeContextMenu();
 }
 
@@ -1116,6 +1213,7 @@ function initDrawingHandlers(){
   chartBody.addEventListener('mouseup', (e) => {
     if(dragState){
       saveDrawings();
+      renderDrawingsPanel();
       dragState = null;
       chartBody.style.cursor = 'default';
       // Keep didDrag true briefly to prevent click event
@@ -1207,6 +1305,7 @@ function initDrawingHandlers(){
       
       saveDrawings();
       renderChart();
+      renderDrawingsPanel();
       setDrawingTool(null);
     }
     
@@ -1233,6 +1332,7 @@ function initDrawingHandlers(){
         drawingStart = null;
         saveDrawings();
         renderChart();
+        renderDrawingsPanel();
         setDrawingTool(null);
       }
     }
