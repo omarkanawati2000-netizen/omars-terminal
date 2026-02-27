@@ -593,6 +593,7 @@ let activeLayout = 'default';
 let portfolio = []; // {id, asset, side, entry, size, timestamp}
 let drawingTool = null; // hline, trendline, fib_ret, fib_ext, rectangle, ruler, text
 let drawings = []; // {type, data, color, label, alert}
+let drawingStart = null; // For two-click tools (trendline, fib, etc.)
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -761,6 +762,7 @@ function shareChart(){
    ═══════════════════════════════════════════ */
 function setDrawingTool(tool){
   drawingTool = drawingTool === tool ? null : tool; // toggle off if clicking same tool
+  drawingStart = null; // Reset any in-progress drawing
   
   // Update button states
   document.querySelectorAll('.draw-btn').forEach(b => {
@@ -774,8 +776,6 @@ function setDrawingTool(tool){
   } else {
     chartBody.style.cursor = 'default';
   }
-  
-  console.log('Drawing tool:', drawingTool || 'none');
 }
 
 // Save/load drawings
@@ -867,13 +867,38 @@ function findDrawingNear(x, y, cW, cH, yMin, yMax){
     if(d.coin !== activeCoin || d.tf !== activeTF) continue;
     
     if(d.type === 'hline'){
-      // Convert drawing price to Y pixel
       const drawingY = cH * (1 - (d.price - yMin) / yRange);
       const pixelDiff = Math.abs(drawingY - y);
+      if(pixelDiff < pixelThreshold) return i;
+    }
+    
+    else if(d.type === 'trendline'){
+      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
+      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
+      const x1 = d.start.x;
+      const x2 = d.end.x;
       
-      if(pixelDiff < pixelThreshold){
-        return i;
-      }
+      // Calculate distance from point to line segment
+      const A = x - x1;
+      const B = y - y1;
+      const C = x2 - x1;
+      const D = y2 - y1;
+      
+      const dot = A * C + B * D;
+      const lenSq = C * C + D * D;
+      let param = -1;
+      if(lenSq !== 0) param = dot / lenSq;
+      
+      let xx, yy;
+      if(param < 0){ xx = x1; yy = y1; }
+      else if(param > 1){ xx = x2; yy = y2; }
+      else{ xx = x1 + param * C; yy = y1 + param * D; }
+      
+      const dx = x - xx;
+      const dy = y - yy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if(dist < pixelThreshold) return i;
     }
   }
   return -1;
@@ -963,10 +988,33 @@ function initDrawingHandlers(){
       });
       
       saveDrawings();
-      renderChart(); // Redraw chart with new line
-      
-      // Deselect tool after drawing
+      renderChart();
       setDrawingTool(null);
+    }
+    
+    else if(drawingTool === 'trendline'){
+      if(!drawingStart){
+        // First click - store start point
+        drawingStart = {x, y, price};
+        chartBody.style.cursor = 'crosshair';
+      } else {
+        // Second click - create trendline
+        drawings.push({
+          type: 'trendline',
+          start: drawingStart,
+          end: {x, y, price},
+          color: '#ff8c00',
+          label: null,
+          coin: activeCoin,
+          tf: activeTF,
+          timestamp: Date.now()
+        });
+        
+        drawingStart = null;
+        saveDrawings();
+        renderChart();
+        setDrawingTool(null);
+      }
     }
   });
 }
@@ -1003,6 +1051,47 @@ function renderDrawings(ctx, cW, cH, yMin, yMax){
         ctx.fillRect(10, y - 12, ctx.measureText(d.label).width + 6, 14);
         ctx.fillStyle = d.color || '#ff8c00';
         ctx.fillText(d.label, 13, y - 2);
+      }
+    }
+    
+    else if(d.type === 'trendline'){
+      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
+      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
+      const x1 = d.start.x;
+      const x2 = d.end.x;
+      
+      // Extend line beyond endpoints
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const extendFactor = 10;
+      const startX = x1 - dx * extendFactor;
+      const startY = y1 - dy * extendFactor;
+      const endX = x2 + dx * extendFactor;
+      const endY = y2 + dy * extendFactor;
+      
+      ctx.strokeStyle = d.color || '#ff8c00';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(Math.max(0, startX), startY);
+      ctx.lineTo(Math.min(cW, endX), endY);
+      ctx.stroke();
+      
+      // Draw points
+      ctx.fillStyle = d.color || '#ff8c00';
+      ctx.beginPath();
+      ctx.arc(x1, y1, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x2, y2, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw custom label if set
+      if(d.label){
+        ctx.fillStyle = '#000';
+        ctx.fillRect(x1 + 8, y1 - 12, ctx.measureText(d.label).width + 6, 14);
+        ctx.fillStyle = d.color || '#ff8c00';
+        ctx.fillText(d.label, x1 + 11, y1 - 2);
       }
     }
   });
