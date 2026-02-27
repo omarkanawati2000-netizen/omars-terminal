@@ -337,8 +337,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="hdr-right">
       <div class="hdr-live"><div class="hdr-dot"></div>LIVE</div>
       <span class="hdr-time" id="clock"></span>
-      <span onclick="toggleTheme()" style="cursor:pointer;font-size:14px;margin-left:8px" title="Toggle theme (Alt+T)" id="themeToggle">🌙</span>
-      <span onclick="showLayoutManager()" style="cursor:pointer;font-size:14px;margin-left:8px;color:var(--orange)" title="Manage layouts (Alt+L)">💾</span>
+      <button onclick="toggleTheme()" style="background:transparent;border:1px solid #333;color:var(--muted);padding:4px 8px;font-size:9px;cursor:pointer;border-radius:3px;font-family:var(--font);margin-left:8px" title="Toggle theme (Alt+T)">THEME</button>
+      <button onclick="showLayoutManager()" style="background:transparent;border:1px solid var(--orange);color:var(--orange);padding:4px 8px;font-size:9px;cursor:pointer;border-radius:3px;font-family:var(--font);margin-left:8px" title="Manage layouts (Alt+L)">LAYOUT</button>
       <span class="hdr-brand">OMAR TERMINAL</span>
     </div>
   </div>
@@ -393,14 +393,14 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
                 <div class="draw-menu-item" onclick="setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
                 <div class="draw-menu-item" onclick="setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
                 <div style="border-top:1px solid #333;margin:2px 0"></div>
-                <div class="draw-menu-item" onclick="toggleDrawingsPanel()" style="color:var(--orange)">📋 OBJECTS</div>
+                <div class="draw-menu-item" onclick="toggleDrawingsPanel()" style="color:var(--orange)">OBJECTS</div>
                 <div class="draw-menu-item" onclick="clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
               </div>
             </div>
             <div class="chart-sep"></div>
-            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
-            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
-            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">🔗 Share</button>
+            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
+            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">DATA</button>
+            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">SHARE</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
@@ -427,7 +427,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div id="contractInfo"></div>
         <div class="ov-section-title">MARKET SENTIMENT</div>
         <div id="fearGreedGauge"></div>
-        <div class="ov-section-title">🐋 WHALE ALERTS</div>
+        <div class="ov-section-title">LARGE TRANSACTIONS</div>
         <div id="whaleAlerts"></div>
         <div class="ov-section-title">WATCHLIST</div>
         <div id="watchlist"></div>
@@ -717,7 +717,7 @@ function showLayoutManager(){
   modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center';
   modal.innerHTML=`<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">💾 LAYOUTS</span>
+      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">LAYOUTS</span>
       <span onclick="document.getElementById('layoutModal').remove()" style="cursor:pointer;color:var(--muted);font-size:18px">✕</span>
     </div>
     <button onclick="const n=prompt('Layout name:');if(n){saveLayout(n);showLayoutManager()}" style="width:100%;background:var(--orange);color:#000;border:none;padding:8px;font-family:var(--font);font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;margin-bottom:12px">+ SAVE CURRENT LAYOUT</button>
@@ -781,7 +781,7 @@ function shareChart(){
   if(indicators.vwap)url.searchParams.set('vwap','1');
   
   navigator.clipboard.writeText(url.toString()).then(()=>{
-    alert('📋 Share URL copied to clipboard!');
+    alert('Share URL copied to clipboard!');
   }).catch(()=>{
     prompt('Share this URL:',url.toString());
   });
@@ -1474,7 +1474,7 @@ function checkPriceAlerts(){
     if(hit){
       alert.triggered=true;
       playAlertSound();
-      const msg=`🔔 PRICE ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
+      const msg=`ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
       console.log(msg);
       if('Notification' in window&&Notification.permission==='granted'){
         new Notification('Price Alert',{body:msg,icon:'https://omarkanawati2000-netizen.github.io/omars-terminal/favicon.ico'});
@@ -2086,7 +2086,7 @@ function renderWhaleAlerts(){
   ];
   
   el.innerHTML=`<div style="font-size:9px;color:var(--muted);padding:8px 12px;background:#0a0a0a">Large transactions (>$10M)</div>`+whales.map(w=>{
-    const icon=w.type==='transfer'?'📤':'🔄';
+    const icon=w.type==='transfer'?'→':'↔';
     return `<div style="padding:8px 12px;border-bottom:1px solid #0f0f0f;font-size:10px">
       <div style="display:flex;justify-content:space-between;margin-bottom:2px">
         <span style="font-weight:700;color:${categoryColor(w.coin)}">${icon} ${w.coin}</span>
@@ -2612,7 +2612,7 @@ function renderAnalysis(){
       }).join('')}
     </div>
     <div class="analysis-card">
-      <h3>📅 ECONOMIC CALENDAR (THIS WEEK)</h3>
+      <h3>ECONOMIC CALENDAR (THIS WEEK)</h3>
       ${economicEvents.length===0?'<div style="padding:12px;color:var(--muted);font-size:10px">Loading events...</div>':economicEvents.map(e=>{
         const impactColor=e.impact==='High'?'var(--red)':e.impact==='Medium'?'var(--orange)':'var(--dim)';
         const dateStr=e.date.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -3225,7 +3225,7 @@ document.addEventListener('keydown',e=>{
   }
   
   // Toggle sound (Alt+M for mute)
-  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'🔊 Sound enabled':'🔇 Sound muted')}
+  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'Sound enabled':'Sound muted')}
   
   // Toggle theme (Alt+T)
   else if(e.altKey&&e.key==='t'){toggleTheme()}
