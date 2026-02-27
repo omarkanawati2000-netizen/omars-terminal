@@ -3206,10 +3206,30 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='f'){toggleFavorite(activeCoin)}
   
   // Indicator toggles (Alt + letter)
-  else if(e.altKey&&e.key==='s'){indicators.sma20=!indicators.sma20;document.getElementById('ind-sma20')?.classList.toggle('active');saveSettings();renderChart()}
-  else if(e.altKey&&e.key==='e'){indicators.ema20=!indicators.ema20;document.getElementById('ind-ema20')?.classList.toggle('active');saveSettings();renderChart()}
-  else if(e.altKey&&e.key==='b'){indicators.bb=!indicators.bb;document.getElementById('ind-bb')?.classList.toggle('active');saveSettings();renderChart()}
-  else if(e.altKey&&e.key==='v'){indicators.vwap=!indicators.vwap;document.getElementById('ind-vwap')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='s'){
+    indicators.sma20=!indicators.sma20;
+    const btn=document.getElementById('ind-sma20');
+    if(btn){indicators.sma20?btn.classList.add('active'):btn.classList.remove('active')}
+    saveSettings();renderChart();
+  }
+  else if(e.altKey&&e.key==='e'){
+    indicators.ema20=!indicators.ema20;
+    const btn=document.getElementById('ind-ema20');
+    if(btn){indicators.ema20?btn.classList.add('active'):btn.classList.remove('active')}
+    saveSettings();renderChart();
+  }
+  else if(e.altKey&&e.key==='b'){
+    indicators.bb=!indicators.bb;
+    const btn=document.getElementById('ind-bb');
+    if(btn){indicators.bb?btn.classList.add('active'):btn.classList.remove('active')}
+    saveSettings();renderChart();
+  }
+  else if(e.altKey&&e.key==='v'){
+    indicators.vwap=!indicators.vwap;
+    const btn=document.getElementById('ind-vwap');
+    if(btn){indicators.vwap?btn.classList.add('active'):btn.classList.remove('active')}
+    saveSettings();renderChart();
+  }
   
   // Reset zoom (Escape or r)
   else if(e.key==='Escape'||e.key==='r'){chartZoomX=1;chartZoomY=1;chartPanX=0;document.getElementById('chartScroll').value=100;renderChart()}
@@ -3285,11 +3305,17 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
 ['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
   const btn=document.getElementById('ind-'+ind);
   if(!btn)return;
+  // Set initial state
   if(indicators[ind])btn.classList.add('active');
   btn.addEventListener('click',()=>{
     indicators[ind]=!indicators[ind];
-    btn.classList.toggle('active');
-    saveSettings(); // Save indicator preferences
+    // Always sync visual state with actual state
+    if(indicators[ind]){
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+    saveSettings();
     renderChart();
   });
 });
