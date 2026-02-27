@@ -594,6 +594,7 @@ let portfolio = []; // {id, asset, side, entry, size, timestamp}
 let drawingTool = null; // hline, trendline, fib_ret, fib_ext, rectangle, ruler, text
 let drawings = []; // {type, data, color, label, alert}
 let drawingStart = null; // For two-click tools (trendline, fib, etc.)
+let dragState = null; // {drawingIndex, dragType: 'move'|'start'|'end', offsetY, offsetIdx}
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -913,9 +914,197 @@ function findDrawingNear(x, y, cW, cH, yMin, yMax){
   return -1;
 }
 
+// Find what was clicked (drawing body or endpoint)
+function findClickTarget(x, y, cW, cH, yMin, yMax){
+  const yRange = yMax - yMin;
+  const allCandles = candleData[candleKey(activeCoin, activeTF)];
+  if(!allCandles) return null;
+  const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+  const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+  const gap = cW / visibleCount;
+  
+  for(let i = drawings.length - 1; i >= 0; i--){
+    const d = drawings[i];
+    if(d.coin !== activeCoin || d.tf !== activeTF) continue;
+    
+    if(d.type === 'hline'){
+      const drawingY = cH * (1 - (d.price - yMin) / yRange);
+      if(Math.abs(drawingY - y) < 10) return {index: i, type: 'move'};
+    }
+    
+    else if(d.type === 'trendline'){
+      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
+      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
+      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
+      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
+      
+      // Check endpoints first (priority)
+      const dist1 = Math.sqrt((x - x1) ** 2 + (y - y1) ** 2);
+      const dist2 = Math.sqrt((x - x2) ** 2 + (y - y2) ** 2);
+      if(dist1 < 10) return {index: i, type: 'start'};
+      if(dist2 < 10) return {index: i, type: 'end'};
+      
+      // Check line body
+      const A = x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
+      const dot = A * C + B * D;
+      const lenSq = C * C + D * D;
+      let param = lenSq !== 0 ? dot / lenSq : -1;
+      let xx, yy;
+      if(param < 0){ xx = x1; yy = y1; }
+      else if(param > 1){ xx = x2; yy = y2; }
+      else{ xx = x1 + param * C; yy = y1 + param * D; }
+      const dist = Math.sqrt((x - xx) ** 2 + (y - yy) ** 2);
+      if(dist < 10) return {index: i, type: 'move'};
+    }
+  }
+  return null;
+}
+
 // Mouse handler for drawing tools
 function initDrawingHandlers(){
   const chartBody = document.getElementById('chartBody');
+  
+  // Mouse down - start drag or drawing
+  chartBody.addEventListener('mousedown', (e) => {
+    if(e.button !== 0) return; // Left click only
+    
+    const rect = chartBody.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const allCandles = candleData[candleKey(activeCoin, activeTF)];
+    if(!allCandles || allCandles.length < 2) return;
+    
+    const mB = 30, mR = 80;
+    const cH = rect.height - mB;
+    const cW = rect.width - mR;
+    
+    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+    const candles = allCandles.slice(startIdx, visibleCount);
+    
+    const dataMin = Math.min(...candles.map(c => c.l));
+    const dataMax = Math.max(...candles.map(c => c.h));
+    const dataMid = (dataMax + dataMin) / 2;
+    const dataRange = (dataMax - dataMin) || 1;
+    const zr = dataRange / chartZoomY;
+    const yMin = dataMid - zr / 2;
+    const yMax = dataMid + zr / 2;
+    
+    // Check if clicking on existing drawing (when no tool selected)
+    if(!drawingTool){
+      const target = findClickTarget(x, y, cW, cH, yMin, yMax);
+      if(target){
+        const d = drawings[target.index];
+        dragState = {
+          drawingIndex: target.index,
+          dragType: target.type,
+          startY: y,
+          startX: x,
+          originalPrice: target.type === 'start' ? d.start.price : (target.type === 'end' ? d.end.price : d.price),
+          originalIdx: target.type === 'start' ? d.start.candleIndex : (target.type === 'end' ? d.end.candleIndex : null)
+        };
+        chartBody.style.cursor = target.type === 'move' ? 'move' : 'grab';
+        e.preventDefault();
+      }
+    }
+  });
+  
+  // Mouse move - update drag or cursor
+  chartBody.addEventListener('mousemove', (e) => {
+    if(dragState){
+      // Update drag position
+    
+    const rect = chartBody.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const allCandles = candleData[candleKey(activeCoin, activeTF)];
+    if(!allCandles) return;
+    
+    const mB = 30, mR = 80;
+    const cH = rect.height - mB;
+    const cW = rect.width - mR;
+    
+    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+    const candles = allCandles.slice(startIdx, visibleCount);
+    
+    const dataMin = Math.min(...candles.map(c => c.l));
+    const dataMax = Math.max(...candles.map(c => c.h));
+    const dataMid = (dataMax + dataMin) / 2;
+    const dataRange = (dataMax - dataMin) || 1;
+    const zr = dataRange / chartZoomY;
+    const yMin = dataMid - zr / 2;
+    const yMax = dataMid + zr / 2;
+    const yRange = yMax - yMin;
+    
+    const d = drawings[dragState.drawingIndex];
+    const newPrice = yMax - (y / cH) * yRange;
+    const gap = cW / visibleCount;
+    const newCandleIdx = Math.floor((x / cW) * candles.length) + startIdx;
+    
+    if(dragState.dragType === 'move'){
+      if(d.type === 'hline'){
+        d.price = newPrice;
+      } else if(d.type === 'trendline'){
+        const deltaPrice = newPrice - dragState.originalPrice;
+        d.start.price += deltaPrice;
+        d.end.price += deltaPrice;
+        dragState.originalPrice = newPrice;
+      }
+    } else if(dragState.dragType === 'start'){
+      d.start.price = newPrice;
+      d.start.candleIndex = newCandleIdx;
+    } else if(dragState.dragType === 'end'){
+      d.end.price = newPrice;
+      d.end.candleIndex = newCandleIdx;
+    }
+    
+      renderChart();
+      e.preventDefault();
+    } else if(!drawingTool) {
+      // Update cursor on hover (when not drawing)
+      const rect = chartBody.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const allCandles = candleData[candleKey(activeCoin, activeTF)];
+      if(!allCandles) return;
+      
+      const mB = 30, mR = 80;
+      const cH = rect.height - mB;
+      const cW = rect.width - mR;
+      
+      const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
+      const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
+      const candles = allCandles.slice(startIdx, visibleCount);
+      
+      const dataMin = Math.min(...candles.map(c => c.l));
+      const dataMax = Math.max(...candles.map(c => c.h));
+      const dataMid = (dataMax + dataMin) / 2;
+      const dataRange = (dataMax - dataMin) || 1;
+      const zr = dataRange / chartZoomY;
+      const yMin = dataMid - zr / 2;
+      const yMax = dataMid + zr / 2;
+      
+      const target = findClickTarget(x, y, cW, cH, yMin, yMax);
+      if(target){
+        chartBody.style.cursor = target.type === 'move' ? 'move' : 'grab';
+      } else {
+        chartBody.style.cursor = 'default';
+      }
+    }
+  });
+  
+  // Mouse up - end drag
+  chartBody.addEventListener('mouseup', (e) => {
+    if(dragState){
+      saveDrawings();
+      dragState = null;
+      chartBody.style.cursor = 'default';
+    }
+  });
   
   // Right-click for context menu
   chartBody.addEventListener('contextmenu', (e) => {
