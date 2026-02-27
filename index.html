@@ -481,22 +481,49 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 
   <!-- ═══ [5] SCREENER ═══ -->
   <div class="view" id="view-screener">
-    <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0d0d0d">
-      <span style="font-size:10px;color:var(--dim);font-weight:600">FILTER:</span>
-      <select id="screenFilter" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
-        <option value="all">All Assets</option>
-        <option value="gainers">Top Gainers</option>
-        <option value="losers">Top Losers</option>
-        <option value="volume">High Volume</option>
-        <option value="volatile">Most Volatile</option>
-      </select>
-      <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:16px">SORT:</span>
-      <select id="screenSort" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
-        <option value="change">% Change</option>
-        <option value="price">Price</option>
-        <option value="volume">Volume</option>
-        <option value="name">Name</option>
-      </select>
+    <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;background:#0d0d0d">
+      <!-- Row 1: Asset Type & Preset Filters -->
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+        <span style="font-size:10px;color:var(--dim);font-weight:600">TYPE:</span>
+        <select id="screenAssetType" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+          <option value="all">All</option>
+          <option value="crypto">Crypto</option>
+          <option value="stocks">Stocks</option>
+          <option value="commodities">Commodities</option>
+          <option value="forex">Forex</option>
+        </select>
+        <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:12px">PRESET:</span>
+        <select id="screenFilter" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+          <option value="all">All</option>
+          <option value="gainers">Top Gainers</option>
+          <option value="losers">Top Losers</option>
+          <option value="volume">High Volume</option>
+          <option value="volatile">Most Volatile</option>
+        </select>
+        <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:12px">SORT:</span>
+        <select id="screenSort" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+          <option value="change">% Change</option>
+          <option value="price">Price</option>
+          <option value="volume">Volume</option>
+          <option value="name">Name</option>
+        </select>
+      </div>
+      <!-- Row 2: Range Filters -->
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:10px;color:var(--dim)">PRICE:</span>
+          <input id="screenPriceMin" type="number" placeholder="Min" style="width:70px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
+          <span style="color:var(--dim)">-</span>
+          <input id="screenPriceMax" type="number" placeholder="Max" style="width:70px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
+        </div>
+        <div style="display:flex;gap:4px;align-items:center">
+          <span style="font-size:10px;color:var(--dim)">CHANGE %:</span>
+          <input id="screenChangeMin" type="number" placeholder="Min" style="width:60px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
+          <span style="color:var(--dim)">-</span>
+          <input id="screenChangeMax" type="number" placeholder="Max" style="width:60px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
+        </div>
+        <button onclick="resetScreenerFilters()" style="background:transparent;border:1px solid #333;color:var(--muted);padding:3px 8px;font-family:var(--font);font-size:9px;cursor:pointer;border-radius:2px">RESET</button>
+      </div>
     </div>
     <div style="overflow-y:auto;flex:1" id="screenerTable"></div>
   </div>
@@ -2855,19 +2882,46 @@ document.querySelectorAll('.rv-btn').forEach(b=>b.addEventListener('click',()=>{
 /* ═══════════════════════════════════════════
    [5] SCREENER
    ═══════════════════════════════════════════ */
+function resetScreenerFilters(){
+  document.getElementById('screenAssetType').value='all';
+  document.getElementById('screenFilter').value='all';
+  document.getElementById('screenSort').value='change';
+  document.getElementById('screenPriceMin').value='';
+  document.getElementById('screenPriceMax').value='';
+  document.getElementById('screenChangeMin').value='';
+  document.getElementById('screenChangeMax').value='';
+  renderScreener();
+}
+
 function renderScreener(){
+  const assetType=document.getElementById('screenAssetType')?.value||'all';
   const filter=document.getElementById('screenFilter')?.value||'all';
   const sortBy=document.getElementById('screenSort')?.value||'change';
+  const priceMin=parseFloat(document.getElementById('screenPriceMin')?.value)||0;
+  const priceMax=parseFloat(document.getElementById('screenPriceMax')?.value)||Infinity;
+  const changeMin=parseFloat(document.getElementById('screenChangeMin')?.value)||-Infinity;
+  const changeMax=parseFloat(document.getElementById('screenChangeMax')?.value)||Infinity;
   
   let assets=ALL_TICKERS.map(sym=>{
     const d=priceData[sym];
     if(!d)return null;
     const change=((d.price-d.open)/d.open*100);
     const volatility=d.high&&d.low?((d.high-d.low)/d.low*100):0;
-    return{sym,price:d.price,change,volume:d.volume||0,volatility,cat:assetCategory(sym)};
+    return{sym,price:d.price,change,volume:d.volume||0,volatility,cat:assetCategory(sym),type:ASSET_TYPE[sym]};
   }).filter(Boolean);
   
-  // Apply filter
+  // Apply asset type filter
+  if(assetType!=='all'){
+    assets=assets.filter(a=>a.type===assetType);
+  }
+  
+  // Apply range filters
+  assets=assets.filter(a=>
+    a.price>=priceMin && a.price<=priceMax &&
+    a.change>=changeMin && a.change<=changeMax
+  );
+  
+  // Apply preset filter
   if(filter==='gainers')assets=assets.filter(a=>a.change>0).sort((a,b)=>b.change-a.change);
   else if(filter==='losers')assets=assets.filter(a=>a.change<0).sort((a,b)=>a.change-b.change);
   else if(filter==='volume')assets.sort((a,b)=>b.volume-a.volume);
@@ -2898,8 +2952,13 @@ function renderScreener(){
   el.innerHTML=header+rows;
 }
 
+document.getElementById('screenAssetType')?.addEventListener('change',renderScreener);
 document.getElementById('screenFilter')?.addEventListener('change',renderScreener);
 document.getElementById('screenSort')?.addEventListener('change',renderScreener);
+document.getElementById('screenPriceMin')?.addEventListener('input',renderScreener);
+document.getElementById('screenPriceMax')?.addEventListener('input',renderScreener);
+document.getElementById('screenChangeMin')?.addEventListener('input',renderScreener);
+document.getElementById('screenChangeMax')?.addEventListener('input',renderScreener);
 
 function timeAgo(date){
   const now=Date.now();
