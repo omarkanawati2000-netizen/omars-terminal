@@ -387,20 +387,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
-            <div style="position:relative;display:inline-block;isolation:isolate">
+            <div style="display:inline-block">
               <button class="draw-toggle-btn" onclick="toggleDrawingMenu();event.stopPropagation()" id="drawingMenuBtn" style="font-size:9px;padding:3px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);cursor:pointer;border-radius:3px;font-weight:600">DRAW ▼</button>
-              <div id="drawingMenu" style="display:none;position:absolute;top:100%;left:0;background:#1a1a1a;border:1px solid #333;border-radius:3px;margin-top:2px;z-index:1000;min-width:140px;box-shadow:0 4px 8px rgba(0,0,0,0.5)">
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
-                <div style="border-top:1px solid #333;margin:2px 0"></div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();toggleDrawingsPanel()" style="color:var(--orange)">OBJECTS</div>
-                <div class="draw-menu-item" onclick="event.stopPropagation();clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
-              </div>
             </div>
             <div class="chart-sep"></div>
             <button class="tool-btn" onclick="exportChartPNG()" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
@@ -892,11 +880,13 @@ function toggleDrawingMenu(){
   const menu = document.getElementById('drawingMenu');
   const btn = document.getElementById('drawingMenuBtn');
   const isOpen = menu.style.display === 'block';
-  menu.style.display = isOpen ? 'none' : 'block';
-  btn.textContent = isOpen ? 'DRAW ▼' : 'DRAW ▲';
   
   if(!isOpen){
-    // Close when clicking outside
+    const rect = btn.getBoundingClientRect();
+    menu.style.top = (rect.bottom + 2) + 'px';
+    menu.style.left = rect.left + 'px';
+    menu.style.display = 'block';
+    btn.textContent = 'DRAW ▲';
     setTimeout(() => {
       const closeMenu = (e) => {
         if(!menu.contains(e.target) && !btn.contains(e.target)){
@@ -907,6 +897,9 @@ function toggleDrawingMenu(){
       };
       document.addEventListener('click', closeMenu);
     }, 10);
+  } else {
+    menu.style.display = 'none';
+    btn.textContent = 'DRAW ▼';
   }
 }
 
@@ -1523,7 +1516,7 @@ function checkPriceAlerts(){
       const msg=`ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
       console.log(msg);
       if('Notification' in window&&Notification.permission==='granted'){
-        new Notification('Price Alert',{body:msg,icon:'https://omarkanawati2000-netizen.github.io/omars-terminal/favicon.ico'});
+        new Notification('Price Alert',{body:msg,icon:'https://kanawatiomar.github.io/omars-terminal/favicon.ico'});
       }
       saveSettings();
     }
@@ -3477,5 +3470,19 @@ setInterval(fetchAIInsight,300000); // AI insight every 5 min
 setInterval(fetchEconomicCalendar,3600000); // Economic calendar every hour
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
+
+<!-- Drawing menu: lives directly on body — zero z-index/overflow interference -->
+<div id="drawingMenu" style="display:none;position:fixed;background:#1a1a1a;border:1px solid #333;border-radius:3px;z-index:99999;min-width:140px;box-shadow:0 4px 8px rgba(0,0,0,0.5)">
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
+  <div style="border-top:1px solid #333;margin:2px 0"></div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();toggleDrawingsPanel()" style="color:#ff8c00">OBJECTS</div>
+  <div class="draw-menu-item" onclick="event.stopPropagation();clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
+</div>
 </body>
 </html>
