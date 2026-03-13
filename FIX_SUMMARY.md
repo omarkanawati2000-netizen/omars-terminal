@@ -180,7 +180,7 @@ Even though the root cause is fixed, there are 3 possible remaining issues:
 
 #### **Test 1: Incognito Mode (Fresh Start)**
 1. Press `Ctrl+Shift+N` (open Incognito window)
-2. Go to: https://omarkanawati2000-netizen.github.io/omars-terminal/
+2. Go to: https://kanawatiomar.github.io/omars-terminal/
 3. **Look for alert:** "SCRIPT TAG EXECUTED - JavaScript is loading..."
    - **If alert shows** → ✅ Script runs! Continue to Test 2
    - **If NO alert** → ❌ Script blocked. Try different browser (Chrome)

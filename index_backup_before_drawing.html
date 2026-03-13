@@ -87,29 +87,6 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 .type-btn:hover{color:var(--dim)}
 .type-btn.active{color:var(--orange)}
 
-/* Utility buttons (export, data, share, draw) */
-.tool-btn{padding:3px 6px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);font-size:9px;cursor:pointer;border-radius:3px;font-weight:600}
-.tool-btn:hover{color:var(--dim);background:#1a1a1a}
-
-/* Drawing tools dropdown */
-.draw-toggle-btn:hover{color:var(--dim);background:#1a1a1a}
-.draw-menu-item{padding:8px 12px;cursor:pointer;font-size:11px;color:var(--text);font-family:var(--font);transition:background 0.15s}
-.draw-menu-item:hover{background:#2a2a2a;color:var(--orange)}
-.draw-menu-item.active{color:var(--orange);font-weight:600}
-
-/* Drawings panel */
-.drawings-panel{position:fixed;top:100px;right:20px;width:280px;max-height:calc(100vh - 140px);background:#0d0d0d;border:1px solid #333;border-radius:4px;z-index:1000;display:none;flex-direction:column;box-shadow:0 4px 16px rgba(0,0,0,0.6)}
-.drawings-panel.show{display:flex}
-.drawings-panel-head{padding:10px 12px;background:#080808;border-bottom:1px solid #333;font-size:11px;font-weight:700;color:var(--orange);display:flex;justify-content:space-between;align-items:center}
-.drawings-panel-body{flex:1;overflow-y:auto;padding:4px}
-.drawing-item{padding:6px 8px;margin:2px 0;background:#111;border-radius:2px;font-size:10px;display:flex;align-items:center;gap:6px;cursor:pointer}
-.drawing-item:hover{background:#1a1a1a}
-.drawing-item-icon{width:16px;height:16px;border-radius:2px;flex-shrink:0}
-.drawing-item-label{flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.drawing-item-actions{display:flex;gap:4px}
-.drawing-item-btn{padding:2px 6px;background:transparent;border:1px solid #333;color:var(--muted);font-size:8px;cursor:pointer;border-radius:2px}
-.drawing-item-btn:hover{color:var(--orange);border-color:var(--orange)}
-
 .chart-body{flex:1;position:relative;cursor:crosshair;overflow:hidden;background:#000}
 .chart-body canvas{width:100%;height:100%;pointer-events:none}
 .chart-ohlc{position:absolute;top:8px;left:12px;display:flex;gap:12px;font-size:10px;pointer-events:none;z-index:2}
@@ -342,8 +319,8 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
     <div class="hdr-right">
       <div class="hdr-live"><div class="hdr-dot"></div>LIVE</div>
       <span class="hdr-time" id="clock"></span>
-      <button onclick="toggleTheme()" style="background:transparent;border:1px solid #333;color:var(--muted);padding:4px 8px;font-size:9px;cursor:pointer;border-radius:3px;font-family:var(--font);margin-left:8px" title="Toggle theme (Alt+T)">THEME</button>
-      <button onclick="showLayoutManager()" style="background:transparent;border:1px solid var(--orange);color:var(--orange);padding:4px 8px;font-size:9px;cursor:pointer;border-radius:3px;font-family:var(--font);margin-left:8px" title="Manage layouts (Alt+L)">LAYOUT</button>
+      <span onclick="toggleTheme()" style="cursor:pointer;font-size:14px;margin-left:8px" title="Toggle theme (Alt+T)" id="themeToggle">🌙</span>
+      <span onclick="showLayoutManager()" style="cursor:pointer;font-size:14px;margin-left:8px;color:var(--orange)" title="Manage layouts (Alt+L)">💾</span>
       <span class="hdr-brand">OMAR TERMINAL</span>
     </div>
   </div>
@@ -387,13 +364,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
             <button class="tf-btn" id="ind-volProfile" style="font-size:9px;padding:3px 6px">VOL PROFILE</button>
             <button class="tf-btn" id="ind-liqLevels" style="font-size:9px;padding:3px 6px">LIQ LEVELS</button>
             <div class="chart-sep"></div>
-            <div style="display:inline-block">
-              <button class="draw-toggle-btn" onclick="toggleDrawingMenu();event.stopPropagation()" id="drawingMenuBtn" style="font-size:9px;padding:3px 8px;background:transparent;border:1px solid #333;color:var(--muted);font-family:var(--font);cursor:pointer;border-radius:3px;font-weight:600">DRAW ▼</button>
-            </div>
-            <div class="chart-sep"></div>
-            <button class="tool-btn" onclick="exportChartPNG()" title="Export chart as PNG (Ctrl+P)">EXPORT</button>
-            <button class="tool-btn" onclick="downloadCSV()" title="Download CSV data (Ctrl+D)">DATA</button>
-            <button class="tool-btn" onclick="shareChart()" title="Copy share URL">SHARE</button>
+            <button class="tf-btn" onclick="exportChartPNG()" style="font-size:9px;padding:3px 6px" title="Export chart as PNG (Ctrl+P)">📸 PNG</button>
+            <button class="tf-btn" onclick="downloadCSV()" style="font-size:9px;padding:3px 6px" title="Download CSV data (Ctrl+D)">📊 CSV</button>
+            <button class="tf-btn" onclick="shareChart()" style="font-size:9px;padding:3px 6px" title="Copy share URL">🔗 Share</button>
           </div>
           <div class="chart-body" id="chartBody">
             <div class="chart-watermark">OMAR</div>
@@ -420,7 +393,7 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
         <div id="contractInfo"></div>
         <div class="ov-section-title">MARKET SENTIMENT</div>
         <div id="fearGreedGauge"></div>
-        <div class="ov-section-title">LARGE TRANSACTIONS</div>
+        <div class="ov-section-title">🐋 WHALE ALERTS</div>
         <div id="whaleAlerts"></div>
         <div class="ov-section-title">WATCHLIST</div>
         <div id="watchlist"></div>
@@ -454,74 +427,37 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
 
   <!-- ═══ [8] REL VALUE ═══ -->
   <div class="view" id="view-relvalue">
-    <div style="padding:16px;overflow-y:auto;height:100%">
-      <h2 style="color:var(--orange);font-size:14px;margin-bottom:16px">RELATIVE VALUE ANALYSIS</h2>
-      
-      <!-- Performance Comparison -->
-      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px;margin-bottom:16px">
-        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">PERFORMANCE COMPARISON</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px" id="rvPerfGrid"></div>
-      </div>
-      
-      <!-- Correlation Matrix -->
-      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px;margin-bottom:16px">
-        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">CORRELATION MATRIX (24H)</div>
-        <div id="rvCorrelation" style="overflow-x:auto"></div>
-      </div>
-      
-      <!-- Sector Relative Strength -->
-      <div style="background:#0d0d0d;border:1px solid #1a1a1a;border-radius:4px;padding:12px">
-        <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px">SECTOR RELATIVE STRENGTH (24H)</div>
-        <div id="rvSectors"></div>
-      </div>
+    <div class="rv-toolbar" id="rvToolbar">
+      <button class="rv-btn active" data-period="1d">1D</button>
+      <button class="rv-btn" data-period="1w">1W</button>
+      <button class="rv-btn" data-period="1m">1M</button>
+      <button class="rv-btn" data-period="3m">3M</button>
+    </div>
+    <div class="rv-chart"><canvas id="rvChart"></canvas></div>
+    <div class="rv-table">
+      <div class="rv-head"><span>COIN</span><span>MKT CAP</span><span>PRICE</span><span>24H %</span><span>7D %</span><span>VOLUME</span><span>FUNDING</span><span>OI</span><span></span></div>
+      <div id="rvTableBody"></div>
     </div>
   </div>
 
   <!-- ═══ [5] SCREENER ═══ -->
   <div class="view" id="view-screener">
-    <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;background:#0d0d0d">
-      <!-- Row 1: Asset Type & Preset Filters -->
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-        <span style="font-size:10px;color:var(--dim);font-weight:600">TYPE:</span>
-        <select id="screenAssetType" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
-          <option value="all">All</option>
-          <option value="crypto">Crypto</option>
-          <option value="stocks">Stocks</option>
-          <option value="commodities">Commodities</option>
-          <option value="forex">Forex</option>
-        </select>
-        <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:12px">PRESET:</span>
-        <select id="screenFilter" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
-          <option value="all">All</option>
-          <option value="gainers">Top Gainers</option>
-          <option value="losers">Top Losers</option>
-          <option value="volume">High Volume</option>
-          <option value="volatile">Most Volatile</option>
-        </select>
-        <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:12px">SORT:</span>
-        <select id="screenSort" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
-          <option value="change">% Change</option>
-          <option value="price">Price</option>
-          <option value="volume">Volume</option>
-          <option value="name">Name</option>
-        </select>
-      </div>
-      <!-- Row 2: Range Filters -->
-      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-        <div style="display:flex;gap:4px;align-items:center">
-          <span style="font-size:10px;color:var(--dim)">PRICE:</span>
-          <input id="screenPriceMin" type="number" placeholder="Min" style="width:70px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
-          <span style="color:var(--dim)">-</span>
-          <input id="screenPriceMax" type="number" placeholder="Max" style="width:70px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
-        </div>
-        <div style="display:flex;gap:4px;align-items:center">
-          <span style="font-size:10px;color:var(--dim)">CHANGE %:</span>
-          <input id="screenChangeMin" type="number" placeholder="Min" style="width:60px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
-          <span style="color:var(--dim)">-</span>
-          <input id="screenChangeMax" type="number" placeholder="Max" style="width:60px;background:var(--bg3);border:1px solid #333;color:var(--text);padding:3px 6px;font-family:var(--font);font-size:10px;border-radius:2px">
-        </div>
-        <button onclick="resetScreenerFilters()" style="background:transparent;border:1px solid #333;color:var(--muted);padding:3px 8px;font-family:var(--font);font-size:9px;cursor:pointer;border-radius:2px">RESET</button>
-      </div>
+    <div style="padding:12px 16px;border-bottom:1px solid #1a1a1a;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0d0d0d">
+      <span style="font-size:10px;color:var(--dim);font-weight:600">FILTER:</span>
+      <select id="screenFilter" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+        <option value="all">All Assets</option>
+        <option value="gainers">Top Gainers</option>
+        <option value="losers">Top Losers</option>
+        <option value="volume">High Volume</option>
+        <option value="volatile">Most Volatile</option>
+      </select>
+      <span style="font-size:10px;color:var(--dim);font-weight:600;margin-left:16px">SORT:</span>
+      <select id="screenSort" style="background:var(--bg3);border:1px solid #333;color:var(--text);padding:4px 8px;font-family:var(--font);font-size:10px;border-radius:2px">
+        <option value="change">% Change</option>
+        <option value="price">Price</option>
+        <option value="volume">Volume</option>
+        <option value="name">Name</option>
+      </select>
     </div>
     <div style="overflow-y:auto;flex:1" id="screenerTable"></div>
   </div>
@@ -534,18 +470,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
   <!-- ═══ [6] PORTFOLIO ═══ -->
   <div class="view" id="view-positions">
     <div class="pos-view">
-      <!-- HL Connection Bar -->
-      <div id="hlConnectionBar" style="padding:8px 16px;background:#080808;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <span style="font-size:10px;color:var(--orange);font-weight:700;letter-spacing:0.08em">HYPERLIQUID</span>
-        <input type="text" id="hlWalletInput" placeholder="Paste wallet address (0x...)" style="flex:1;min-width:200px;max-width:420px;background:var(--bg3);border:1px solid #333;color:var(--white);padding:6px 10px;font-family:var(--font);font-size:10px;border-radius:2px" spellcheck="false" autocomplete="off">
-        <button onclick="connectHLWallet()" class="port-btn" style="padding:5px 12px">CONNECT</button>
-        <button onclick="disconnectHLWallet()" style="background:transparent;border:1px solid #333;color:var(--muted);padding:5px 10px;font-family:var(--font);font-size:9px;cursor:pointer;border-radius:2px;font-weight:600">DISCONNECT</button>
-        <span id="hlStatus" style="font-size:9px;color:var(--muted);margin-left:4px"></span>
-      </div>
       <div class="port-summary" id="portSummary"></div>
       <div class="port-toolbar">
-        <button class="port-btn" onclick="showAddPositionModal()">+ ADD POSITION (LOCAL)</button>
-        <button onclick="refreshHLData()" style="background:transparent;border:1px solid var(--orange);color:var(--orange);padding:6px 12px;font-family:var(--font);font-size:10px;font-weight:700;cursor:pointer;border-radius:3px;letter-spacing:0.05em">REFRESH HL DATA</button>
+        <button class="port-btn" onclick="showAddPositionModal()">+ ADD POSITION</button>
       </div>
       <div class="pos-subtabs">
         <div class="pos-subtab active" data-sub="positions">POSITIONS</div>
@@ -555,15 +482,6 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
       </div>
       <div class="pos-content" id="posContent"></div>
     </div>
-  </div>
-
-  <!-- Drawings Panel -->
-  <div class="drawings-panel" id="drawingsPanel">
-    <div class="drawings-panel-head">
-      <span>OBJECTS</span>
-      <span onclick="toggleDrawingsPanel()" style="cursor:pointer;color:var(--muted)">✕</span>
-    </div>
-    <div class="drawings-panel-body" id="drawingsPanelBody"></div>
   </div>
 
   <!-- Add Position Modal -->
@@ -612,9 +530,9 @@ html,body{background:var(--bg);color:var(--text);font-family:var(--font);font-si
    ═══════════════════════════════════════════ */
 // ═══ ASSET CATEGORIES ═══
 const CRYPTO = ['BTC','ETH','SOL','XRP','DOGE','SUI','AVAX','LINK','ADA','HYPE','PEPE','WIF','JTO','TIA','SEI','INJ','ONDO','PENDLE','PUMP'];
-const STOCKS = ['SPY','QQQ','DIA','IWM','VIX','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','NFLX','JPM','AMD','COIN','MSTR','PLTR','DIS','BA','INTC','UBER','SHOP','SQ','BABA','NIO'];
-const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F','HG=F','PL=F','ZW=F','ZC=F'];
-const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB','AUDUSD=X','USDCAD=X','USDCHF=X','NZDUSD=X'];
+const STOCKS = ['SPY','QQQ','AAPL','MSFT','NVDA','TSLA','AMZN','META','GOOGL','JPM','AMD','COIN','MSTR','PLTR'];
+const COMMODITIES = ['GC=F','SI=F','CL=F','NG=F'];
+const FOREX = ['EURUSD=X','GBPUSD=X','USDJPY=X','DX-Y.NYB'];
 const ALL_TICKERS = [...CRYPTO,...STOCKS,...COMMODITIES,...FOREX];
 const COINS = CRYPTO; // backward compat
 
@@ -622,22 +540,18 @@ const ASSET_NAMES = {
   // Crypto
   BTC:'Bitcoin',ETH:'Ethereum',SOL:'Solana',XRP:'XRP',DOGE:'Dogecoin',SUI:'Sui',AVAX:'Avalanche',LINK:'Chainlink',ADA:'Cardano',HYPE:'Hyperliquid',PEPE:'Pepe',WIF:'dogwifhat',JTO:'Jito',TIA:'Celestia',SEI:'Sei',INJ:'Injective',ONDO:'Ondo',PENDLE:'Pendle',PUMP:'Pump.fun',
   // Stocks & ETFs
-  SPY:'S&P 500 ETF',QQQ:'Nasdaq 100 ETF',DIA:'Dow Jones ETF',IWM:'Russell 2000 ETF','^VIX':'Volatility Index',
-  AAPL:'Apple',MSFT:'Microsoft',NVDA:'NVIDIA',TSLA:'Tesla',AMZN:'Amazon',META:'Meta',GOOGL:'Alphabet',NFLX:'Netflix',
-  JPM:'JPMorgan',AMD:'AMD',COIN:'Coinbase',MSTR:'MicroStrategy',PLTR:'Palantir',DIS:'Disney',BA:'Boeing',INTC:'Intel',
-  UBER:'Uber',SHOP:'Shopify',SQ:'Block',BABA:'Alibaba',NIO:'NIO',
+  SPY:'S&P 500 ETF',QQQ:'Nasdaq 100 ETF',AAPL:'Apple',MSFT:'Microsoft',NVDA:'NVIDIA',TSLA:'Tesla',AMZN:'Amazon',META:'Meta',GOOGL:'Alphabet',JPM:'JPMorgan',AMD:'AMD',COIN:'Coinbase',MSTR:'MicroStrategy',PLTR:'Palantir',
   // Commodities
-  'GC=F':'Gold','SI=F':'Silver','CL=F':'Crude Oil','NG=F':'Natural Gas','HG=F':'Copper','PL=F':'Platinum','ZW=F':'Wheat','ZC=F':'Corn',
+  'GC=F':'Gold','SI=F':'Silver','CL=F':'Crude Oil','NG=F':'Natural Gas',
   // Forex
-  'EURUSD=X':'EUR/USD','GBPUSD=X':'GBP/USD','USDJPY=X':'USD/JPY','DX-Y.NYB':'US Dollar Index',
-  'AUDUSD=X':'AUD/USD','USDCAD=X':'USD/CAD','USDCHF=X':'USD/CHF','NZDUSD=X':'NZD/USD'
+  'EURUSD=X':'EUR/USD','GBPUSD=X':'GBP/USD','USDJPY=X':'USD/JPY','DX-Y.NYB':'US Dollar Index'
 };
 const COIN_NAMES = ASSET_NAMES; // backward compat
 
 const ASSET_TYPE = {};
 CRYPTO.forEach(c=>ASSET_TYPE[c]='crypto');
-STOCKS.forEach(s=>ASSET_TYPE[s]='stocks');
-COMMODITIES.forEach(c=>ASSET_TYPE[c]='commodities');
+STOCKS.forEach(s=>ASSET_TYPE[s]='stock');
+COMMODITIES.forEach(c=>ASSET_TYPE[c]='commodity');
 FOREX.forEach(f=>ASSET_TYPE[f]='forex');
 
 let activeCoin = 'BTC';
@@ -662,15 +576,6 @@ let theme = 'dark';
 let customLayouts = {}; // saved layouts
 let activeLayout = 'default';
 let portfolio = []; // {id, asset, side, entry, size, timestamp}
-let drawingTool = null; // hline, trendline, fib_ret, fib_ext, rectangle, ruler, text
-let drawings = []; // {type, data, color, label, alert}
-let hlWalletAddress = localStorage.getItem('omar_hl_wallet') || '';
-let hlAccountData = null; // { positions, openOrders, fills, clearinghouse }
-let hlLoading = false;
-let hlError = null;
-let drawingStart = null; // For two-click tools (trendline, fib, etc.)
-let dragState = null; // {drawingIndex, dragType: 'move'|'start'|'end', offsetY, offsetIdx}
-let didDrag = false; // Track if we just finished a drag (prevent click event)
 
 const TF_MS = {'1m':60000,'5m':300000,'15m':900000,'1h':3600000,'4h':14400000,'1d':86400000,'1w':604800000};
 
@@ -764,7 +669,7 @@ function showLayoutManager(){
   modal.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center';
   modal.innerHTML=`<div style="background:#111;border:1px solid var(--orange);border-radius:4px;padding:20px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">LAYOUTS</span>
+      <span style="color:var(--orange);font-weight:800;font-size:14px;letter-spacing:0.1em">💾 LAYOUTS</span>
       <span onclick="document.getElementById('layoutModal').remove()" style="cursor:pointer;color:var(--muted);font-size:18px">✕</span>
     </div>
     <button onclick="const n=prompt('Layout name:');if(n){saveLayout(n);showLayoutManager()}" style="width:100%;background:var(--orange);color:#000;border:none;padding:8px;font-family:var(--font);font-weight:700;font-size:11px;cursor:pointer;border-radius:3px;margin-bottom:12px">+ SAVE CURRENT LAYOUT</button>
@@ -828,647 +733,9 @@ function shareChart(){
   if(indicators.vwap)url.searchParams.set('vwap','1');
   
   navigator.clipboard.writeText(url.toString()).then(()=>{
-    alert('Share URL copied to clipboard!');
+    alert('📋 Share URL copied to clipboard!');
   }).catch(()=>{
     prompt('Share this URL:',url.toString());
-  });
-}
-
-/* ═══════════════════════════════════════════
-   DRAWING TOOLS (Basic Setup)
-   ═══════════════════════════════════════════ */
-function setDrawingTool(tool){
-  drawingTool = drawingTool === tool ? null : tool; // toggle off if clicking same tool
-  drawingStart = null; // Reset any in-progress drawing
-  
-  // Update menu item states
-  document.querySelectorAll('.draw-menu-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  if(drawingTool){
-    event.target.closest('.draw-menu-item')?.classList.add('active');
-  }
-  
-  // Close menu
-  const menu = document.getElementById('drawingMenu');
-  const btn = document.getElementById('drawingMenuBtn');
-  if(menu && btn){
-    menu.style.display = 'none';
-    btn.textContent = 'DRAW ▼';
-  }
-  
-  // Change cursor
-  const chartBody = document.getElementById('chartBody');
-  if(drawingTool){
-    chartBody.style.cursor = 'crosshair';
-  } else {
-    chartBody.style.cursor = 'default';
-  }
-}
-
-// Save/load drawings
-function saveDrawings(){
-  try{
-    localStorage.setItem('omar_terminal_drawings', JSON.stringify(drawings));
-  }catch(e){console.error('Failed to save drawings:', e)}
-}
-
-function loadDrawings(){
-  try{
-    const saved = localStorage.getItem('omar_terminal_drawings');
-    if(saved) drawings = JSON.parse(saved);
-  }catch(e){console.error('Failed to load drawings:', e)}
-}
-
-function clearDrawings(){
-  if(confirm('Delete all drawings for this chart?')){
-    drawings = drawings.filter(d => d.coin !== activeCoin || d.tf !== activeTF);
-    saveDrawings();
-    renderChart();
-    renderDrawingsPanel();
-  }
-}
-
-function toggleDrawingMenu(){
-  const menu = document.getElementById('drawingMenu');
-  const btn = document.getElementById('drawingMenuBtn');
-  const isOpen = menu.style.display === 'block';
-  
-  if(!isOpen){
-    const rect = btn.getBoundingClientRect();
-    menu.style.top = (rect.bottom + 2) + 'px';
-    menu.style.left = rect.left + 'px';
-    menu.style.display = 'block';
-    btn.textContent = 'DRAW ▲';
-    setTimeout(() => {
-      const closeMenu = (e) => {
-        if(!menu.contains(e.target) && !btn.contains(e.target)){
-          menu.style.display = 'none';
-          btn.textContent = 'DRAW ▼';
-          document.removeEventListener('click', closeMenu);
-        }
-      };
-      document.addEventListener('click', closeMenu);
-    }, 10);
-  } else {
-    menu.style.display = 'none';
-    btn.textContent = 'DRAW ▼';
-  }
-}
-
-function toggleDrawingsPanel(){
-  const panel = document.getElementById('drawingsPanel');
-  panel.classList.toggle('show');
-  renderDrawingsPanel();
-}
-
-function renderDrawingsPanel(){
-  const panel = document.getElementById('drawingsPanelBody');
-  if(!panel) return;
-  
-  const currentDrawings = drawings.filter(d => d.coin === activeCoin && d.tf === activeTF);
-  
-  if(currentDrawings.length === 0){
-    panel.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:10px">No drawings</div>';
-    return;
-  }
-  
-  panel.innerHTML = currentDrawings.map((d, idx) => {
-    const actualIndex = drawings.indexOf(d);
-    const typeLabel = d.type === 'hline' ? 'H-LINE' : d.type === 'trendline' ? 'TREND' : d.type.toUpperCase();
-    const label = d.label || typeLabel;
-    
-    return `<div class="drawing-item">
-      <div class="drawing-item-icon" style="background:${d.color || '#ff8c00'}"></div>
-      <div class="drawing-item-label" title="${label}">${label}</div>
-      <div class="drawing-item-actions">
-        <button class="drawing-item-btn" onclick="event.stopPropagation();deleteDrawing(${actualIndex})" title="Delete">DEL</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function deleteDrawing(index){
-  drawings.splice(index, 1);
-  saveDrawings();
-  renderChart();
-  renderDrawingsPanel();
-  closeContextMenu();
-}
-
-function editDrawingLabel(index){
-  const label = prompt('Enter label text:', drawings[index].label || '');
-  if(label !== null){
-    drawings[index].label = label || null;
-    saveDrawings();
-    renderChart();
-    renderDrawingsPanel();
-  }
-  closeContextMenu();
-}
-
-function changeDrawingColor(index, color){
-  drawings[index].color = color;
-  saveDrawings();
-  renderChart();
-  renderDrawingsPanel();
-  closeContextMenu();
-}
-
-function showContextMenu(x, y, index){
-  closeContextMenu();
-  
-  const menu = document.createElement('div');
-  menu.id = 'drawing-context-menu';
-  menu.style.cssText = 'position:fixed;background:#1a1a1a;border:1px solid #333;border-radius:4px;padding:4px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.5)';
-  menu.style.left = x + 'px';
-  menu.style.top = y + 'px';
-  
-  const colors = ['#ff8c00','#ff1744','#00c853','#2196f3','#ffeb3b','#9c27b0','#00bcd4','#fff'];
-  
-  menu.innerHTML = `
-    <div onclick="editDrawingLabel(${index})" style="padding:6px 12px;cursor:pointer;color:#e8e8e8;font-size:11px;font-family:JetBrains Mono">Edit Label</div>
-    <div style="padding:6px 12px;color:#888;font-size:10px">Color:</div>
-    <div style="display:flex;gap:4px;padding:4px 12px">
-      ${colors.map(c => `<div onclick="changeDrawingColor(${index},'${c}')" style="width:20px;height:20px;background:${c};cursor:pointer;border:2px solid ${drawings[index].color===c?'#fff':'transparent'}"></div>`).join('')}
-    </div>
-    <div onclick="deleteDrawing(${index})" style="padding:6px 12px;cursor:pointer;color:#ff1744;font-size:11px;font-family:JetBrains Mono;border-top:1px solid #333;margin-top:4px">Delete</div>
-  `;
-  
-  document.body.appendChild(menu);
-  
-  // Close on click outside
-  setTimeout(() => {
-    document.addEventListener('click', closeContextMenu, {once: true});
-  }, 10);
-}
-
-function closeContextMenu(){
-  const menu = document.getElementById('drawing-context-menu');
-  if(menu) menu.remove();
-}
-
-// Find drawing near click position
-function findDrawingNear(x, y, cW, cH, yMin, yMax){
-  const yRange = yMax - yMin;
-  const pixelThreshold = 10; // 10 pixels tolerance
-  
-  for(let i = drawings.length - 1; i >= 0; i--){
-    const d = drawings[i];
-    if(d.coin !== activeCoin || d.tf !== activeTF) continue;
-    
-    if(d.type === 'hline'){
-      const drawingY = cH * (1 - (d.price - yMin) / yRange);
-      const pixelDiff = Math.abs(drawingY - y);
-      if(pixelDiff < pixelThreshold) return i;
-    }
-    
-    else if(d.type === 'trendline'){
-      // Get current visible range for X conversion
-      const allCandles = candleData[candleKey(activeCoin, activeTF)];
-      if(!allCandles) continue;
-      const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-      const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-      const gap = cW / visibleCount;
-      
-      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
-      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
-      
-      // Convert candle indices to screen X coordinates
-      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
-      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
-      
-      // Calculate distance from point to line segment
-      const A = x - x1;
-      const B = y - y1;
-      const C = x2 - x1;
-      const D = y2 - y1;
-      
-      const dot = A * C + B * D;
-      const lenSq = C * C + D * D;
-      let param = -1;
-      if(lenSq !== 0) param = dot / lenSq;
-      
-      let xx, yy;
-      if(param < 0){ xx = x1; yy = y1; }
-      else if(param > 1){ xx = x2; yy = y2; }
-      else{ xx = x1 + param * C; yy = y1 + param * D; }
-      
-      const dx = x - xx;
-      const dy = y - yy;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if(dist < pixelThreshold) return i;
-    }
-  }
-  return -1;
-}
-
-// Find what was clicked (drawing body or endpoint)
-function findClickTarget(x, y, cW, cH, yMin, yMax){
-  const yRange = yMax - yMin;
-  const allCandles = candleData[candleKey(activeCoin, activeTF)];
-  if(!allCandles) return null;
-  const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-  const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-  const gap = cW / visibleCount;
-  
-  for(let i = drawings.length - 1; i >= 0; i--){
-    const d = drawings[i];
-    if(d.coin !== activeCoin || d.tf !== activeTF) continue;
-    
-    if(d.type === 'hline'){
-      const drawingY = cH * (1 - (d.price - yMin) / yRange);
-      if(Math.abs(drawingY - y) < 10) return {index: i, type: 'move'};
-    }
-    
-    else if(d.type === 'trendline'){
-      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
-      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
-      const x1 = (d.start.candleIndex - startIdx) * gap + gap / 2;
-      const x2 = (d.end.candleIndex - startIdx) * gap + gap / 2;
-      
-      // Check endpoints first (priority)
-      const dist1 = Math.sqrt((x - x1) ** 2 + (y - y1) ** 2);
-      const dist2 = Math.sqrt((x - x2) ** 2 + (y - y2) ** 2);
-      if(dist1 < 10) return {index: i, type: 'start'};
-      if(dist2 < 10) return {index: i, type: 'end'};
-      
-      // Check line body
-      const A = x - x1, B = y - y1, C = x2 - x1, D = y2 - y1;
-      const dot = A * C + B * D;
-      const lenSq = C * C + D * D;
-      let param = lenSq !== 0 ? dot / lenSq : -1;
-      let xx, yy;
-      if(param < 0){ xx = x1; yy = y1; }
-      else if(param > 1){ xx = x2; yy = y2; }
-      else{ xx = x1 + param * C; yy = y1 + param * D; }
-      const dist = Math.sqrt((x - xx) ** 2 + (y - yy) ** 2);
-      if(dist < 10) return {index: i, type: 'move'};
-    }
-  }
-  return null;
-}
-
-// Mouse handler for drawing tools
-function initDrawingHandlers(){
-  const chartBody = document.getElementById('chartBody');
-  
-  // Mouse down - start drag or drawing
-  chartBody.addEventListener('mousedown', (e) => {
-    if(e.button !== 0) return; // Left click only
-    
-    const rect = chartBody.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const allCandles = candleData[candleKey(activeCoin, activeTF)];
-    if(!allCandles || allCandles.length < 2) return;
-    
-    const mB = 30, mR = 80;
-    const cH = rect.height - mB;
-    const cW = rect.width - mR;
-    
-    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-    const candles = allCandles.slice(startIdx, visibleCount);
-    
-    const dataMin = Math.min(...candles.map(c => c.l));
-    const dataMax = Math.max(...candles.map(c => c.h));
-    const dataMid = (dataMax + dataMin) / 2;
-    const dataRange = (dataMax - dataMin) || 1;
-    const zr = dataRange / chartZoomY;
-    const yMin = dataMid - zr / 2;
-    const yMax = dataMid + zr / 2;
-    
-    // Check if clicking on existing drawing (when no tool selected)
-    if(!drawingTool){
-      const target = findClickTarget(x, y, cW, cH, yMin, yMax);
-      if(target){
-        const d = drawings[target.index];
-        didDrag = false; // Reset before starting new drag
-        dragState = {
-          drawingIndex: target.index,
-          dragType: target.type,
-          startY: y,
-          startX: x,
-          originalPrice: target.type === 'start' ? d.start.price : (target.type === 'end' ? d.end.price : d.price),
-          originalIdx: target.type === 'start' ? d.start.candleIndex : (target.type === 'end' ? d.end.candleIndex : null),
-          // For trendline move, store both original prices and indices
-          originalStartPrice: d.type === 'trendline' ? d.start.price : null,
-          originalEndPrice: d.type === 'trendline' ? d.end.price : null,
-          originalStartIdx: d.type === 'trendline' ? d.start.candleIndex : null,
-          originalEndIdx: d.type === 'trendline' ? d.end.candleIndex : null
-        };
-        chartBody.style.cursor = target.type === 'move' ? 'move' : 'grab';
-        e.preventDefault();
-      }
-    }
-  });
-  
-  // Mouse move - update drag or cursor
-  chartBody.addEventListener('mousemove', (e) => {
-    if(dragState){
-      didDrag = true; // Mark that we moved during drag
-      // Update drag position
-    
-    const rect = chartBody.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const allCandles = candleData[candleKey(activeCoin, activeTF)];
-    if(!allCandles) return;
-    
-    const mB = 30, mR = 80;
-    const cH = rect.height - mB;
-    const cW = rect.width - mR;
-    
-    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-    const candles = allCandles.slice(startIdx, visibleCount);
-    
-    const dataMin = Math.min(...candles.map(c => c.l));
-    const dataMax = Math.max(...candles.map(c => c.h));
-    const dataMid = (dataMax + dataMin) / 2;
-    const dataRange = (dataMax - dataMin) || 1;
-    const zr = dataRange / chartZoomY;
-    const yMin = dataMid - zr / 2;
-    const yMax = dataMid + zr / 2;
-    const yRange = yMax - yMin;
-    
-    const d = drawings[dragState.drawingIndex];
-    const newPrice = yMax - (y / cH) * yRange;
-    const gap = cW / visibleCount;
-    const newCandleIdx = Math.floor((x / cW) * candles.length) + startIdx;
-    
-    if(dragState.dragType === 'move'){
-      if(d.type === 'hline'){
-        d.price = newPrice;
-      } else if(d.type === 'trendline'){
-        // Calculate delta from ORIGINAL mouse position (both X and Y)
-        const originalMousePrice = yMax - (dragState.startY / cH) * yRange;
-        const deltaPrice = newPrice - originalMousePrice;
-        
-        const originalMouseIdx = Math.floor((dragState.startX / cW) * candles.length) + startIdx;
-        const deltaIdx = newCandleIdx - originalMouseIdx;
-        
-        d.start.price = dragState.originalStartPrice + deltaPrice;
-        d.end.price = dragState.originalEndPrice + deltaPrice;
-        d.start.candleIndex = dragState.originalStartIdx + deltaIdx;
-        d.end.candleIndex = dragState.originalEndIdx + deltaIdx;
-      }
-    } else if(dragState.dragType === 'start'){
-      d.start.price = newPrice;
-      d.start.candleIndex = newCandleIdx;
-    } else if(dragState.dragType === 'end'){
-      d.end.price = newPrice;
-      d.end.candleIndex = newCandleIdx;
-    }
-    
-      renderChart();
-      e.preventDefault();
-    } else if(!drawingTool) {
-      // Update cursor on hover (when not drawing)
-      const rect = chartBody.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      
-      const allCandles = candleData[candleKey(activeCoin, activeTF)];
-      if(!allCandles) return;
-      
-      const mB = 30, mR = 80;
-      const cH = rect.height - mB;
-      const cW = rect.width - mR;
-      
-      const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-      const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-      const candles = allCandles.slice(startIdx, visibleCount);
-      
-      const dataMin = Math.min(...candles.map(c => c.l));
-      const dataMax = Math.max(...candles.map(c => c.h));
-      const dataMid = (dataMax + dataMin) / 2;
-      const dataRange = (dataMax - dataMin) || 1;
-      const zr = dataRange / chartZoomY;
-      const yMin = dataMid - zr / 2;
-      const yMax = dataMid + zr / 2;
-      
-      const target = findClickTarget(x, y, cW, cH, yMin, yMax);
-      if(target){
-        chartBody.style.cursor = target.type === 'move' ? 'move' : 'grab';
-      } else {
-        chartBody.style.cursor = 'default';
-      }
-    }
-  });
-  
-  // Mouse up - end drag
-  chartBody.addEventListener('mouseup', (e) => {
-    if(dragState){
-      saveDrawings();
-      renderDrawingsPanel();
-      dragState = null;
-      chartBody.style.cursor = 'default';
-      // Keep didDrag true briefly to prevent click event
-      setTimeout(() => { didDrag = false; }, 50);
-    }
-  });
-  
-  // Right-click for context menu
-  chartBody.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    
-    const rect = chartBody.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const allCandles = candleData[candleKey(activeCoin, activeTF)];
-    if(!allCandles || allCandles.length < 2) return;
-    
-    const mB = 30, mR = 80;
-    const cH = rect.height - mB;
-    const cW = rect.width - mR;
-    
-    // Calculate visible range exactly like drawCandles does
-    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-    const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
-    const candles = allCandles.slice(startIdx, endIdx);
-    
-    const dataMin = Math.min(...candles.map(c => c.l));
-    const dataMax = Math.max(...candles.map(c => c.h));
-    const dataMid = (dataMax + dataMin) / 2;
-    const dataRange = (dataMax - dataMin) || 1;
-    const zr = dataRange / chartZoomY;
-    const yMin = dataMid - zr / 2;
-    const yMax = dataMid + zr / 2;
-    
-    const drawingIndex = findDrawingNear(x, y, cW, cH, yMin, yMax);
-    
-    if(drawingIndex >= 0){
-      showContextMenu(e.clientX, e.clientY, drawingIndex);
-    }
-  });
-  
-  chartBody.addEventListener('click', (e) => {
-    if(didDrag) return; // Prevent click after drag
-    if(!drawingTool) return;
-    
-    const rect = chartBody.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Convert pixel Y to price - USE SAME LOGIC AS drawCandles()
-    const canvas = document.getElementById('chart');
-    const allCandles = candleData[candleKey(activeCoin, activeTF)];
-    if(!allCandles || allCandles.length < 2) return;
-    
-    const mB = 30, mR = 80;
-    const cH = rect.height - mB;
-    const cW = rect.width - mR;
-    
-    // Calculate visible range exactly like drawCandles does
-    const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-    const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-    const endIdx = Math.min(allCandles.length, startIdx + visibleCount);
-    const candles = allCandles.slice(startIdx, endIdx);
-    
-    const dataMin = Math.min(...candles.map(c => c.l));
-    const dataMax = Math.max(...candles.map(c => c.h));
-    const dataMid = (dataMax + dataMin) / 2;
-    const dataRange = (dataMax - dataMin) || 1;
-    const zr = dataRange / chartZoomY;
-    const yMin = dataMid - zr / 2;
-    const yMax = dataMid + zr / 2;
-    const yRange = yMax - yMin;
-    
-    const price = yMax - (y / cH) * yRange;
-    
-    if(drawingTool === 'hline'){
-      drawings.push({
-        type: 'hline',
-        price: price,
-        color: '#ff8c00',
-        label: null,
-        alert: false,
-        coin: activeCoin,
-        tf: activeTF,
-        timestamp: Date.now()
-      });
-      
-      saveDrawings();
-      renderChart();
-      renderDrawingsPanel();
-      setDrawingTool(null);
-    }
-    
-    else if(drawingTool === 'trendline'){
-      if(!drawingStart){
-        // First click - store start point (use candle index for X)
-        const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
-        drawingStart = {candleIndex, price};
-        chartBody.style.cursor = 'crosshair';
-      } else {
-        // Second click - create trendline
-        const candleIndex = Math.floor((x / cW) * candles.length) + startIdx;
-        drawings.push({
-          type: 'trendline',
-          start: drawingStart,
-          end: {candleIndex, price},
-          color: '#ff8c00',
-          label: null,
-          coin: activeCoin,
-          tf: activeTF,
-          timestamp: Date.now()
-        });
-        
-        drawingStart = null;
-        saveDrawings();
-        renderChart();
-        renderDrawingsPanel();
-        setDrawingTool(null);
-      }
-    }
-  });
-}
-
-// Render drawings on chart
-function renderDrawings(ctx, cW, cH, yMin, yMax){
-  if(!drawings || drawings.length === 0) return;
-  
-  const yRange = yMax - yMin;
-  
-  // Get current visible candle range for X coordinate conversion
-  const allCandles = candleData[candleKey(activeCoin, activeTF)];
-  if(!allCandles) return;
-  const visibleCount = Math.max(5, Math.floor(allCandles.length / chartZoomX));
-  const startIdx = Math.max(0, allCandles.length - visibleCount - Math.floor(chartPanX));
-  const gap = cW / visibleCount;
-  
-  drawings.forEach((d, idx) => {
-    // Only render drawings for current coin/timeframe
-    if(d.coin !== activeCoin || d.tf !== activeTF) return;
-    
-    if(d.type === 'hline'){
-      const y = cH * (1 - (d.price - yMin) / yRange);
-      
-      ctx.strokeStyle = d.color || '#ff8c00';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(cW, y);
-      ctx.stroke();
-      
-      // Draw price label
-      ctx.fillStyle = d.color || '#ff8c00';
-      ctx.font = '10px JetBrains Mono';
-      ctx.fillText(d.price.toFixed(2), cW + 5, y + 3);
-      
-      // Draw custom label if set
-      if(d.label){
-        ctx.fillStyle = '#000';
-        ctx.fillRect(10, y - 12, ctx.measureText(d.label).width + 6, 14);
-        ctx.fillStyle = d.color || '#ff8c00';
-        ctx.fillText(d.label, 13, y - 2);
-      }
-    }
-    
-    else if(d.type === 'trendline'){
-      const y1 = cH * (1 - (d.start.price - yMin) / yRange);
-      const y2 = cH * (1 - (d.end.price - yMin) / yRange);
-      
-      // Convert candle indices to screen X coordinates  
-      const relativeIdx1 = d.start.candleIndex - startIdx;
-      const relativeIdx2 = d.end.candleIndex - startIdx;
-      const x1 = relativeIdx1 * gap + gap / 2;
-      const x2 = relativeIdx2 * gap + gap / 2;
-      
-      // Draw line connecting the two points (no extension)
-      ctx.strokeStyle = d.color || '#ff8c00';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      
-      // Draw endpoint circles
-      ctx.fillStyle = d.color || '#ff8c00';
-      ctx.beginPath();
-      ctx.arc(x1, y1, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x2, y2, 5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Draw custom label if set
-      if(d.label){
-        ctx.fillStyle = '#000';
-        ctx.fillRect(x1 + 8, y1 - 12, ctx.measureText(d.label).width + 6, 14);
-        ctx.fillStyle = d.color || '#ff8c00';
-        ctx.fillText(d.label, x1 + 11, y1 - 2);
-      }
-    }
   });
 }
 
@@ -1526,7 +793,7 @@ function checkPriceAlerts(){
     if(hit){
       alert.triggered=true;
       playAlertSound();
-      const msg=`ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
+      const msg=`🔔 PRICE ALERT: ${alert.coin} ${alert.condition==='above'?'≥':'≤'} $${fmtPrice(alert.price)} (now $${fmtPrice(d.price)})`;
       console.log(msg);
       if('Notification' in window&&Notification.permission==='granted'){
         new Notification('Price Alert',{body:msg,icon:'https://kanawatiomar.github.io/omars-terminal/favicon.ico'});
@@ -1768,7 +1035,6 @@ async function fetchStocks(){
     try{
       const url=CORS_PROXY+encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=5d`);
       const resp=await fetch(url);
-      if(!resp.ok)return; // Silently skip 404s and other errors
       const data=await resp.json();
       const result=data.chart&&data.chart.result&&data.chart.result[0];
       if(!result||!result.meta)return;
@@ -1902,7 +1168,7 @@ Provide actionable market outlook in 2-3 sentences max. Be concise and specific.
    ═══════════════════════════════════════════ */
 async function fetchEconomicCalendar(){
   try{
-    const resp=await fetch('https://corsproxy.io/?https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+    const resp=await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
     const data=await resp.json();
     if(Array.isArray(data)){
       economicEvents=data.filter(e=>e.impact==='High'||e.impact==='Medium').slice(0,15).map(e=>({
@@ -2037,144 +1303,6 @@ function calcVWAP(candles){
   return vwap;
 }
 
-function calcMACD(candles, fast=12, slow=26, signal=9) {
-  if (!candles || candles.length < slow + signal) return { macd: [], signal: [], histogram: [] };
-  const emaFast = calcEMA(candles, fast);
-  const emaSlow = calcEMA(candles, slow);
-  const diff = slow - fast;
-  const macdLine = [];
-  for (let i = 0; i < emaSlow.length; i++) {
-    macdLine.push(emaFast[i + diff] - emaSlow[i]);
-  }
-  // Signal line = EMA of MACD line
-  const k = 2 / (signal + 1);
-  const sigLine = [];
-  let prev = macdLine.slice(0, signal).reduce((a, b) => a + b, 0) / signal;
-  sigLine.push(prev);
-  for (let i = signal; i < macdLine.length; i++) {
-    prev = (macdLine[i] - prev) * k + prev;
-    sigLine.push(prev);
-  }
-  const hist = [];
-  const offset = macdLine.length - sigLine.length;
-  for (let i = 0; i < sigLine.length; i++) {
-    hist.push(macdLine[i + offset] - sigLine[i]);
-  }
-  return { macd: macdLine, signal: sigLine, histogram: hist };
-}
-
-function calcStochastic(candles, kPeriod=14, dPeriod=3) {
-  if (!candles || candles.length < kPeriod) return { k: [], d: [] };
-  const kValues = [];
-  for (let i = kPeriod - 1; i < candles.length; i++) {
-    const slice = candles.slice(i - kPeriod + 1, i + 1);
-    const high = Math.max(...slice.map(c => c.h));
-    const low = Math.min(...slice.map(c => c.l));
-    const k = high === low ? 50 : ((candles[i].c - low) / (high - low)) * 100;
-    kValues.push(k);
-  }
-  const dValues = [];
-  for (let i = dPeriod - 1; i < kValues.length; i++) {
-    dValues.push(kValues.slice(i - dPeriod + 1, i + 1).reduce((a, b) => a + b, 0) / dPeriod);
-  }
-  return { k: kValues, d: dValues };
-}
-
-function calcCCI(candles, period=20) {
-  if (!candles || candles.length < period) return [];
-  const cci = [];
-  for (let i = period - 1; i < candles.length; i++) {
-    const slice = candles.slice(i - period + 1, i + 1);
-    const tps = slice.map(c => (c.h + c.l + c.c) / 3);
-    const mean = tps.reduce((a, b) => a + b, 0) / period;
-    const meanDev = tps.reduce((a, b) => a + Math.abs(b - mean), 0) / period;
-    cci.push(meanDev === 0 ? 0 : (tps[tps.length - 1] - mean) / (0.015 * meanDev));
-  }
-  return cci;
-}
-
-function calcWilliamsR(candles, period=14) {
-  if (!candles || candles.length < period) return [];
-  const wr = [];
-  for (let i = period - 1; i < candles.length; i++) {
-    const slice = candles.slice(i - period + 1, i + 1);
-    const high = Math.max(...slice.map(c => c.h));
-    const low = Math.min(...slice.map(c => c.l));
-    wr.push(high === low ? -50 : ((high - candles[i].c) / (high - low)) * -100);
-  }
-  return wr;
-}
-
-function calcATR(candles, period=14) {
-  if (!candles || candles.length < period + 1) return [];
-  const trs = [];
-  for (let i = 1; i < candles.length; i++) {
-    const tr = Math.max(candles[i].h - candles[i].l, Math.abs(candles[i].h - candles[i - 1].c), Math.abs(candles[i].l - candles[i - 1].c));
-    trs.push(tr);
-  }
-  const atr = [];
-  let avg = trs.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  atr.push(avg);
-  for (let i = period; i < trs.length; i++) {
-    avg = (avg * (period - 1) + trs[i]) / period;
-    atr.push(avg);
-  }
-  return atr;
-}
-
-function calcADX(candles, period=14) {
-  if (!candles || candles.length < period * 2 + 1) return [];
-  const pdm = [], ndm = [], tr = [];
-  for (let i = 1; i < candles.length; i++) {
-    const upMove = candles[i].h - candles[i - 1].h;
-    const downMove = candles[i - 1].l - candles[i].l;
-    pdm.push(upMove > downMove && upMove > 0 ? upMove : 0);
-    ndm.push(downMove > upMove && downMove > 0 ? downMove : 0);
-    tr.push(Math.max(candles[i].h - candles[i].l, Math.abs(candles[i].h - candles[i - 1].c), Math.abs(candles[i].l - candles[i - 1].c)));
-  }
-  // Smooth with Wilder's method
-  let smoothPDM = pdm.slice(0, period).reduce((a, b) => a + b, 0);
-  let smoothNDM = ndm.slice(0, period).reduce((a, b) => a + b, 0);
-  let smoothTR = tr.slice(0, period).reduce((a, b) => a + b, 0);
-  const dx = [];
-  for (let i = period; i < pdm.length; i++) {
-    if (i > period) {
-      smoothPDM = smoothPDM - smoothPDM / period + pdm[i];
-      smoothNDM = smoothNDM - smoothNDM / period + ndm[i];
-      smoothTR = smoothTR - smoothTR / period + tr[i];
-    }
-    const pdi = smoothTR === 0 ? 0 : (smoothPDM / smoothTR) * 100;
-    const ndi = smoothTR === 0 ? 0 : (smoothNDM / smoothTR) * 100;
-    const sum = pdi + ndi;
-    dx.push(sum === 0 ? 0 : Math.abs(pdi - ndi) / sum * 100);
-  }
-  if (dx.length < period) return [];
-  const adx = [];
-  let adxVal = dx.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  adx.push(adxVal);
-  for (let i = period; i < dx.length; i++) {
-    adxVal = (adxVal * (period - 1) + dx[i]) / period;
-    adx.push(adxVal);
-  }
-  return adx;
-}
-
-function calcPivotPoints(candles) {
-  if (!candles || candles.length < 2) return null;
-  // Use the previous candle's high/low/close for pivot calculation
-  const prev = candles[candles.length - 2];
-  const pivot = (prev.h + prev.l + prev.c) / 3;
-  return {
-    r3: pivot + 2 * (prev.h - prev.l),
-    r2: pivot + (prev.h - prev.l),
-    r1: 2 * pivot - prev.l,
-    pivot: pivot,
-    s1: 2 * pivot - prev.h,
-    s2: pivot - (prev.h - prev.l),
-    s3: pivot - 2 * (prev.h - prev.l)
-  };
-}
-
 function calcVolumeProfile(candles,bins=30){
   if(!candles||candles.length<2)return{};
   const min=Math.min(...candles.map(c=>c.l));
@@ -2277,7 +1405,7 @@ function renderWhaleAlerts(){
   ];
   
   el.innerHTML=`<div style="font-size:9px;color:var(--muted);padding:8px 12px;background:#0a0a0a">Large transactions (>$10M)</div>`+whales.map(w=>{
-    const icon=w.type==='transfer'?'→':'↔';
+    const icon=w.type==='transfer'?'📤':'🔄';
     return `<div style="padding:8px 12px;border-bottom:1px solid #0f0f0f;font-size:10px">
       <div style="display:flex;justify-content:space-between;margin-bottom:2px">
         <span style="font-weight:700;color:${categoryColor(w.coin)}">${icon} ${w.coin}</span>
@@ -2697,9 +1825,6 @@ function drawCandles(ctx,W,H,allCandles){
   ctx.fillStyle='#000';ctx.font='600 10px JetBrains Mono';
   ctx.fillText(fmtPrice(lastC),cW+4,lastY+3);
 
-  // Render drawings
-  renderDrawings(ctx, cW, cH, min, max);
-
   // OHLC
   const last=candles[candles.length-1];
   document.getElementById('ohlcO').textContent=fmtPrice(last.o);
@@ -2739,171 +1864,71 @@ function drawLine(ctx,W,H,d){
 function renderAnalysis(){
   const d=priceData[activeCoin];if(!d)return;
   const el=document.getElementById('analysisContent');
-  const key=candleKey(activeCoin,activeTF);
-  const candles=candleData[key];
-
-  // Check if we have enough candle data
-  if(!candles||candles.length<30){
-    el.innerHTML=`<div class="analysis-card" style="grid-column:1/-1;text-align:center;padding:40px">
-      <div style="color:var(--muted);font-size:12px">Waiting for candle data (need 30+ bars, have ${candles?candles.length:0})...</div>
-      <div style="color:var(--dim);font-size:10px;margin-top:8px">Switch to a longer timeframe or wait for data to load</div>
-    </div>`;
-    return;
-  }
-
-  // Compute all indicators from real candle data
-  const rsiArr = calcRSI(candles, 14);
-  const rsi = rsiArr.length > 0 ? rsiArr[rsiArr.length - 1] : null;
-
-  const macdResult = calcMACD(candles, 12, 26, 9);
-  const macdVal = macdResult.macd.length > 0 ? macdResult.macd[macdResult.macd.length - 1] : null;
-  const macdSig = macdResult.signal.length > 0 ? macdResult.signal[macdResult.signal.length - 1] : null;
-  const macdHist = macdResult.histogram.length > 0 ? macdResult.histogram[macdResult.histogram.length - 1] : null;
-
-  const stoch = calcStochastic(candles, 14, 3);
-  const stochK = stoch.k.length > 0 ? stoch.k[stoch.k.length - 1] : null;
-  const stochD = stoch.d.length > 0 ? stoch.d[stoch.d.length - 1] : null;
-
-  const cciArr = calcCCI(candles, 20);
-  const cci = cciArr.length > 0 ? cciArr[cciArr.length - 1] : null;
-
-  const wrArr = calcWilliamsR(candles, 14);
-  const wr = wrArr.length > 0 ? wrArr[wrArr.length - 1] : null;
-
-  const adxArr = calcADX(candles, 14);
-  const adx = adxArr.length > 0 ? adxArr[adxArr.length - 1] : null;
-
-  const atrArr = calcATR(candles, 14);
-  const atr = atrArr.length > 0 ? atrArr[atrArr.length - 1] : null;
-
-  // Moving averages
-  const maList = [
-    { name: 'SMA 10', val: calcSMA(candles, 10) },
-    { name: 'SMA 20', val: calcSMA(candles, 20) },
-    { name: 'SMA 50', val: calcSMA(candles, 50) },
-    { name: 'SMA 100', val: calcSMA(candles, 100) },
-    { name: 'SMA 200', val: calcSMA(candles, 200) },
-    { name: 'EMA 10', val: calcEMA(candles, 10) },
-    { name: 'EMA 20', val: calcEMA(candles, 20) },
-  ];
-
-  // Count buy/sell signals
-  let maBuys = 0, maSells = 0;
-  const maRows = maList.map(ma => {
-    const last = ma.val.length > 0 ? ma.val[ma.val.length - 1] : null;
-    if (last === null) return null;
-    const above = d.price > last;
-    if (above) maBuys++; else maSells++;
-    return { name: ma.name, val: last, above };
-  }).filter(Boolean);
-
-  // Oscillator signals
-  let oscBuys = 0, oscSells = 0, oscNeutral = 0;
-  const oscSignal = (name, val, buyTest, sellTest) => {
-    if (val === null) return 'NEUTRAL';
-    if (buyTest(val)) { oscBuys++; return 'BUY'; }
-    if (sellTest(val)) { oscSells++; return 'SELL'; }
-    oscNeutral++; return 'NEUTRAL';
-  };
-
-  const rsiSig = oscSignal('RSI', rsi, v => v < 30, v => v > 70);
-  const macdSigLabel = oscSignal('MACD', macdHist, v => v > 0, v => v < 0);
-  const stochSig = oscSignal('Stoch', stochK, v => v < 20, v => v > 80);
-  const cciSig = oscSignal('CCI', cci, v => v < -100, v => v > 100);
-  const wrSig = oscSignal('W%R', wr, v => v < -80, v => v > -20);
-  const adxSig = adx !== null && adx > 25 ? 'STRONG' : 'WEAK';
-
-  // Overall signal
-  const totalBuys = maBuys + oscBuys;
-  const totalSells = maSells + oscSells;
-  const totalIndicators = maRows.length + oscBuys + oscSells + oscNeutral;
-  const signal = totalBuys > totalSells + 2 ? 'BUY' : totalSells > totalBuys + 2 ? 'SELL' : 'NEUTRAL';
-  const signalColor = signal === 'BUY' ? 'var(--green)' : signal === 'SELL' ? 'var(--red)' : 'var(--orange)';
-
-  // Signal meter highlighting
-  const meterIdx = signal === 'SELL' ? 0 : signal === 'BUY' ? 4 : 2;
-  if (totalBuys > totalSells && signal !== 'BUY') { /* weak buy */ }
-  if (totalSells > totalBuys && signal !== 'SELL') { /* weak sell */ }
-  const meterWeightIdx = totalBuys > totalSells ? (signal === 'BUY' ? 4 : 3) : totalSells > totalBuys ? (signal === 'SELL' ? 0 : 1) : 2;
-
-  // Pivot points
-  const pivots = calcPivotPoints(candles);
-
-  // ATR % for context
-  const atrPct = atr !== null && d.price > 0 ? (atr / d.price * 100) : null;
-
-  const sigColor = s => s === 'BUY' ? 'var(--green)' : s === 'SELL' ? 'var(--red)' : 'var(--dim)';
-
-  const aiCard = aiInsight ? `<div class="analysis-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(255,140,0,0.05),rgba(0,0,0,0))">
+  const rsi=40+Math.random()*30;
+  const macd=(Math.random()-0.5)*2;
+  const signal=rsi>60?'BUY':rsi<40?'SELL':'NEUTRAL';
+  const signalColor=signal==='BUY'?'var(--green)':signal==='SELL'?'var(--red)':'var(--orange)';
+  
+  const aiCard=aiInsight?`<div class="analysis-card" style="grid-column:1/-1;background:linear-gradient(135deg,rgba(255,140,0,0.05),rgba(0,0,0,0))">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <h3>AI MARKET INSIGHT</h3>
+      <h3>🤖 AI MARKET INSIGHT</h3>
       <button onclick="fetchAIInsight()" style="background:var(--orange-bg);border:1px solid var(--orange-dim);color:var(--orange);padding:4px 10px;border-radius:3px;cursor:pointer;font-size:9px;font-family:var(--font)">REFRESH</button>
     </div>
     <div style="font-size:12px;color:var(--text);line-height:1.6;margin-top:8px">${aiInsight}</div>
     <div style="font-size:9px;color:var(--muted);margin-top:8px">Generated by Mistral-7B • Auto-refreshes every 5 min</div>
-  </div>` : `<div class="analysis-card" style="grid-column:1/-1;text-align:center;padding:20px">
+  </div>`:`<div class="analysis-card" style="grid-column:1/-1;text-align:center;padding:20px">
     <div style="color:var(--muted);font-size:11px">Loading AI analysis...</div>
   </div>`;
-
-  el.innerHTML = aiCard + `
+  
+  el.innerHTML=aiCard+`
     <div class="analysis-card">
       <h3>SIGNAL SUMMARY</h3>
       <div style="text-align:center;margin:20px 0">
         <div style="font-size:32px;font-weight:800;color:${signalColor}">${signal}</div>
-        <div style="font-size:11px;color:var(--dim);margin-top:4px">Based on ${totalIndicators} technical indicators</div>
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">Based on 12 technical indicators</div>
       </div>
       <div class="signal-meter">
-        ${[0,1,2,3,4].map(i => {
-          const labels = ['SELL','WEAK','NEUTRAL','WEAK','BUY'];
-          const colors = ['var(--red)','var(--red)','var(--orange)','var(--green)','var(--green)'];
-          const bgs = ['var(--red-bg)','var(--red-bg)','var(--orange-bg)','var(--green-bg)','var(--green-bg)'];
-          const isActive = i === meterWeightIdx;
-          return `<div class="signal-bar" style="background:${bgs[i]};color:${colors[i]};opacity:${isActive?1:0.3}">${labels[i]}</div>`;
-        }).join('')}
+        <div class="signal-bar" style="background:var(--red-bg);color:var(--red)">SELL</div>
+        <div class="signal-bar" style="background:var(--red-bg);color:var(--red);opacity:0.6">WEAK</div>
+        <div class="signal-bar" style="background:var(--orange-bg);color:var(--orange)">NEUTRAL</div>
+        <div class="signal-bar" style="background:var(--green-bg);color:var(--green);opacity:0.6">WEAK</div>
+        <div class="signal-bar" style="background:var(--green-bg);color:var(--green)">BUY</div>
       </div>
-      <div class="indicator-row"><span class="name">Moving Averages (${maRows.length})</span><span class="val">${maBuys} Buy / ${maSells} Sell</span></div>
-      <div class="indicator-row"><span class="name">Oscillators (${oscBuys+oscSells+oscNeutral})</span><span class="val">${oscBuys} Buy / ${oscSells} Sell / ${oscNeutral} Neutral</span></div>
-      <div class="indicator-row"><span class="name">Trend Strength (ADX)</span><span class="val" style="color:${adx!==null&&adx>25?'var(--green)':'var(--dim)'}">${adx!==null?adx.toFixed(1)+' — '+adxSig:'N/A'}</span></div>
-      ${atrPct!==null?`<div class="indicator-row"><span class="name">Volatility (ATR)</span><span class="val">$${atr.toFixed(2)} (${atrPct.toFixed(2)}%)</span></div>`:''}
+      <div class="indicator-row"><span class="name">Moving Averages (7)</span><span class="val up">5 Buy / 2 Sell</span></div>
+      <div class="indicator-row"><span class="name">Oscillators (5)</span><span class="val">2 Buy / 1 Sell / 2 Neutral</span></div>
     </div>
     <div class="analysis-card">
       <h3>OSCILLATORS</h3>
-      <div class="indicator-row"><span class="name">RSI (14)</span><span class="val" style="color:${sigColor(rsiSig)}">${rsi!==null?rsi.toFixed(1):'N/A'}</span></div>
-      <div class="indicator-row"><span class="name">MACD (12,26,9)</span><span class="val ${macdVal!==null&&macdVal>=0?'up':'down'}">${macdVal!==null?macdVal.toFixed(4):'N/A'}${macdSig!==null?' / Sig: '+macdSig.toFixed(4):''}</span></div>
-      <div class="indicator-row"><span class="name">MACD Histogram</span><span class="val ${macdHist!==null&&macdHist>=0?'up':'down'}">${macdHist!==null?macdHist.toFixed(4):'N/A'}</span></div>
-      <div class="indicator-row"><span class="name">Stochastic %K / %D</span><span class="val" style="color:${sigColor(stochSig)}">${stochK!==null?stochK.toFixed(1):'N/A'}${stochD!==null?' / '+stochD.toFixed(1):''}</span></div>
-      <div class="indicator-row"><span class="name">CCI (20)</span><span class="val" style="color:${sigColor(cciSig)}">${cci!==null?cci.toFixed(1):'N/A'}</span></div>
-      <div class="indicator-row"><span class="name">Williams %R (14)</span><span class="val" style="color:${sigColor(wrSig)}">${wr!==null?wr.toFixed(1):'N/A'}</span></div>
-      <div class="indicator-row"><span class="name">ADX (14)</span><span class="val">${adx!==null?adx.toFixed(1):'N/A'}</span></div>
-      <div class="indicator-row"><span class="name">ATR (14)</span><span class="val">${atr!==null?'$'+atr.toFixed(2):'N/A'}</span></div>
+      <div class="indicator-row"><span class="name">RSI (14)</span><span class="val ${rsi>60?'up':rsi<40?'down':''}">${rsi.toFixed(1)}</span></div>
+      <div class="indicator-row"><span class="name">MACD (12,26,9)</span><span class="val ${macd>=0?'up':'down'}">${macd.toFixed(4)}</span></div>
+      <div class="indicator-row"><span class="name">Stochastic %K</span><span class="val">${(30+Math.random()*40).toFixed(1)}</span></div>
+      <div class="indicator-row"><span class="name">CCI (20)</span><span class="val">${(-50+Math.random()*200).toFixed(1)}</span></div>
+      <div class="indicator-row"><span class="name">Williams %R</span><span class="val">${(-80+Math.random()*60).toFixed(1)}</span></div>
+      <div class="indicator-row"><span class="name">ADX (14)</span><span class="val">${(15+Math.random()*30).toFixed(1)}</span></div>
     </div>
     <div class="analysis-card">
       <h3>MOVING AVERAGES</h3>
-      ${maRows.map(ma => {
-        return `<div class="indicator-row"><span class="name">${ma.name}</span><span class="val">${fmtPrice(ma.val)}</span><span class="${ma.above?'up':'down'}" style="font-weight:600;font-size:10px">${ma.above?'BUY':'SELL'}</span></div>`;
+      ${['SMA 10','SMA 20','SMA 50','SMA 100','SMA 200','EMA 10','EMA 20'].map(ma=>{
+        const val=d.price*(0.95+Math.random()*0.1);
+        const above=d.price>val;
+        return `<div class="indicator-row"><span class="name">${ma}</span><span class="val">${fmtPrice(val)}</span><span class="${above?'up':'down'}" style="font-weight:600;font-size:10px">${above?'BUY':'SELL'}</span></div>`;
       }).join('')}
-      ${maRows.length===0?'<div style="padding:8px;color:var(--muted);font-size:10px">Not enough data for MAs</div>':''}
     </div>
     <div class="analysis-card">
-      <h3>SUPPORT & RESISTANCE (PIVOTS)</h3>
-      ${pivots ? [
-        ['R3', pivots.r3], ['R2', pivots.r2], ['R1', pivots.r1],
-        ['Pivot', pivots.pivot],
-        ['S1', pivots.s1], ['S2', pivots.s2], ['S3', pivots.s3]
-      ].map(([label, val]) => {
-        const isSupport = label.startsWith('S');
-        const isPivot = label === 'Pivot';
-        const pctFromPrice = ((val - d.price) / d.price * 100);
+      <h3>SUPPORT & RESISTANCE</h3>
+      ${[['R3',1.04],['R2',1.025],['R1',1.012],['Pivot',1.0],['S1',0.988],['S2',0.975],['S3',0.96]].map(([label,mult])=>{
+        const val=d.price*mult;
+        const isSupport=mult<1;
+        const pct=((mult-1)*100);
         return `<div class="sr-level">
-          <span style="width:40px;font-weight:700;color:${isPivot?'var(--orange)':isSupport?'var(--green)':'var(--red)'}">${label}</span>
-          <div class="sr-bar" style="background:${isPivot?'var(--orange-bg)':isSupport?'var(--green-bg)':'var(--red-bg)'};width:${Math.min(Math.abs(pctFromPrice)*15, 80)}%"></div>
+          <span style="width:30px;font-weight:700;color:${isSupport?'var(--green)':'var(--red)'}">${label}</span>
+          <div class="sr-bar" style="background:${isSupport?'var(--green-bg)':'var(--red-bg)'};width:${Math.abs(pct)*20}%"></div>
           <span style="font-weight:600">$${fmtPrice(val)}</span>
-          <span style="font-size:9px;color:var(--dim);margin-left:4px">${pctFromPrice>=0?'+':''}${pctFromPrice.toFixed(2)}%</span>
         </div>`;
-      }).join('') : '<div style="padding:8px;color:var(--muted);font-size:10px">Not enough data for pivots</div>'}
+      }).join('')}
     </div>
     <div class="analysis-card">
-      <h3>ECONOMIC CALENDAR (THIS WEEK)</h3>
+      <h3>📅 ECONOMIC CALENDAR (THIS WEEK)</h3>
       ${economicEvents.length===0?'<div style="padding:12px;color:var(--muted);font-size:10px">Loading events...</div>':economicEvents.map(e=>{
         const impactColor=e.impact==='High'?'var(--red)':e.impact==='Medium'?'var(--orange)':'var(--dim)';
         const dateStr=e.date.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -2987,7 +2012,7 @@ function renderDepthCanvas(){
   
   const price=d.price;
   const ob=orderBookData[activeCoin];
-  let bidCum=[],askCum=[],bidTotal=0,askTotal=0,levels;
+  let bidCum=[],askCum=[],bidTotal=0,askTotal=0;
   
   // Use real L2 data if available
   if(ob&&ob.bids&&ob.asks){
@@ -3000,11 +2025,9 @@ function renderDepthCanvas(){
       askTotal+=a.size;
       askCum.push({price:a.price,cum:askTotal});
     });
-    levels=Math.max(bidCum.length,askCum.length);
   }else{
     // Fake data fallback
-    const spread=price*0.05;
-    levels=40;
+    const spread=price*0.05,levels=40;
     for(let i=0;i<levels;i++){
       bidTotal+=Math.random()*50+5+(levels-i)*2;
       askTotal+=Math.random()*50+5+(levels-i)*1.5;
@@ -3053,80 +2076,31 @@ function renderDepthCanvas(){
    [4] REL VALUE
    ═══════════════════════════════════════════ */
 function renderRelValue(){
-  // Performance Comparison Grid
-  const perfAssets=['BTC','ETH','SOL','SPY','QQQ','GC=F','EURUSD=X'];
-  const perfEl=document.getElementById('rvPerfGrid');
-  if(perfEl){
-    perfEl.innerHTML=perfAssets.map(sym=>{
-      const d=priceData[sym];
-      if(!d)return'';
-      const chg=d.change24h||((d.price-d.open)/d.open*100)||0;
-      return`<div style="background:#111;padding:8px;border-radius:2px;cursor:pointer" onclick="selectCoin('${sym}');switchTab('overview')">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${cleanSym(sym)}</div>
-        <div style="font-size:14px;font-weight:700;color:var(--white);margin-bottom:2px">$${fmtPrice(d.price)}</div>
-        <div style="font-size:10px;font-weight:600;color:${chg>=0?'var(--green)':'var(--red)'}">
-          ${chg>=0?'+':''}${chg.toFixed(2)}%
-        </div>
-      </div>`;
-    }).join('');
-  }
+  // Peer table
+  const el=document.getElementById('rvTableBody');
+  el.innerHTML=getFilteredAssets().map(c=>{
+    const d=priceData[c];if(!d)return'';
+    const change24=((d.price-d.open)/d.open*100);
+    const change7d=(Math.random()-0.3)*15;
+    const vol=d.volume||Math.random()*500e6;
+    const funding=d.funding||(Math.random()-0.5)*0.01;
+    const oi=d.openInterest||Math.random()*200;
+    const isUp=change24>=0;
+    return `<div class="rv-row" onclick="selectCoin('${c}')" style="${c===activeCoin?'background:#1a1200;':''}">
+      <span class="sym">${c}</span>
+      <span style="color:var(--dim)">${fmtCompact(vol*10)}</span>
+      <span style="font-weight:600">$${fmtPrice(d.price)}</span>
+      <span class="${isUp?'up':'down'}" style="font-weight:600">${isUp?'+':''}${change24.toFixed(2)}%</span>
+      <span class="${change7d>=0?'up':'down'}">${change7d>=0?'+':''}${change7d.toFixed(2)}%</span>
+      <span style="color:var(--dim)">$${fmtCompact(vol)}</span>
+      <span class="${funding>=0?'up':'down'}">${(funding*100).toFixed(4)}%</span>
+      <span style="color:var(--dim)">${fmtCompact(oi*d.price)}</span>
+      <span></span>
+    </div>`;
+  }).join('');
   
-  // Correlation Matrix
-  const corrAssets=['BTC','ETH','SOL','SPY','QQQ'];
-  const corrEl=document.getElementById('rvCorrelation');
-  if(corrEl){
-    const corrMatrix=corrAssets.map(a=>{
-      const changes=corrAssets.map(b=>{
-        const da=priceData[a],db=priceData[b];
-        if(!da||!db)return 0;
-        if(a===b)return 1;
-        const ca=da.change24h||((da.price-da.open)/da.open*100)||0;
-        const cb=db.change24h||((db.price-db.open)/db.open*100)||0;
-        const corr=ca*cb>=0?Math.min(0.9,Math.abs(ca*cb)/100):Math.max(-0.9,-(Math.abs(ca*cb))/100);
-        return corr;
-      });
-      return{asset:a,changes};
-    });
-    
-    corrEl.innerHTML=`<table style="font-size:10px;border-collapse:collapse">
-      <tr><th style="padding:4px"></th>${corrAssets.map(a=>`<th style="padding:4px;color:var(--dim)">${cleanSym(a)}</th>`).join('')}</tr>
-      ${corrMatrix.map(row=>`<tr>
-        <td style="padding:4px;font-weight:700">${cleanSym(row.asset)}</td>
-        ${row.changes.map(c=>{
-          const color=c>0.5?'#00c853':c<-0.5?'#ff1744':'#666';
-          return`<td style="padding:4px;text-align:center;background:${color};color:#fff;border:1px solid #000">${c.toFixed(2)}</td>`;
-        }).join('')}
-      </tr>`).join('')}
-    </table>`;
-  }
-  
-  // Sector Relative Strength
-  const sectorsEl=document.getElementById('rvSectors');
-  if(sectorsEl){
-    const sectors={
-      'Large Cap Crypto':['BTC','ETH'],
-      'Alt L1s':['SOL','AVAX','SUI'],
-      'DeFi':['LINK','UNI'],
-      'Major Indices':['SPY','QQQ','DIA'],
-      'Tech Stocks':['AAPL','MSFT','NVDA','TSLA']
-    };
-    
-    sectorsEl.innerHTML=Object.entries(sectors).map(([name,assets])=>{
-      const validAssets=assets.filter(a=>priceData[a]);
-      if(validAssets.length===0)return'';
-      const avgChange=validAssets.reduce((sum,a)=>{
-        const d=priceData[a];
-        const chg=d.change24h||((d.price-d.open)/d.open*100)||0;
-        return sum+chg;
-      },0)/validAssets.length;
-      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:#111;margin-bottom:4px;border-radius:2px">
-        <span style="font-size:10px;color:var(--text)">${name}</span>
-        <span style="font-size:11px;font-weight:700;color:${avgChange>=0?'var(--green)':'var(--red)'}">
-          ${avgChange>=0?'+':''}${avgChange.toFixed(2)}%
-        </span>
-      </div>`;
-    }).join('');
-  }
+  // Render comparison chart
+  renderRelChart();
 }
 
 function renderRelChart(){
@@ -3186,46 +2160,19 @@ document.querySelectorAll('.rv-btn').forEach(b=>b.addEventListener('click',()=>{
 /* ═══════════════════════════════════════════
    [5] SCREENER
    ═══════════════════════════════════════════ */
-function resetScreenerFilters(){
-  document.getElementById('screenAssetType').value='all';
-  document.getElementById('screenFilter').value='all';
-  document.getElementById('screenSort').value='change';
-  document.getElementById('screenPriceMin').value='';
-  document.getElementById('screenPriceMax').value='';
-  document.getElementById('screenChangeMin').value='';
-  document.getElementById('screenChangeMax').value='';
-  renderScreener();
-}
-
 function renderScreener(){
-  const assetType=document.getElementById('screenAssetType')?.value||'all';
   const filter=document.getElementById('screenFilter')?.value||'all';
   const sortBy=document.getElementById('screenSort')?.value||'change';
-  const priceMin=parseFloat(document.getElementById('screenPriceMin')?.value)||0;
-  const priceMax=parseFloat(document.getElementById('screenPriceMax')?.value)||Infinity;
-  const changeMin=parseFloat(document.getElementById('screenChangeMin')?.value)||-Infinity;
-  const changeMax=parseFloat(document.getElementById('screenChangeMax')?.value)||Infinity;
   
   let assets=ALL_TICKERS.map(sym=>{
     const d=priceData[sym];
     if(!d)return null;
     const change=((d.price-d.open)/d.open*100);
     const volatility=d.high&&d.low?((d.high-d.low)/d.low*100):0;
-    return{sym,price:d.price,change,volume:d.volume||0,volatility,cat:assetCategory(sym),type:ASSET_TYPE[sym]};
+    return{sym,price:d.price,change,volume:d.volume||0,volatility,cat:assetCategory(sym)};
   }).filter(Boolean);
   
-  // Apply asset type filter
-  if(assetType!=='all'){
-    assets=assets.filter(a=>a.type===assetType);
-  }
-  
-  // Apply range filters
-  assets=assets.filter(a=>
-    a.price>=priceMin && a.price<=priceMax &&
-    a.change>=changeMin && a.change<=changeMax
-  );
-  
-  // Apply preset filter
+  // Apply filter
   if(filter==='gainers')assets=assets.filter(a=>a.change>0).sort((a,b)=>b.change-a.change);
   else if(filter==='losers')assets=assets.filter(a=>a.change<0).sort((a,b)=>a.change-b.change);
   else if(filter==='volume')assets.sort((a,b)=>b.volume-a.volume);
@@ -3256,13 +2203,8 @@ function renderScreener(){
   el.innerHTML=header+rows;
 }
 
-document.getElementById('screenAssetType')?.addEventListener('change',renderScreener);
 document.getElementById('screenFilter')?.addEventListener('change',renderScreener);
 document.getElementById('screenSort')?.addEventListener('change',renderScreener);
-document.getElementById('screenPriceMin')?.addEventListener('input',renderScreener);
-document.getElementById('screenPriceMax')?.addEventListener('input',renderScreener);
-document.getElementById('screenChangeMin')?.addEventListener('input',renderScreener);
-document.getElementById('screenChangeMax')?.addEventListener('input',renderScreener);
 
 function timeAgo(date){
   const now=Date.now();
@@ -3286,88 +2228,6 @@ function renderNewsFull(){
     <div class="headline">${n.title}</div>
     <div class="source">${n.source}</div>
   </div>`).join('');
-}
-
-/* ═══════════════════════════════════════════
-   HYPERLIQUID PUBLIC API
-   ═══════════════════════════════════════════ */
-function connectHLWallet() {
-  const input = document.getElementById('hlWalletInput');
-  const addr = (input.value || '').trim();
-  if (!addr || !/^0x[a-fA-F0-9]{40}$/.test(addr)) {
-    document.getElementById('hlStatus').textContent = 'Invalid address (need 0x + 40 hex chars)';
-    document.getElementById('hlStatus').style.color = 'var(--red)';
-    return;
-  }
-  hlWalletAddress = addr;
-  localStorage.setItem('omar_hl_wallet', hlWalletAddress);
-  document.getElementById('hlStatus').textContent = 'Connected';
-  document.getElementById('hlStatus').style.color = 'var(--green)';
-  fetchHLAccountData();
-}
-
-function disconnectHLWallet() {
-  hlWalletAddress = '';
-  hlAccountData = null;
-  hlError = null;
-  localStorage.removeItem('omar_hl_wallet');
-  document.getElementById('hlWalletInput').value = '';
-  document.getElementById('hlStatus').textContent = 'Disconnected';
-  document.getElementById('hlStatus').style.color = 'var(--muted)';
-  renderPositionsSub();
-}
-
-function refreshHLData() {
-  if (!hlWalletAddress) {
-    document.getElementById('hlStatus').textContent = 'No wallet connected';
-    document.getElementById('hlStatus').style.color = 'var(--orange)';
-    return;
-  }
-  fetchHLAccountData();
-}
-
-async function hlPost(type, payload) {
-  const res = await fetch('https://api.hyperliquid.xyz/info', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type, ...payload })
-  });
-  if (!res.ok) throw new Error(`HL API ${res.status}`);
-  return res.json();
-}
-
-async function fetchHLAccountData() {
-  if (!hlWalletAddress || hlLoading) return;
-  hlLoading = true;
-  hlError = null;
-  const statusEl = document.getElementById('hlStatus');
-  if (statusEl) { statusEl.textContent = 'Loading...'; statusEl.style.color = 'var(--orange)'; }
-
-  try {
-    const [clearinghouse, openOrders, fills] = await Promise.all([
-      hlPost('clearinghouseState', { user: hlWalletAddress }),
-      hlPost('openOrders', { user: hlWalletAddress }),
-      hlPost('userFills', { user: hlWalletAddress })
-    ]);
-
-    hlAccountData = { clearinghouse, openOrders, fills };
-    if (statusEl) { statusEl.textContent = 'Connected — ' + hlWalletAddress.slice(0, 6) + '...' + hlWalletAddress.slice(-4); statusEl.style.color = 'var(--green)'; }
-  } catch (e) {
-    hlError = e.message;
-    if (statusEl) { statusEl.textContent = 'Error: ' + e.message; statusEl.style.color = 'var(--red)'; }
-    console.error('HL fetch error:', e);
-  }
-
-  hlLoading = false;
-  renderPositionsSub();
-}
-
-function initHLConnection() {
-  const input = document.getElementById('hlWalletInput');
-  if (input && hlWalletAddress) {
-    input.value = hlWalletAddress;
-    fetchHLAccountData();
-  }
 }
 
 /* ═══════════════════════════════════════════
@@ -3421,68 +2281,39 @@ function addPosition(){
   if(activePosSub==='positions')renderPositions(document.getElementById('posContent'));
 }
 
-function renderPortfolioSummary() {
-  const el = document.getElementById('portSummary');
-  if (!el) return;
-
-  // If HL connected, show real data
-  if (hlAccountData && hlAccountData.clearinghouse) {
-    const ch = hlAccountData.clearinghouse;
-    const equity = parseFloat(ch.marginSummary?.accountValue || 0);
-    const totalMargin = parseFloat(ch.marginSummary?.totalMarginUsed || 0);
-    const available = equity - totalMargin;
-    const positions = (ch.assetPositions || []).filter(p => parseFloat(p.position?.szi || 0) !== 0);
-    const totalPnl = positions.reduce((sum, p) => sum + parseFloat(p.position?.unrealizedPnl || 0), 0);
-
-    el.innerHTML = `
-      <div class="port-summary-cell">
-        <div class="lbl">ACCOUNT VALUE</div>
-        <div class="val" style="color:var(--white)">$${parseFloat(equity).toFixed(2)}</div>
-      </div>
-      <div class="port-summary-cell">
-        <div class="lbl">UNREALIZED PnL</div>
-        <div class="val" style="color:${totalPnl >= 0 ? 'var(--green)' : 'var(--red)'}">${totalPnl >= 0 ? '+' : ''}$${totalPnl.toFixed(2)}</div>
-      </div>
-      <div class="port-summary-cell">
-        <div class="lbl">AVAILABLE</div>
-        <div class="val" style="color:var(--green)">$${available.toFixed(2)}</div>
-      </div>
-      <div class="port-summary-cell">
-        <div class="lbl">MARGIN USED</div>
-        <div class="val" style="color:var(--orange)">$${totalMargin.toFixed(2)}</div>
-      </div>
-      <div class="port-summary-cell">
-        <div class="lbl">POSITIONS</div>
-        <div class="val" style="color:var(--white)">${positions.length}</div>
-      </div>
-    `;
-    return;
-  }
-
-  // Fallback: local portfolio
-  let totalValue = 0, totalPnL = 0, wins = 0, total = portfolio.length;
-  portfolio.forEach(p => {
-    const current = priceData[p.asset]?.price || p.entry;
-    const value = current * p.size;
-    const pnl = p.side === 'LONG' ? (current - p.entry) * p.size : (p.entry - current) * p.size;
-    totalValue += value;
-    totalPnL += pnl;
-    if (pnl > 0) wins++;
+function renderPortfolioSummary(){
+  const el=document.getElementById('portSummary');
+  if(!el)return;
+  
+  let totalValue=0;
+  let totalPnL=0;
+  let dayPnL=0;
+  let wins=0;
+  let total=portfolio.length;
+  
+  portfolio.forEach(p=>{
+    const current=priceData[p.asset]?.price||p.entry;
+    const value=current*p.size;
+    const pnl=p.side==='LONG'?(current-p.entry)*p.size:(p.entry-current)*p.size;
+    totalValue+=value;
+    totalPnL+=pnl;
+    if(pnl>0)wins++;
   });
-  const winRate = total > 0 ? (wins / total * 100) : 0;
-
-  el.innerHTML = `
+  
+  const winRate=total>0?(wins/total*100):0;
+  
+  el.innerHTML=`
     <div class="port-summary-cell">
       <div class="lbl">TOTAL VALUE</div>
       <div class="val" style="color:var(--white)">$${totalValue.toFixed(2)}</div>
     </div>
     <div class="port-summary-cell">
       <div class="lbl">TOTAL P&L</div>
-      <div class="val" style="color:${totalPnL >= 0 ? 'var(--green)' : 'var(--red)'}">${totalPnL >= 0 ? '+' : ''}$${totalPnL.toFixed(2)}</div>
+      <div class="val" style="color:${totalPnL>=0?'var(--green)':'var(--red)'}">${totalPnL>=0?'+':''}$${totalPnL.toFixed(2)}</div>
     </div>
     <div class="port-summary-cell">
       <div class="lbl">DAY P&L</div>
-      <div class="val" style="color:var(--dim)">—</div>
+      <div class="val" style="color:${dayPnL>=0?'var(--green)':'var(--red)'}">${dayPnL>=0?'+':''}$${dayPnL.toFixed(2)}</div>
     </div>
     <div class="port-summary-cell">
       <div class="lbl">POSITIONS</div>
@@ -3510,81 +2341,33 @@ function renderPositionsSub(){
   else if(activePosSub==='account')renderAccount(el);
 }
 
-function renderPositions(el) {
-  // Show HL positions if available
-  if (hlAccountData && hlAccountData.clearinghouse) {
-    const positions = (hlAccountData.clearinghouse.assetPositions || []).filter(p => parseFloat(p.position?.szi || 0) !== 0);
-    if (positions.length === 0) {
-      el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No open positions on Hyperliquid</div>';
-      return;
-    }
-    const rows = positions.map(p => {
-      const pos = p.position;
-      const sym = pos.coin || '?';
-      const size = parseFloat(pos.szi || 0);
-      const side = size > 0 ? 'LONG' : 'SHORT';
-      const absSize = Math.abs(size);
-      const entry = parseFloat(pos.entryPx || 0);
-      const mark = parseFloat(pos.positionValue || 0) / (absSize || 1);
-      const pnl = parseFloat(pos.unrealizedPnl || 0);
-      const roe = parseFloat(pos.returnOnEquity || 0) * 100;
-      const liq = pos.liquidationPx ? '$' + parseFloat(pos.liquidationPx).toFixed(2) : '—';
-      const leverage = pos.leverage?.value || '—';
-      const isUp = pnl >= 0;
-      return `<div class="pos-row">
-        <span class="pos-sym">${sym}</span>
-        <span><span class="pos-badge ${side === 'LONG' ? 'pos-long' : 'pos-short'}">${side}</span></span>
-        <span>$${fmtPrice(entry)}</span>
-        <span>${absSize}</span>
-        <span>${leverage}x</span>
-        <span>${liq}</span>
-        <span class="${isUp ? 'up' : 'down'}" style="font-weight:700">${isUp ? '+' : ''}$${pnl.toFixed(2)}</span>
-        <span class="${isUp ? 'up' : 'down'}" style="font-weight:600">${isUp ? '+' : ''}${roe.toFixed(2)}%</span>
-        <span></span>
-      </div>`;
-    }).join('');
-    el.innerHTML = `
-      <div style="padding:4px 12px;font-size:9px;color:var(--orange);letter-spacing:0.08em">HYPERLIQUID POSITIONS (LIVE)</div>
-      <div class="pos-head"><span>ASSET</span><span>SIDE</span><span>ENTRY</span><span>SIZE</span><span>LEV</span><span>LIQ</span><span>PnL</span><span>ROE%</span><span></span></div>
-      ${rows}
-    `;
-    // Also show local positions below if any
-    if (portfolio.length > 0) {
-      el.innerHTML += renderLocalPositions();
-    }
+function renderPositions(el){
+  if(portfolio.length===0){
+    el.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No positions yet. Click "+ ADD POSITION" to add one.</div>';
     return;
   }
-
-  // Fallback: local-only
-  if (portfolio.length === 0) {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No positions yet. Connect a Hyperliquid wallet or click "+ ADD POSITION" to track locally.</div>';
-    return;
-  }
-  el.innerHTML = renderLocalPositions();
-}
-
-function renderLocalPositions() {
-  if (portfolio.length === 0) return '';
-  const rows = portfolio.map(p => {
-    const current = priceData[p.asset]?.price || p.entry;
-    const value = current * p.size;
-    const pnl = p.side === 'LONG' ? (current - p.entry) * p.size : (p.entry - current) * p.size;
-    const pnlPct = p.side === 'LONG' ? ((current - p.entry) / p.entry * 100) : ((p.entry - current) / p.entry * 100);
-    const isUp = pnl >= 0;
+  
+  const rows=portfolio.map(p=>{
+    const current=priceData[p.asset]?.price||p.entry;
+    const value=current*p.size;
+    const pnl=p.side==='LONG'?(current-p.entry)*p.size:(p.entry-current)*p.size;
+    const pnlPct=p.side==='LONG'?((current-p.entry)/p.entry*100):((p.entry-current)/p.entry*100);
+    const isUp=pnl>=0;
+    
     return `<div class="pos-row">
       <span class="pos-sym">${cleanSym(p.asset)}</span>
-      <span><span class="pos-badge ${p.side === 'LONG' ? 'pos-long' : 'pos-short'}">${p.side}</span></span>
+      <span><span class="pos-badge ${p.side==='LONG'?'pos-long':'pos-short'}">${p.side}</span></span>
       <span>$${fmtPrice(p.entry)}</span>
       <span>$${fmtPrice(current)}</span>
       <span>${p.size}</span>
       <span>$${value.toFixed(2)}</span>
-      <span class="${isUp ? 'up' : 'down'}" style="font-weight:700">${isUp ? '+' : ''}$${pnl.toFixed(2)}</span>
-      <span class="${isUp ? 'up' : 'down'}" style="font-weight:600">${isUp ? '+' : ''}${pnlPct.toFixed(2)}%</span>
+      <span class="${isUp?'up':'down'}" style="font-weight:700">${isUp?'+':''}$${pnl.toFixed(2)}</span>
+      <span class="${isUp?'up':'down'}" style="font-weight:600">${isUp?'+':''}${pnlPct.toFixed(2)}%</span>
       <button onclick="closePosition(${p.id})" style="background:var(--red-bg);color:var(--red);border:none;padding:4px 8px;font-size:9px;cursor:pointer;border-radius:2px;font-family:var(--font);font-weight:600">CLOSE</button>
     </div>`;
   }).join('');
-  return `
-    <div style="padding:4px 12px;font-size:9px;color:var(--dim);letter-spacing:0.08em;margin-top:8px;border-top:1px solid #1a1a1a">LOCAL TRACKED POSITIONS</div>
+  
+  el.innerHTML=`
     <div class="pos-head"><span>ASSET</span><span>SIDE</span><span>ENTRY</span><span>CURRENT</span><span>SIZE</span><span>VALUE</span><span>P&L</span><span>P&L %</span><span></span></div>
     ${rows}
   `;
@@ -3599,42 +2382,46 @@ function closePosition(id){
   }
 }
 
-function renderOrders(el) {
-  if (hlAccountData && hlAccountData.openOrders) {
-    const orders = hlAccountData.openOrders;
-    if (orders.length === 0) {
-      el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">No open orders on Hyperliquid</div>';
-      return;
-    }
-    const rows = orders.map(o => {
-      const isBuy = o.side === 'B';
-      const limitPx = parseFloat(o.limitPx || 0);
-      const sz = parseFloat(o.sz || 0);
-      const timestamp = o.timestamp ? new Date(o.timestamp).toLocaleTimeString() : '—';
-      return `<div class="pos-row">
-        <span class="pos-sym">${o.coin || '?'}</span>
-        <span><span class="pos-badge ${isBuy ? 'pos-long' : 'pos-short'}">${isBuy ? 'BUY' : 'SELL'}</span></span>
-        <span style="color:var(--dim)">${o.orderType || 'LIMIT'}</span>
-        <span>$${fmtPrice(limitPx)}</span>
-        <span>${sz}</span>
-        <span style="color:var(--green)">OPEN</span>
-        <span style="color:var(--muted)">${timestamp}</span>
-        <span></span><span></span>
-      </div>`;
-    }).join('');
-    el.innerHTML = `
-      <div style="padding:4px 12px;font-size:9px;color:var(--orange);letter-spacing:0.08em">HYPERLIQUID OPEN ORDERS (LIVE)</div>
-      <div class="pos-head"><span>ASSET</span><span>SIDE</span><span>TYPE</span><span>PRICE</span><span>SIZE</span><span>STATUS</span><span>TIME</span><span></span><span></span></div>
-      ${rows}
-    `;
-    return;
-  }
+function renderPositions_OLD(el){
+  const positions=[
+    {sym:'BTC',side:'LONG',size:'0.150',entry:'96,842.50',mark:'97,220.00',liq:'91,200.00',pnl:'+$56.63',roe:'+4.15%',margin:'$1,452',up:true},
+    {sym:'ETH',side:'SHORT',size:'2.500',entry:'2,784.20',mark:'2,758.40',liq:'3,012.00',pnl:'+$64.50',roe:'+3.72%',margin:'$834',up:true},
+    {sym:'SOL',side:'LONG',size:'45.00',entry:'168.42',mark:'171.88',liq:'152.10',pnl:'+$155.70',roe:'+6.82%',margin:'$1,516',up:true},
+    {sym:'DOGE',side:'LONG',size:'10,000',entry:'0.25410',mark:'0.24980',liq:'0.22100',pnl:'-$43.00',roe:'-1.69%',margin:'$508',up:false},
+    {sym:'HYPE',side:'LONG',size:'120',entry:'24.50',mark:'25.12',liq:'20.80',pnl:'+$74.40',roe:'+5.06%',margin:'$588',up:true},
+  ];
+  el.innerHTML=`
+    <div class="pos-head"><span>SYMBOL</span><span>SIDE</span><span>SIZE</span><span>ENTRY</span><span>MARK</span><span>LIQ</span><span>PnL</span><span>ROE%</span><span>MARGIN</span></div>
+    ${positions.map(p=>`<div class="pos-row">
+      <span class="pos-sym">${p.sym}</span>
+      <span><span class="pos-badge ${p.side==='LONG'?'pos-long':'pos-short'}">${p.side}</span></span>
+      <span>${p.size}</span><span>$${p.entry}</span><span>$${p.mark}</span>
+      <span style="color:var(--red-dim)">${p.liq}</span>
+      <span class="${p.up?'up':'down'}" style="font-weight:700">${p.pnl}</span>
+      <span class="${p.up?'up':'down'}" style="font-weight:600">${p.roe}</span>
+      <span style="color:var(--dim)">${p.margin}</span>
+    </div>`).join('')}
+    <div style="padding:8px 12px;font-size:11px;color:var(--green);font-weight:700;border-top:1px solid #1a1a1a">TOTAL UNREALIZED PnL: +$308.23</div>
+  `;
+}
 
-  if (!hlWalletAddress) {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Connect a Hyperliquid wallet to see open orders</div>';
-  } else {
-    el.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted)">Loading orders...</div>';
-  }
+function renderOrders(el){
+  const orders=[
+    {sym:'BTC',side:'BUY',type:'LIMIT',price:'$66,500.00',size:'0.200',status:'OPEN',time:'14:32:01'},
+    {sym:'ETH',side:'SELL',type:'LIMIT',price:'$2,850.00',size:'5.000',status:'OPEN',time:'13:45:22'},
+    {sym:'SOL',side:'BUY',type:'STOP',price:'$165.00',size:'30.00',status:'PENDING',time:'12:10:45'},
+    {sym:'HYPE',side:'BUY',type:'LIMIT',price:'$23.00',size:'200',status:'OPEN',time:'11:55:33'},
+  ];
+  el.innerHTML=`
+    <div class="pos-head"><span>SYMBOL</span><span>SIDE</span><span>TYPE</span><span>PRICE</span><span>SIZE</span><span>STATUS</span><span>TIME</span><span></span><span></span></div>
+    ${orders.map(o=>`<div class="pos-row">
+      <span class="pos-sym">${o.sym}</span>
+      <span><span class="pos-badge ${o.side==='BUY'?'pos-long':'pos-short'}">${o.side}</span></span>
+      <span style="color:var(--dim)">${o.type}</span><span>${o.price}</span><span>${o.size}</span>
+      <span style="color:${o.status==='OPEN'?'var(--green)':'var(--orange)'}">${o.status}</span>
+      <span style="color:var(--muted)">${o.time}</span><span></span><span></span>
+    </div>`).join('')}
+  `;
 }
 
 function renderHistory(el){
@@ -3730,26 +2517,10 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='f'){toggleFavorite(activeCoin)}
   
   // Indicator toggles (Alt + letter)
-  else if(e.altKey&&e.key==='s'){
-    indicators.sma20=!indicators.sma20;
-    syncIndicatorButtons();
-    saveSettings();renderChart();
-  }
-  else if(e.altKey&&e.key==='e'){
-    indicators.ema20=!indicators.ema20;
-    syncIndicatorButtons();
-    saveSettings();renderChart();
-  }
-  else if(e.altKey&&e.key==='b'){
-    indicators.bb=!indicators.bb;
-    syncIndicatorButtons();
-    saveSettings();renderChart();
-  }
-  else if(e.altKey&&e.key==='v'){
-    indicators.vwap=!indicators.vwap;
-    syncIndicatorButtons();
-    saveSettings();renderChart();
-  }
+  else if(e.altKey&&e.key==='s'){indicators.sma20=!indicators.sma20;document.getElementById('ind-sma20')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='e'){indicators.ema20=!indicators.ema20;document.getElementById('ind-ema20')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='b'){indicators.bb=!indicators.bb;document.getElementById('ind-bb')?.classList.toggle('active');saveSettings();renderChart()}
+  else if(e.altKey&&e.key==='v'){indicators.vwap=!indicators.vwap;document.getElementById('ind-vwap')?.classList.toggle('active');saveSettings();renderChart()}
   
   // Reset zoom (Escape or r)
   else if(e.key==='Escape'||e.key==='r'){chartZoomX=1;chartZoomY=1;chartPanX=0;document.getElementById('chartScroll').value=100;renderChart()}
@@ -3770,7 +2541,7 @@ document.addEventListener('keydown',e=>{
   }
   
   // Toggle sound (Alt+M for mute)
-  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'Sound enabled':'Sound muted')}
+  else if(e.altKey&&e.key==='m'){soundEnabled=!soundEnabled;saveSettings();alert(soundEnabled?'🔊 Sound enabled':'🔇 Sound muted')}
   
   // Toggle theme (Alt+T)
   else if(e.altKey&&e.key==='t'){toggleTheme()}
@@ -3821,27 +2592,15 @@ document.querySelectorAll('.type-btn').forEach(b=>b.addEventListener('click',()=
   chartType=b.dataset.type;renderChart();
 }));
 
-// Sync indicator button states with actual state
-function syncIndicatorButtons(){
-  ['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
-    const btn=document.getElementById('ind-'+ind);
-    if(!btn)return;
-    if(indicators[ind]){
-      btn.classList.add('active');
-    } else {
-      btn.classList.remove('active');
-    }
-  });
-}
-
 // Indicator toggles
 ['sma20','sma50','ema20','bb','vwap','rsi','volProfile','liqLevels'].forEach(ind=>{
   const btn=document.getElementById('ind-'+ind);
   if(!btn)return;
+  if(indicators[ind])btn.classList.add('active');
   btn.addEventListener('click',()=>{
     indicators[ind]=!indicators[ind];
-    syncIndicatorButtons();
-    saveSettings();
+    btn.classList.toggle('active');
+    saveSettings(); // Save indicator preferences
     renderChart();
   });
 });
@@ -3854,10 +2613,7 @@ window.addEventListener('resize',()=>{renderChart();if(activeTab==='orderbook')r
 loadFromURL();
 loadSavedLayouts();
 loadSettings();
-syncIndicatorButtons(); // Sync button states after loading settings
 loadPortfolio();
-loadDrawings();
-initDrawingHandlers();
 fetchPrices();
 fetchMeta();
 fetchStocks();
@@ -3876,19 +2632,5 @@ setInterval(fetchAIInsight,300000); // AI insight every 5 min
 setInterval(fetchEconomicCalendar,3600000); // Economic calendar every hour
 setInterval(()=>{if(activeTab==='overview')renderRecentTrades()},5000);
 </script>
-
-<!-- Drawing menu: lives directly on body — zero z-index/overflow interference -->
-<div id="drawingMenu" style="display:none;position:fixed;background:#1a1a1a;border:1px solid #333;border-radius:3px;z-index:99999;min-width:140px;box-shadow:0 4px 8px rgba(0,0,0,0.5)">
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('hline')"><span style="margin-right:6px">━</span>H-LINE</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('trendline')"><span style="margin-right:6px">╱</span>TREND</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ret')"><span style="margin-right:6px">F</span>FIB</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('fib_ext')"><span style="margin-right:6px">E</span>FIB-E</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('rectangle')"><span style="margin-right:6px">▭</span>RECT</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('ruler')"><span style="margin-right:6px">M</span>RULER</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();setDrawingTool('text')"><span style="margin-right:6px">T</span>TEXT</div>
-  <div style="border-top:1px solid #333;margin:2px 0"></div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();toggleDrawingsPanel()" style="color:#ff8c00">OBJECTS</div>
-  <div class="draw-menu-item" onclick="event.stopPropagation();clearDrawings()" style="color:#ff1744">CLEAR ALL</div>
-</div>
 </body>
 </html>

@@ -98,7 +98,7 @@ Added try-catch with alert to early diagnostic:
    
 2. **Test in Incognito mode** (bypasses cache):
    - Press `Ctrl+Shift+N`
-   - Go to: https://omarkanawati2000-netizen.github.io/omars-terminal/
+   - Go to: https://kanawatiomar.github.io/omars-terminal/
    
 3. **Look for alert popups:**
    - **If alert appears:** It will say "ERROR: [message] at line X" - send me the EXACT message
